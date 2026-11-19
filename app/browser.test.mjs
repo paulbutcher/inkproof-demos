@@ -121,3 +121,23 @@ test('server events draws its three series as envelopes', async () => {
   assert.ok(red > 0 && green > 0 && blue > 0, `red ${red}, green ${green}, blue ${blue}`);
   await page.close();
 });
+
+test('axis control draws its red series and axis', async () => {
+  const { page, problems } = await open('axis-control/');
+  await page.waitForFunction(() => window.draws.length >= 1);
+  assert.deepEqual(problems, []);
+  const { red } = await colours(page);
+  assert.ok(red > 0, `red ${red}`);
+  await page.close();
+});
+
+test('the time series pages draw every chart in their series colours', async () => {
+  for (const [path, charts, wanted] of [['missing-data/', 2, ['red', 'blue']], ['high-low-bands/', 1, ['red', 'blue', 'green']], ['path-gap-clip/', 2, ['green']]]) {
+    const { page, problems } = await open(path);
+    await page.waitForFunction(n => window.draws.length >= n, charts);
+    assert.deepEqual(problems, [], path);
+    const found = await colours(page);
+    for (const colour of wanted) assert.ok(found[colour] > 0, `${path} ${colour}: ${JSON.stringify(found)}`);
+    await page.close();
+  }
+});

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.0
+
+- The Axis Control page, half a million points with a red right axis and axis titles.
+- The Missing Data, High-Low Bands and Path Gap Clip pages, with lines, bands and gaps over clock-time x axes.
+- `Axes.withTicks` takes the axis style, and `Axes.time` draws a time axis.
+
 ## v0.3.0
 
 - The million-point spike page and the server events page, drawn as per-column envelopes from `Pyramid.columns`, with tick labels placed by one shared helper.

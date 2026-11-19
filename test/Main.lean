@@ -51,5 +51,35 @@ private def serverEventsTest : Except String Unit := do
     check (ServerEvents.drawnHighest e == ServerEvents.highest f) "the envelope reaches the highest value of the data"
     check (ServerEvents.highest f > 0) "the series is not flat"
 
+private def axisControlTest : Except String Unit := do
+  let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
+  check (AxisControl.series.xs.size == AxisControl.n) "the series has every point"
+  check (AxisControl.series.values.all fun v => v.all fun y => -50 ≤ y && y ≤ 50) "the series stays within the fixed y range"
+  let [_, right] := AxisControl.axes measure | throw "expected two axes"
+  check (!right.labels.isEmpty) "the right axis keeps labels"
+  check (right.labels.all fun l => l.anchor.x ≥ AxisControl.frame.right) "the right axis labels lie right of the plot"
+
+private def linesTest : Except String Unit := do
+  let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
+  let charts := MissingData.charts ++ HighLowBands.charts ++ PathGapClip.charts
+  for c in charts do
+    let f := c.frame
+    check (c.layers.all fun l => l.data.xs.all fun x => c.xs.1 ≤ x && x ≤ c.xs.2) s!"{c.name}: points lie within the x range"
+    check (c.layers.all fun l => l.data.values.all fun v => v.all fun y => (if l.onRight then (c.right.getD c.left) else c.left).range.1 ≤ y && y ≤ (if l.onRight then (c.right.getD c.left) else c.left).range.2) s!"{c.name}: points lie within their y range"
+    let axes := c.axes measure
+    check (axes.length == (if c.right.isSome then 3 else 2)) s!"{c.name}: one axis per side"
+    for a in axes do
+      check (!a.labels.isEmpty) s!"{c.name}: every axis keeps labels"
+    match axes with
+    | bottom :: left :: _ =>
+      check (bottom.labels.all fun l => l.anchor.x ≥ f.left && l.anchor.x ≤ f.right) s!"{c.name}: x labels lie within the plot"
+      check (left.labels.all fun l => l.anchor.y ≥ f.top && l.anchor.y ≤ f.bottom) s!"{c.name}: y labels lie within the plot"
+    | _ => throw s!"{c.name}: expected axes"
+  let present (s : Core.Series Rat Rat) := (s.values.filter (·.isSome)).size
+  check (present MissingData.cpuSeries = 200 - 6 ∧ present MissingData.ramSeries = 200 - 6) "missing samples are gaps, not dropped or filled"
+  check (HighLowBands.meanSeries.values.getD 364 none == some 38 ∧ HighLowBands.meanSeries.values.getD 305 (some 0) == none) "the mean has its own gaps"
+  let gap := MissingData.gaps.layers.head?.map (·.segments.numSegments)
+  check (gap == some 2) "samples further apart than the step are not joined"
+
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, platformTest (args.contains "--expect-wasm")]

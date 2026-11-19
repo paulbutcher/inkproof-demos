@@ -1,0 +1,99 @@
+/-
+Copyright (c) 2026 Paul Butcher. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+import Inkproof.Axis
+import Inkproof.Core
+import Inkproof.Scene
+import Inkproof.Scale
+import Inkproof.Demos.Axes
+import Inkproof.Demos.Data
+import Inkproof.Demos.Frame
+
+namespace Inkproof.Demos.AxisControl
+
+open Inkproof.Axis Inkproof.Core Inkproof.Scene Inkproof.Scale Inkproof.Demos
+
+/-- The number of points of the series: `0` to `n - 1`. -/
+def n : Nat := 500001
+
+/-- The signal at `x`: two slow sines and a fast one, as uPlot's page sums them, with `noise` in `[-1/2, 1/2]`. -/
+def signal (x : Nat) (noise : Float) : Float :=
+  let x := x.toFloat
+  noise + Float.sin (x * 0.00002) * 40 + Float.sin (x * 0.001) * 5 + Float.sin (x * 0.1) * 2
+
+theorem signal_eq (x : Nat) (noise : Float) : signal x noise =
+    noise + Float.sin (x.toFloat * 0.00002) * 40 + Float.sin (x.toFloat * 0.001) * 5 + Float.sin (x.toFloat * 0.1) * 2 := rfl
+
+/-- A value rounded to thousandths, the exact number the chart plots. -/
+def thousandths (v : Float) : Rat := (Rat.ofInt (v * 1000).round.toInt64.toInt) / 1000
+
+theorem thousandths_eq (v : Float) : thousandths v = (Rat.ofInt (v * 1000).round.toInt64.toInt) / 1000 := rfl
+
+/-- The `n` points of the series, the noise drawn from a fixed seed so that every visit shows the same chart. -/
+def points : Array (Rat × Option Rat) :=
+  ((List.range n).foldl (fun (acc : Array (Rat × Option Rat) × StdGen) (x : Nat) =>
+    let (d, g) := Data.draw acc.2 1000
+    (acc.1.push ((x : Rat), some (thousandths (signal x (d.toFloat / 1000 - 0.5)))), g)) (#[], mkStdGen 3)).1
+
+theorem points_size : points.size = n := by
+  have h : ∀ (l : List Nat) (acc : Array (Rat × Option Rat) × StdGen),
+      (l.foldl (fun (acc : Array (Rat × Option Rat) × StdGen) (x : Nat) =>
+        let (d, g) := Data.draw acc.2 1000
+        (acc.1.push ((x : Rat), some (thousandths (signal x (d.toFloat / 1000 - 0.5)))), g)) acc).1.size
+        = acc.1.size + l.length := by
+    intro l
+    induction l with
+    | nil => intro acc; simp
+    | cons x l ih => intro acc; simp only [List.foldl_cons, List.length_cons]; rw [ih]; simp; omega
+  unfold points
+  rw [h]; simp
+
+def series : Series Rat Rat := Series.ofUnsorted points
+
+theorem series_eq : series = Series.ofUnsorted points := rfl
+
+def frame : Frame := ⟨60, 988, 20, 520, (0, 500000), (-50, 50)⟩
+
+def red : Color := ⟨255, 0, 0, 255⟩
+
+/-- The right axis is drawn in red, as is the series. -/
+def redStyle : AxisStyle :=
+  { Axes.style with line := ⟨0, red⟩, tick := ⟨0, red⟩ }
+
+def yTicks : List Float := linearTicks (-50) 50 8
+
+theorem yTicks_eq : yTicks = linearTicks (-50) 50 8 := rfl
+
+def labels : List String := tickLabels .en yTicks
+
+theorem labels_eq : labels = tickLabels .en yTicks := rfl
+
+/-- Every label either axis may show: the browser measures these before the axes choose among them. -/
+def labelTexts : List String :=
+  Axes.linearLabels (Rat.toFloat frame.xs.1) (Rat.toFloat frame.xs.2) ++ labels
+
+theorem labelTexts_eq : labelTexts =
+    Axes.linearLabels (Rat.toFloat frame.xs.1) (Rat.toFloat frame.xs.2) ++ labels := rfl
+
+def axes (measure : String → Float × Float) : List AxisDrawing :=
+  let f := frame
+  [Axes.linear .bottom (plot f) measure (Rat.toFloat f.xs.1) (Rat.toFloat f.xs.2) (Rat.toFloat f.left) (Rat.toFloat f.right),
+   Axes.withTicks .right (plot f) measure (Linear.mk (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) (Rat.toFloat f.bottom) (Rat.toFloat f.top)).map
+     yTicks labels redStyle]
+
+theorem axes_eq (measure : String → Float × Float) : axes measure =
+    [Axes.linear .bottom (plot frame) measure (Rat.toFloat frame.xs.1) (Rat.toFloat frame.xs.2) (Rat.toFloat frame.left) (Rat.toFloat frame.right),
+     Axes.withTicks .right (plot frame) measure (Linear.mk (Rat.toFloat frame.ys.1) (Rat.toFloat frame.ys.2) (Rat.toFloat frame.bottom) (Rat.toFloat frame.top)).map
+       yTicks labels redStyle] := rfl
+
+/-- The axes, then the series as a line thinned to what its pixel columns show. -/
+def chart (measure : String → Float × Float) : DisplayList :=
+  (axes measure).foldl (· ++ ·.display) #[] ++
+  compileLine ⟨⟨1, red⟩, 1, true, none⟩ (projection frame) (Segmented.single series)
+
+theorem chart_eq (measure : String → Float × Float) : chart measure =
+    (axes measure).foldl (· ++ ·.display) #[] ++
+    compileLine ⟨⟨1, red⟩, 1, true, none⟩ (projection frame) (Segmented.single series) := rfl
+
+end Inkproof.Demos.AxisControl

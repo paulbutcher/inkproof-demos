@@ -26,4 +26,11 @@ def frameScene (width height : Nat) (f : Frame) (chart : (String → Float × Fl
   let labels := tickLabels (axes f measure)
   pure { commands := Page.bytes width height (chart measure), labels }
 
+/-- The scene of a chart of lines: its axes' labels over the data. -/
+def lineScene (c : Lines.Chart) : IO Scene := do
+  let measure ← measurer "12px sans-serif" c.labelTexts.toArray
+  let sides := [Side.bottom, .left] ++ (c.right.map fun _ => Side.right).toList
+  let labels := ((c.axes measure).zip sides).toArray.flatMap fun (a, side) => Label.ofDrawing side a
+  pure { commands := Page.bytes c.width c.height (c.display measure), labels }
+
 end Inkproof.Demos.Browser

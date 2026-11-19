@@ -1,0 +1,200 @@
+/-
+Copyright (c) 2026 Paul Butcher. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-/
+import Inkproof.Axis
+import Inkproof.Core
+import Inkproof.Scene
+import Inkproof.Scale
+import Inkproof.Demos.Axes
+import Inkproof.Demos.Frame
+
+namespace Inkproof.Demos.Lines
+
+open Inkproof.Axis Inkproof.Core Inkproof.Scene Inkproof.Scale Inkproof.Demos
+
+/-- The points `(xs[i], ys[i])`, a value of `none` being missing. -/
+def series (xs : Array Rat) (ys : Array (Option Rat)) : Series Rat Rat :=
+  Series.ofUnsorted (xs.zip ys)
+
+theorem series_eq (xs : Array Rat) (ys : Array (Option Rat)) : series xs ys = Series.ofUnsorted (xs.zip ys) := rfl
+
+/-- Values given in units of `1 / scale`, as the numbers they stand for. -/
+def scaled (scale : Nat) (vals : Array Int) : Array Rat := vals.map fun (v : Int) => (v : Rat) / scale
+
+theorem scaled_eq (scale : Nat) (vals : Array Int) : scaled scale vals = vals.map fun (v : Int) => (v : Rat) / scale := rfl
+
+/-- `ys` with the entries at `gaps` missing. -/
+def withGaps (gaps : List Nat) (ys : Array Rat) : Array (Option Rat) :=
+  ys.mapIdx fun i y => if gaps.contains i then none else some y
+
+theorem withGaps_eq (gaps : List Nat) (ys : Array Rat) :
+    withGaps gaps ys = ys.mapIdx fun i y => if gaps.contains i then none else some y := rfl
+
+/-- A y axis: the range it shows, a unit written after each label, and whether its ticks have gridlines. -/
+structure YAxis where
+  range : Rat × Rat
+  suffix : String := ""
+  grid : Bool := true
+
+/-- One drawn series. -/
+structure Layer where
+  data : Series Rat Rat
+  color : Color
+  fill : Option Color := none
+  halfWidth : Rat := 1 / 2
+  dash : Option DashPattern := none
+  onRight : Bool := false
+  /-- Adjacent points further apart than this are not joined. -/
+  maxStep : Option Rat := none
+
+/-- The filled space between two layers, where both have a value. -/
+structure Band where
+  lower : Nat
+  upper : Nat
+  color : Color
+
+/-- A chart of series sharing an x axis (Unix times when `time`), with a left y axis and optionally a right one. -/
+structure Chart where
+  name : String
+  width : Nat
+  height : Nat
+  xs : Rat × Rat
+  time : Bool
+  left : YAxis
+  right : Option YAxis := none
+  layers : List Layer
+  bands : List Band := []
+
+/-- Every value present in the layers. -/
+def values (layers : List Layer) : List Rat := layers.flatMap fun l => l.data.values.toList.filterMap id
+
+theorem values_eq (layers : List Layer) : values layers = layers.flatMap fun l => l.data.values.toList.filterMap id := rfl
+
+/-- The y axis showing every value of the layers, as `autoRange` pads them. -/
+def autoYAxis (layers : List Layer) (suffix : String := "") : YAxis :=
+  match values layers with
+  | [] => { range := (0, 1), suffix }
+  | v :: vs => { range := autoRange (1 / 10) (vs.foldl min v) (vs.foldl max v), suffix }
+
+theorem autoYAxis_eq (layers : List Layer) (suffix : String) : autoYAxis layers suffix =
+    match values layers with
+    | [] => { range := (0, 1), suffix }
+    | v :: vs => { range := autoRange (1 / 10) (vs.foldl min v) (vs.foldl max v), suffix } := rfl
+
+def Chart.frame (c : Chart) : Frame :=
+  ⟨60, c.width - (if c.right.isSome then 80 else 20), 20, c.height - 40, c.xs, c.left.range⟩
+
+theorem Chart.frame_eq (c : Chart) :
+    c.frame = ⟨60, c.width - (if c.right.isSome then 80 else 20), 20, c.height - 40, c.xs, c.left.range⟩ := rfl
+
+/-- Data to pixels along a y axis of `a`. -/
+def Chart.yScale (c : Chart) (a : YAxis) : Linear Rat :=
+  ⟨a.range.1, a.range.2, c.frame.bottom, c.frame.top⟩
+
+theorem Chart.yScale_eq (c : Chart) (a : YAxis) : c.yScale a = ⟨a.range.1, a.range.2, c.frame.bottom, c.frame.top⟩ := rfl
+
+def Chart.xScale (c : Chart) : Linear Rat := ⟨c.xs.1, c.xs.2, c.frame.left, c.frame.right⟩
+
+theorem Chart.xScale_eq (c : Chart) : c.xScale = ⟨c.xs.1, c.xs.2, c.frame.left, c.frame.right⟩ := rfl
+
+/-- Data to pixels for `layer`, along the axis it is drawn against. -/
+def Chart.projection (c : Chart) (l : Layer) : Projection Rat Rat :=
+  ⟨c.xScale.map, (c.yScale (if l.onRight then c.right.getD c.left else c.left)).map⟩
+
+theorem Chart.projection_x (c : Chart) (l : Layer) (x : Rat) : (c.projection l).x x = c.xScale.map x := rfl
+
+/-- The tick values and labels of a y axis. -/
+def YAxis.ticks (a : YAxis) : List Float × List String :=
+  let ts := linearTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) 10
+  (ts, (tickLabels .en ts).map (· ++ a.suffix))
+
+theorem YAxis.ticks_eq (a : YAxis) : a.ticks =
+    (linearTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) 10,
+     (tickLabels .en (linearTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) 10)).map (· ++ a.suffix)) := rfl
+
+/-- About one tick every 120 pixels along a time axis. -/
+def Chart.timeTarget (c : Chart) : Nat := c.width / 120
+
+theorem Chart.timeTarget_eq (c : Chart) : c.timeTarget = c.width / 120 := rfl
+
+/-- Every label an axis may show: the browser measures these before the axes choose among them. -/
+def Chart.labelTexts (c : Chart) : List String :=
+  (if c.time then (Axes.timeTicks (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2) c.timeTarget).2
+   else Axes.linearLabels (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2)) ++
+  c.left.ticks.2 ++ (c.right.map (·.ticks.2)).getD []
+
+theorem Chart.labelTexts_eq (c : Chart) : c.labelTexts =
+    (if c.time then (Axes.timeTicks (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2) c.timeTarget).2
+     else Axes.linearLabels (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2)) ++
+    c.left.ticks.2 ++ (c.right.map (·.ticks.2)).getD [] := rfl
+
+def Chart.axes (c : Chart) (measure : String → Float × Float) : List AxisDrawing :=
+  let f := c.frame
+  let (lo, hi, l, r) := (Rat.toFloat f.xs.1, Rat.toFloat f.xs.2, Rat.toFloat f.left, Rat.toFloat f.right)
+  let yAxis (side : Side) (a : YAxis) :=
+    let (ts, ls) := a.ticks
+    Axes.withTicks side (plot f) measure (Linear.mk (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) (Rat.toFloat f.bottom) (Rat.toFloat f.top)).map ts ls
+      (if a.grid then Axes.style else { Axes.style with grid := none })
+  [if c.time then Axes.time .bottom (plot f) measure c.timeTarget lo hi l r else Axes.linear .bottom (plot f) measure lo hi l r,
+   yAxis .left c.left] ++ (c.right.map (yAxis .right)).toList
+
+theorem Chart.axes_eq (c : Chart) (measure : String → Float × Float) : c.axes measure =
+    let f := c.frame
+    let (lo, hi, l, r) := (Rat.toFloat f.xs.1, Rat.toFloat f.xs.2, Rat.toFloat f.left, Rat.toFloat f.right)
+    let yAxis (side : Side) (a : YAxis) :=
+      let (ts, ls) := a.ticks
+      Axes.withTicks side (plot f) measure (Linear.mk (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) (Rat.toFloat f.bottom) (Rat.toFloat f.top)).map ts ls
+        (if a.grid then Axes.style else { Axes.style with grid := none })
+    [if c.time then Axes.time .bottom (plot f) measure c.timeTarget lo hi l r else Axes.linear .bottom (plot f) measure lo hi l r,
+     yAxis .left c.left] ++ (c.right.map (yAxis .right)).toList := rfl
+
+/-- The layer's strokes, split where its `maxStep` says the data has a gap. -/
+def Layer.segments (l : Layer) : Segmented Rat Rat :=
+  match l.maxStep with
+  | some d => Segmented.splitWhere l.data fun a b => decide (d < b - a)
+  | none => Segmented.single l.data
+
+theorem Layer.segments_eq (l : Layer) : l.segments =
+    match l.maxStep with
+    | some d => Segmented.splitWhere l.data fun a b => decide (d < b - a)
+    | none => Segmented.single l.data := rfl
+
+/-- The band between layers `b.lower` and `b.upper`: a column at each x where both have a value. -/
+def Chart.bandDisplay (c : Chart) (b : Band) : DisplayList :=
+  match c.layers[b.lower]?, c.layers[b.upper]? with
+  | some lo, some hi =>
+    let cols := (lo.data.values.zip hi.data.values).map fun (a, z) => do pure (← a, ← z)
+    compileEnvelope ⟨0, b.color⟩ ⟨fun i => c.xScale.map (lo.data.xs.getD i 0), (c.yScale c.left).map⟩ cols
+  | _, _ => #[]
+
+theorem Chart.bandDisplay_eq (c : Chart) (b : Band) : c.bandDisplay b =
+    match c.layers[b.lower]?, c.layers[b.upper]? with
+    | some lo, some hi =>
+      let cols := (lo.data.values.zip hi.data.values).map fun (a, z) => do pure (← a, ← z)
+      compileEnvelope ⟨0, b.color⟩ ⟨fun i => c.xScale.map (lo.data.xs.getD i 0), (c.yScale c.left).map⟩ cols
+    | _, _ => #[] := rfl
+
+/-- The layer filled down to the bottom of its axis, then stroked. -/
+def Chart.layerDisplay (c : Chart) (l : Layer) : DisplayList :=
+  (match l.fill with
+    | some f => compileArea ⟨0, f⟩ (if l.onRight then (c.right.getD c.left).range.1 else c.left.range.1) (c.projection l) l.segments
+    | none => #[]) ++
+  compileLine ⟨⟨1, l.color⟩, l.halfWidth, false, l.dash⟩ (c.projection l) l.segments
+
+theorem Chart.layerDisplay_eq (c : Chart) (l : Layer) : c.layerDisplay l =
+    (match l.fill with
+      | some f => compileArea ⟨0, f⟩ (if l.onRight then (c.right.getD c.left).range.1 else c.left.range.1) (c.projection l) l.segments
+      | none => #[]) ++
+    compileLine ⟨⟨1, l.color⟩, l.halfWidth, false, l.dash⟩ (c.projection l) l.segments := rfl
+
+/-- The axes, then the bands and each layer in turn. -/
+def Chart.display (c : Chart) (measure : String → Float × Float) : DisplayList :=
+  (c.axes measure).foldl (· ++ ·.display) #[] ++ c.bands.foldl (· ++ c.bandDisplay ·) #[] ++
+    c.layers.foldl (· ++ c.layerDisplay ·) #[]
+
+theorem Chart.display_eq (c : Chart) (measure : String → Float × Float) : c.display measure =
+    (c.axes measure).foldl (· ++ ·.display) #[] ++ c.bands.foldl (· ++ c.bandDisplay ·) #[] ++
+      c.layers.foldl (· ++ c.layerDisplay ·) #[] := rfl
+
+end Inkproof.Demos.Lines

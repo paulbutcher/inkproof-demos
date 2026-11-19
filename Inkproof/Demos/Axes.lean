@@ -29,11 +29,11 @@ theorem labelLayout_eq (side : Side) (measure : String → Float × Float) (tick
       | .left | .right => let (n, kept) := layoutLabelsVertical measure 8 ticks; ⟨.horizontal, n, kept⟩
       | _ => layoutLabels measure 8 ticks := rfl
 
-/-- The axis of `side` of `plot` with a tick at each value of `ticks`, labelled by `labels` and placed at `pixel` of it. -/
+/-- The axis of `side` of `plot` with a tick at each value of `ticks`, labelled by `labels`, placed at `pixel` of it and drawn in `look`. -/
 def withTicks (side : Side) (plot : Rect) (measure : String → Float × Float) (pixel : Float → Float)
-    (ticks : List Float) (labels : List String) : AxisDrawing :=
+    (ticks : List Float) (labels : List String) (look : AxisStyle := style) : AxisDrawing :=
   let placed := (ticks.zip labels).map fun (v, l) => (pixel v, l)
-  compileAxis side plot plane style (placed.map (·.1)) (labelLayout side measure placed)
+  compileAxis side plot plane look (placed.map (·.1)) (labelLayout side measure placed)
 
 /-- The labels of the ticks `linear` draws on the range `lo` to `hi`. -/
 def linearLabels (lo hi : Float) : List String := tickLabels .en (linearTicks lo hi 10)
@@ -48,13 +48,33 @@ def logarithmic (log : Float → Float) (side : Side) (plot : Rect) (measure : S
     (lo hi start stop : Float) (ticks : List Float) (labels : List String) : AxisDrawing :=
   withTicks side plot measure (Log.map log ⟨lo, hi, start, stop⟩) ticks labels
 
+/-- Month names for time axes. -/
+def months : List String := ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+/-- The ticks of a time axis over `lo` to `hi` seconds, at clock intervals, about `target` of them, with their labels. -/
+def timeTicks (lo hi : Float) (target : Nat) : List Float × List String :=
+  let ticks := durationTicks lo hi target
+  (ticks, timeTickLabels months (durationStep (hi - lo) target) ticks)
+
+theorem timeTicks_eq (lo hi : Float) (target : Nat) : timeTicks lo hi target =
+    (durationTicks lo hi target, timeTickLabels months (durationStep (hi - lo) target) (durationTicks lo hi target)) := rfl
+
+/-- The axis of `side` of `plot` showing the Unix times `lo` to `hi`, which lie between `start` and `stop` pixels along the plot. -/
+def time (side : Side) (plot : Rect) (measure : String → Float × Float) (target : Nat) (lo hi start stop : Float) : AxisDrawing :=
+  let (ticks, labels) := timeTicks lo hi target
+  withTicks side plot measure (Linear.mk lo hi start stop).map ticks labels
+
+theorem time_eq (side : Side) (plot : Rect) (measure : String → Float × Float) (target : Nat) (lo hi start stop : Float) :
+    time side plot measure target lo hi start stop =
+      withTicks side plot measure (Linear.mk lo hi start stop).map (timeTicks lo hi target).1 (timeTicks lo hi target).2 := rfl
+
 theorem plane_eq (p : Float) : plane p = (Inkproof.Float.Float.toRat p).getD 0 := rfl
 
 theorem withTicks_eq (side : Side) (plot : Rect) (measure : String → Float × Float) (pixel : Float → Float)
-    (ticks : List Float) (labels : List String) :
-    withTicks side plot measure pixel ticks labels =
+    (ticks : List Float) (labels : List String) (look : AxisStyle) :
+    withTicks side plot measure pixel ticks labels look =
       let placed := (ticks.zip labels).map fun (v, l) => (pixel v, l)
-      compileAxis side plot plane style (placed.map (·.1)) (labelLayout side measure placed) := rfl
+      compileAxis side plot plane look (placed.map (·.1)) (labelLayout side measure placed) := rfl
 
 theorem linear_eq (side : Side) (plot : Rect) (measure : String → Float × Float) (lo hi start stop : Float) :
     linear side plot measure lo hi start stop =
