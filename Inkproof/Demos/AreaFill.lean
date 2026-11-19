@@ -74,15 +74,15 @@ def plot (f : Frame) : Rect := ⟨f.left, f.top, f.right, f.bottom⟩
 
 theorem plot_eq (f : Frame) : plot f = ⟨f.left, f.top, f.right, f.bottom⟩ := rfl
 
-/-- The bottom and left axes. Left labels stack vertically, so Axis gets each one with its height as its width. -/
+/-- The bottom and left axes. -/
 def axes (f : Frame) (measure : String → Float × Float) : List AxisDrawing :=
   [Axes.linear .bottom (plot f) measure (flt f.xs.1) (flt f.xs.2) (flt f.left) (flt f.right),
-   Axes.linear .left (plot f) (fun t => (measure t).swap) (flt f.ys.1) (flt f.ys.2) (flt f.bottom) (flt f.top)]
+   Axes.linear .left (plot f) measure (flt f.ys.1) (flt f.ys.2) (flt f.bottom) (flt f.top)]
 
 theorem axes_eq (f : Frame) (measure : String → Float × Float) :
     axes f measure =
       [Axes.linear .bottom (plot f) measure (flt f.xs.1) (flt f.xs.2) (flt f.left) (flt f.right),
-       Axes.linear .left (plot f) (fun t => (measure t).swap) (flt f.ys.1) (flt f.ys.2) (flt f.bottom) (flt f.top)] := rfl
+       Axes.linear .left (plot f) measure (flt f.ys.1) (flt f.ys.2) (flt f.bottom) (flt f.top)] := rfl
 
 /-- Each series filled down to zero and stroked on top, over the axes. -/
 def chart (f : Frame) (measure : String → Float × Float) : DisplayList :=
