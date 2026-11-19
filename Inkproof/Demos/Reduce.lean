@@ -32,15 +32,4 @@ def columnExtents (p : Pyramid Extent) (total cols : Nat) : Array Extent :=
 theorem columnExtents_eq (p : Pyramid Extent) (total cols : Nat) : columnExtents p total cols =
     Pyramid.columns tileSize (by decide) p.branching p.levels.size (p.tile tileSize) 0 total cols := rfl
 
-/-- Plot rectangle of one panel. -/
-structure Panel where
-  left : Rat
-  right : Rat
-  top : Rat
-  bottom : Rat
-
-def plot (p : Panel) : Rect := ⟨p.left, p.top, p.right, p.bottom⟩
-
-theorem plot_eq (p : Panel) : plot p = ⟨p.left, p.top, p.right, p.bottom⟩ := rfl
-
 end Inkproof.Demos.Reduce

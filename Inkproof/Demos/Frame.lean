@@ -2,6 +2,7 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+import Inkproof.Gpu.Frame
 import Inkproof.Scene
 import Inkproof.Float
 import Inkproof.Scale
@@ -10,6 +11,9 @@ import Inkproof.Demos.Axes
 namespace Inkproof.Demos
 
 open Inkproof.Scene Inkproof.Scale
+
+/-- The page's colour, which every chart is drawn on. -/
+def background : Color := ⟨255, 255, 255, 255⟩
 
 /-- Plot rectangle and data ranges of the chart. -/
 structure Frame where
@@ -41,15 +45,37 @@ def Frame.sized (width height : Nat) (xs ys : Rat × Rat) : Frame :=
 theorem Frame.sized_eq (width height : Nat) (xs ys : Rat × Rat) :
     Frame.sized width height xs ys = ⟨60, width - 20, 20, height - 40, xs, ys⟩ := rfl
 
+/-- The float scale of the frame's x axis, from data to pixels along the plot. -/
+def Frame.xScale (f : Frame) : Linear Float :=
+  ⟨Rat.toFloat f.xs.1, Rat.toFloat f.xs.2, Rat.toFloat f.left, Rat.toFloat f.right⟩
+
+theorem Frame.xScale_eq (f : Frame) :
+    f.xScale = ⟨Rat.toFloat f.xs.1, Rat.toFloat f.xs.2, Rat.toFloat f.left, Rat.toFloat f.right⟩ := rfl
+
+/-- The float scale of the frame's y axis; pixels grow downwards. -/
+def Frame.yScale (f : Frame) : Linear Float :=
+  ⟨Rat.toFloat f.ys.1, Rat.toFloat f.ys.2, Rat.toFloat f.bottom, Rat.toFloat f.top⟩
+
+theorem Frame.yScale_eq (f : Frame) :
+    f.yScale = ⟨Rat.toFloat f.ys.1, Rat.toFloat f.ys.2, Rat.toFloat f.bottom, Rat.toFloat f.top⟩ := rfl
+
 /-- The bottom and left axes. -/
 def axes (f : Frame) (measure : String → Float × Float) : List AxisDrawing :=
-  [Axes.linear .bottom (plot f) measure (Rat.toFloat f.xs.1) (Rat.toFloat f.xs.2) (Rat.toFloat f.left) (Rat.toFloat f.right),
-   Axes.linear .left (plot f) measure (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) (Rat.toFloat f.bottom) (Rat.toFloat f.top)]
+  [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
+   compileLinearAxis .left (plot f) f.yScale Axes.spec measure Axes.style]
 
 theorem axes_eq (f : Frame) (measure : String → Float × Float) :
     axes f measure =
-      [Axes.linear .bottom (plot f) measure (Rat.toFloat f.xs.1) (Rat.toFloat f.xs.2) (Rat.toFloat f.left) (Rat.toFloat f.right),
-       Axes.linear .left (plot f) measure (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) (Rat.toFloat f.bottom) (Rat.toFloat f.top)] := rfl
+      [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
+       compileLinearAxis .left (plot f) f.yScale Axes.spec measure Axes.style] := rfl
+
+/-- The bottom axis of `f` over Unix times, with ticks at clock intervals, about `target` of them. -/
+def Frame.timeAxis (f : Frame) (target : Nat) (measure : String → Float × Float) : AxisDrawing :=
+  compileTimeAxis .bottom (plot f) f.xScale { Axes.spec with target } Axes.months measure Axes.style
+
+theorem Frame.timeAxis_eq (f : Frame) (target : Nat) (measure : String → Float × Float) :
+    f.timeAxis target measure =
+      compileTimeAxis .bottom (plot f) f.xScale { Axes.spec with target } Axes.months measure Axes.style := rfl
 
 /-- The axes' commands, drawn under the data. -/
 def axisDisplay (f : Frame) (measure : String → Float × Float) : DisplayList :=

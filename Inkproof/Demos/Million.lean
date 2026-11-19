@@ -80,40 +80,31 @@ def shownCount (shown : Nat → Bool) : Nat := (spikes.filter shown).size
 
 theorem shownCount_eq (shown : Nat → Bool) : shownCount shown = (spikes.filter shown).size := rfl
 
-def naivePanel : Panel := ⟨60, 1180, 40, 340⟩
-def inkproofPanel : Panel := ⟨60, 1180, 420, 720⟩
-
 def ys : Rat × Rat := (-300, 1100)
 
+def naivePanel : Frame := ⟨60, 1180, 40, 340, (0, total), ys⟩
+def inkproofPanel : Frame := ⟨60, 1180, 420, 720, (0, total), ys⟩
+
 /-- Column index and sample value to pixels in `p`. -/
-def projection (p : Panel) : Projection Nat Int :=
+def projection (p : Frame) : Projection Nat Int :=
   .mk (fun c => (Linear.mk 0 (columns : Rat) p.left p.right).map (c : Rat))
     (fun v => (Linear.mk ys.1 ys.2 p.bottom p.top).map (v : Rat))
 
-theorem projection_x (p : Panel) (c : Nat) :
+theorem projection_x (p : Frame) (c : Nat) :
     (projection p).x c = (Linear.mk 0 (columns : Rat) p.left p.right).map (c : Rat) := rfl
 
-theorem projection_y (p : Panel) (v : Int) :
+theorem projection_y (p : Frame) (v : Int) :
     (projection p).y v = (Linear.mk ys.1 ys.2 p.bottom p.top).map (v : Rat) := rfl
-
-/-- The bottom axis counts samples and the left axis shows the value. -/
-def axes (p : Panel) (measure : String → Float × Float) : List AxisDrawing :=
-  [Axes.linear .bottom (Reduce.plot p) measure 0 (Rat.toFloat total) (Rat.toFloat p.left) (Rat.toFloat p.right),
-   Axes.linear .left (Reduce.plot p) measure (Rat.toFloat ys.1) (Rat.toFloat ys.2) (Rat.toFloat p.bottom) (Rat.toFloat p.top)]
-
-theorem axes_eq (p : Panel) (measure : String → Float × Float) : axes p measure =
-    [Axes.linear .bottom (Reduce.plot p) measure 0 (Rat.toFloat total) (Rat.toFloat p.left) (Rat.toFloat p.right),
-     Axes.linear .left (Reduce.plot p) measure (Rat.toFloat ys.1) (Rat.toFloat ys.2) (Rat.toFloat p.bottom) (Rat.toFloat p.top)] := rfl
 
 def ink : Color := ⟨30, 30, 30, 255⟩
 def spikeColor : Color := ⟨220, 0, 0, 255⟩
 
 /-- Each true spike, as a ring in the column that holds it. -/
-def spikeMarks (p : Panel) : DisplayList :=
+def spikeMarks (p : Frame) : DisplayList :=
   compileScatter ⟨⟨2, spikeColor⟩, .circle, 6⟩ (projection p)
     (Series.ofUnsorted (spikes.map fun i => (columnOf i, some (sample i))))
 
-theorem spikeMarks_eq (p : Panel) : spikeMarks p = compileScatter ⟨⟨2, spikeColor⟩, .circle, 6⟩ (projection p)
+theorem spikeMarks_eq (p : Frame) : spikeMarks p = compileScatter ⟨⟨2, spikeColor⟩, .circle, 6⟩ (projection p)
     (Series.ofUnsorted (spikes.map fun i => (columnOf i, some (sample i)))) := rfl
 
 /-- The naive panel: one sample per column, joined by a line. -/

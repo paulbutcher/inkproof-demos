@@ -14,7 +14,6 @@ The [uPlot demos](https://leeoniya.github.io/uPlot/demos/index.html), recreated 
 - Show the Missing Data, High-Low Bands and Path Gap Clip demos, lines and bands over Unix-time x axes with gaps drawn as gaps, and stepped and spline joins, from uPlot's `missing-data.html`, `high-low-bands.html` and `path-gap-clip.html`: `Inkproof.Demos.Lines.Chart`, at `missing-data/`, `high-low-bands/` and `path-gap-clip/`.
 - Show a million samples with twelve one-sample spikes drawn two ways, one sample per pixel column against the lowest and highest per column from Core's pyramid, and count the spikes each keeps: `Inkproof.Demos.Million.naiveChart`, `Million.inkproofChart`, at `million/`.
 - Show three dense series of 55,550 samples as per-column envelopes, with the highest value of each in the data and as drawn: `Inkproof.Demos.ServerEvents.chart`, at `server-events/`.
-- Turn a display list into the command list a chart element draws: `Inkproof.Demos.Page.bytes`.
 
 ## Build and run
 

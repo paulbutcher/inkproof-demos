@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Inkproof.Demos.Browser
 
-open Inkproof.Web.Host Inkproof.Demos
+open Inkproof.Web.Host Inkproof.Demos Inkproof
 
 def main : IO Unit :=
   register "inkproof-chart" fun _ => do
@@ -13,4 +13,4 @@ def main : IO Unit :=
     let measure ← measurer "12px sans-serif" numbers.toArray
     let axes := axes f measure
     let labels := Browser.tickLabels axes
-    pure { commands := Page.bytes 1200 600 (AreaFill.chart f measure), labels }
+    pure { commands := Gpu.frameBytes 1200 600 (AreaFill.chart f measure) background, labels }

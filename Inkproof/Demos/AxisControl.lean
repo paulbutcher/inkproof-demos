@@ -77,15 +77,12 @@ theorem labelTexts_eq : labelTexts =
     Axes.linearLabels (Rat.toFloat frame.xs.1) (Rat.toFloat frame.xs.2) ++ labels := rfl
 
 def axes (measure : String → Float × Float) : List AxisDrawing :=
-  let f := frame
-  [Axes.linear .bottom (plot f) measure (Rat.toFloat f.xs.1) (Rat.toFloat f.xs.2) (Rat.toFloat f.left) (Rat.toFloat f.right),
-   Axes.withTicks .right (plot f) measure (Linear.mk (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) (Rat.toFloat f.bottom) (Rat.toFloat f.top)).map
-     yTicks labels redStyle]
+  [compileLinearAxis .bottom (plot frame) frame.xScale Axes.spec measure Axes.style,
+   compilePixelAxis .right (plot frame) redStyle measure Axes.spec.labelGap (yTicks.map frame.yScale.map) labels]
 
 theorem axes_eq (measure : String → Float × Float) : axes measure =
-    [Axes.linear .bottom (plot frame) measure (Rat.toFloat frame.xs.1) (Rat.toFloat frame.xs.2) (Rat.toFloat frame.left) (Rat.toFloat frame.right),
-     Axes.withTicks .right (plot frame) measure (Linear.mk (Rat.toFloat frame.ys.1) (Rat.toFloat frame.ys.2) (Rat.toFloat frame.bottom) (Rat.toFloat frame.top)).map
-       yTicks labels redStyle] := rfl
+    [compileLinearAxis .bottom (plot frame) frame.xScale Axes.spec measure Axes.style,
+     compilePixelAxis .right (plot frame) redStyle measure Axes.spec.labelGap (yTicks.map frame.yScale.map) labels] := rfl
 
 /-- The axes, then the series as a line thinned to what its pixel columns show. -/
 def chart (measure : String → Float × Float) : DisplayList :=

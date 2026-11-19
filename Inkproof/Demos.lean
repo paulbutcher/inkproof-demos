@@ -11,7 +11,6 @@ import Inkproof.Demos.HighLowBands
 import Inkproof.Demos.MissingData
 import Inkproof.Demos.LogScales
 import Inkproof.Demos.LogScales2
-import Inkproof.Demos.Page
 import Inkproof.Demos.Points
 import Inkproof.Demos.Reduce
 import Inkproof.Demos.ServerEvents

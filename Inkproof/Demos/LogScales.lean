@@ -58,23 +58,23 @@ def Spec.frame (s : Spec) : Frame := ⟨80, width - 20, 20, height - 40, (times.
 theorem Spec.frame_eq (s : Spec) :
     s.frame = ⟨80, width - 20, 20, height - 40, (times.getD 0 0, times.getD (times.size - 1) 0), s.ys⟩ := rfl
 
-/-- The y axis's tick values and their labels. -/
-def Spec.yTicks (s : Spec) : List Float × List String :=
+/-- The labels of the y axis's ticks. -/
+def Spec.yLabels (s : Spec) : List String :=
   let (lo, hi) := (Rat.toFloat s.ys.1, Rat.toFloat s.ys.2)
-  let ts := if s.log then logTicks lo hi 10 else linearTicks lo hi 10
-  (ts, tickLabels .en ts)
+  tickLabels Axes.spec.locale (if s.log then logTicks lo hi Axes.spec.target else linearTicks lo hi Axes.spec.target)
 
-theorem Spec.yTicks_eq (s : Spec) : s.yTicks =
-    let ts := if s.log then logTicks (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) 10 else linearTicks (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) 10
-    (ts, tickLabels .en ts) := rfl
+theorem Spec.yLabels_eq (s : Spec) : s.yLabels =
+    tickLabels Axes.spec.locale
+      (if s.log then logTicks (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) Axes.spec.target
+       else linearTicks (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) Axes.spec.target) := rfl
 
 /-- Data to pixels along the y axis. -/
 def Spec.yPixel (s : Spec) : Float → Float :=
   let (lo, hi, start, stop) := (Rat.toFloat s.ys.1, Rat.toFloat s.ys.2, Rat.toFloat s.frame.bottom, Rat.toFloat s.frame.top)
-  if s.log then Log.map Float.log10 ⟨lo, hi, start, stop⟩ else (Linear.mk lo hi start stop).map
+  if s.log then Log.map Float.log ⟨lo, hi, start, stop⟩ else (Linear.mk lo hi start stop).map
 
 theorem Spec.yPixel_eq (s : Spec) : s.yPixel =
-    if s.log then Log.map Float.log10 ⟨Rat.toFloat s.ys.1, Rat.toFloat s.ys.2, Rat.toFloat s.frame.bottom, Rat.toFloat s.frame.top⟩
+    if s.log then Log.map Float.log ⟨Rat.toFloat s.ys.1, Rat.toFloat s.ys.2, Rat.toFloat s.frame.bottom, Rat.toFloat s.frame.top⟩
     else (Linear.mk (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) (Rat.toFloat s.frame.bottom) (Rat.toFloat s.frame.top)).map := rfl
 
 /-- About one tick every 120 pixels along the time axis. -/
@@ -82,26 +82,28 @@ def timeTarget : Nat := width / 120
 
 /-- Every label either axis may show: the browser measures these before the axes choose among them. -/
 def Spec.labelTexts (s : Spec) : List String :=
-  (Axes.timeTicks (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) timeTarget).2 ++ s.yTicks.2
+  (Axes.timeTicks (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) timeTarget).2 ++ s.yLabels
 
 theorem Spec.labelTexts_eq (s : Spec) : s.labelTexts =
-    (Axes.timeTicks (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) timeTarget).2 ++ s.yTicks.2 := rfl
+    (Axes.timeTicks (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) timeTarget).2 ++ s.yLabels := rfl
 
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame
-  [Axes.time .bottom (plot f) measure timeTarget (Rat.toFloat f.xs.1) (Rat.toFloat f.xs.2) (Rat.toFloat f.left) (Rat.toFloat f.right),
-   Axes.withTicks .left (plot f) measure s.yPixel s.yTicks.1 s.yTicks.2]
+  [f.timeAxis timeTarget measure,
+   if s.log then compileLogAxis .left (plot f) ⟨Rat.toFloat s.ys.1, Rat.toFloat s.ys.2, Rat.toFloat f.bottom, Rat.toFloat f.top⟩ Axes.spec measure Axes.style
+   else compileLinearAxis .left (plot f) f.yScale Axes.spec measure Axes.style]
 
 theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) : s.axes measure =
-    [Axes.time .bottom (plot s.frame) measure timeTarget (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) (Rat.toFloat s.frame.left) (Rat.toFloat s.frame.right),
-     Axes.withTicks .left (plot s.frame) measure s.yPixel s.yTicks.1 s.yTicks.2] := rfl
+    [s.frame.timeAxis timeTarget measure,
+     if s.log then compileLogAxis .left (plot s.frame) ⟨Rat.toFloat s.ys.1, Rat.toFloat s.ys.2, Rat.toFloat s.frame.bottom, Rat.toFloat s.frame.top⟩ Axes.spec measure Axes.style
+     else compileLinearAxis .left (plot s.frame) s.frame.yScale Axes.spec measure Axes.style] := rfl
 
 /-- Data to pixels: the y axis is the chart's own scale. -/
 def Spec.projection (s : Spec) : Projection Rat Rat :=
   let f := s.frame
-  ⟨(Linear.mk f.xs.1 f.xs.2 f.left f.right).map, fun v => Axes.plane (s.yPixel (Rat.toFloat v))⟩
+  ⟨(Linear.mk f.xs.1 f.xs.2 f.left f.right).map, fun v => (Inkproof.Float.Float.toRat (s.yPixel (Rat.toFloat v))).getD 0⟩
 
-theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = Axes.plane (s.yPixel (Rat.toFloat v)) := rfl
+theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = (Inkproof.Float.Float.toRat (s.yPixel (Rat.toFloat v))).getD 0 := rfl
 
 /-- The axes, then every server's line. -/
 def Spec.chart (s : Spec) (measure : String → Float × Float) : DisplayList :=

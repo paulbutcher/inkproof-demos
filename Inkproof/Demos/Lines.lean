@@ -132,22 +132,22 @@ theorem Chart.labelTexts_eq (c : Chart) : c.labelTexts =
 
 def Chart.axes (c : Chart) (measure : String → Float × Float) : List AxisDrawing :=
   let f := c.frame
-  let (lo, hi, l, r) := (Rat.toFloat f.xs.1, Rat.toFloat f.xs.2, Rat.toFloat f.left, Rat.toFloat f.right)
   let yAxis (side : Side) (a : YAxis) :=
     let (ts, ls) := a.ticks
-    Axes.withTicks side (plot f) measure (Linear.mk (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) (Rat.toFloat f.bottom) (Rat.toFloat f.top)).map ts ls
-      (if a.grid then Axes.style else { Axes.style with grid := none })
-  [if c.time then Axes.time .bottom (plot f) measure c.timeTarget lo hi l r else Axes.linear .bottom (plot f) measure lo hi l r,
+    let scale : Linear Float := ⟨Rat.toFloat a.range.1, Rat.toFloat a.range.2, Rat.toFloat f.bottom, Rat.toFloat f.top⟩
+    compilePixelAxis side (plot f) (if a.grid then Axes.style else { Axes.style with grid := none }) measure
+      Axes.spec.labelGap (ts.map scale.map) ls
+  [if c.time then f.timeAxis c.timeTarget measure else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
    yAxis .left c.left] ++ (c.right.map (yAxis .right)).toList
 
 theorem Chart.axes_eq (c : Chart) (measure : String → Float × Float) : c.axes measure =
     let f := c.frame
-    let (lo, hi, l, r) := (Rat.toFloat f.xs.1, Rat.toFloat f.xs.2, Rat.toFloat f.left, Rat.toFloat f.right)
     let yAxis (side : Side) (a : YAxis) :=
       let (ts, ls) := a.ticks
-      Axes.withTicks side (plot f) measure (Linear.mk (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) (Rat.toFloat f.bottom) (Rat.toFloat f.top)).map ts ls
-        (if a.grid then Axes.style else { Axes.style with grid := none })
-    [if c.time then Axes.time .bottom (plot f) measure c.timeTarget lo hi l r else Axes.linear .bottom (plot f) measure lo hi l r,
+      let scale : Linear Float := ⟨Rat.toFloat a.range.1, Rat.toFloat a.range.2, Rat.toFloat f.bottom, Rat.toFloat f.top⟩
+      compilePixelAxis side (plot f) (if a.grid then Axes.style else { Axes.style with grid := none }) measure
+        Axes.spec.labelGap (ts.map scale.map) ls
+    [if c.time then f.timeAxis c.timeTarget measure else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
      yAxis .left c.left] ++ (c.right.map (yAxis .right)).toList := rfl
 
 /-- The layer's strokes, split where its `maxStep` says the data has a gap. -/

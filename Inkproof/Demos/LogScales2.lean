@@ -145,23 +145,23 @@ theorem Spec.labelTexts_eq (s : Spec) :
 
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame
-  [Axes.linear .bottom (plot f) measure (Rat.toFloat f.xs.1) (Rat.toFloat f.xs.2) (Rat.toFloat f.left) (Rat.toFloat f.right),
-   Axes.withTicks .left (plot f) measure s.yPixel s.yTicks.1 s.yTicks.2]
+  [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
+   compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yTicks.2]
 
 theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) :
     s.axes measure =
-      [Axes.linear .bottom (plot s.frame) measure (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) (Rat.toFloat s.frame.left) (Rat.toFloat s.frame.right),
-       Axes.withTicks .left (plot s.frame) measure s.yPixel s.yTicks.1 s.yTicks.2] := rfl
+      [compileLinearAxis .bottom (plot s.frame) s.frame.xScale Axes.spec measure Axes.style,
+       compilePixelAxis .left (plot s.frame) Axes.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yTicks.2] := rfl
 
 /-- Data to pixels: the y axis is the chart's own scale. -/
 def Spec.projection (s : Spec) : Projection Rat Rat :=
   let f := s.frame
-  ⟨(Linear.mk f.xs.1 f.xs.2 f.left f.right).map, fun v => Axes.plane (s.yPixel (Rat.toFloat v))⟩
+  ⟨(Linear.mk f.xs.1 f.xs.2 f.left f.right).map, fun v => (Inkproof.Float.Float.toRat (s.yPixel (Rat.toFloat v))).getD 0⟩
 
 theorem Spec.projection_x (s : Spec) (x : Rat) :
     s.projection.x x = (Linear.mk s.frame.xs.1 s.frame.xs.2 s.frame.left s.frame.right).map x := rfl
 
-theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = Axes.plane (s.yPixel (Rat.toFloat v)) := rfl
+theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = (Inkproof.Float.Float.toRat (s.yPixel (Rat.toFloat v))).getD 0 := rfl
 
 /-- The axes, then the series filled down to the bottom of the plot if it has a fill, and stroked. -/
 def Spec.chart (s : Spec) (measure : String → Float × Float) : DisplayList :=

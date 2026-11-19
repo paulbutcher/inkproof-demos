@@ -6,6 +6,7 @@ import Inkproof.Core
 import Inkproof.Scene
 import Inkproof.Demos.Axes
 import Inkproof.Demos.Frame
+import Inkproof.Demos.Frame
 import Inkproof.Demos.Reduce
 
 namespace Inkproof.Demos.ServerEvents
@@ -65,9 +66,9 @@ def drawnHighest (exts : Array Extent) : Int :=
 theorem drawnHighest_eq (exts : Array Extent) : drawnHighest exts =
     (extentColumns exts).foldl (fun m c => match c with | some (_, hi) => max m hi | none => m) 0 := rfl
 
-def panel : Panel := ⟨60, 1180, 40, 560⟩
-
 def ys : Rat × Rat := (0, 100)
+
+def panel : Frame := ⟨60, 1180, 40, 560, (0, total), ys⟩
 
 /-- Column index and value in hundredths of a percent to pixels. -/
 def projection : Projection Nat Int :=
@@ -80,24 +81,16 @@ theorem projection_x (c : Nat) :
 theorem projection_y (v : Int) :
     projection.y v = (Linear.mk ys.1 ys.2 panel.bottom panel.top).map ((v : Rat) / 100) := rfl
 
-def axes (measure : String → Float × Float) : List AxisDrawing :=
-  [Axes.linear .bottom (Reduce.plot panel) measure 0 (Rat.toFloat total) (Rat.toFloat panel.left) (Rat.toFloat panel.right),
-   Axes.linear .left (Reduce.plot panel) measure (Rat.toFloat ys.1) (Rat.toFloat ys.2) (Rat.toFloat panel.bottom) (Rat.toFloat panel.top)]
-
-theorem axes_eq (measure : String → Float × Float) : axes measure =
-    [Axes.linear .bottom (Reduce.plot panel) measure 0 (Rat.toFloat total) (Rat.toFloat panel.left) (Rat.toFloat panel.right),
-     Axes.linear .left (Reduce.plot panel) measure (Rat.toFloat ys.1) (Rat.toFloat ys.2) (Rat.toFloat panel.bottom) (Rat.toFloat panel.top)] := rfl
-
 def colors : List Color := [⟨255, 0, 0, 255⟩, ⟨0, 128, 0, 255⟩, ⟨0, 0, 255, 255⟩]
 
 /-- The axes, and each series as the envelope of its columns. -/
 def chart (exts : List (Array Extent)) (measure : String → Float × Float) : DisplayList :=
-  (axes measure).foldl (· ++ ·.display) #[] ++
+  (Demos.axes panel measure).foldl (· ++ ·.display) #[] ++
   (colors.zip exts).zipIdx.toArray.flatMap fun ((color, e), i) =>
     compileEnvelopeOfExtents ⟨i + 1, color⟩ projection e
 
 theorem chart_eq (exts : List (Array Extent)) (measure : String → Float × Float) : chart exts measure =
-    (axes measure).foldl (· ++ ·.display) #[] ++
+    (Demos.axes panel measure).foldl (· ++ ·.display) #[] ++
     (colors.zip exts).zipIdx.toArray.flatMap fun ((color, e), i) =>
       compileEnvelopeOfExtents ⟨i + 1, color⟩ projection e := rfl
 

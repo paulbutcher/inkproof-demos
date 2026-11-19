@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.6.0
+
+- Tick labels are converted with Web's `Label.ofDrawing`.
+- Axes are compiled by Scene's `compilePixelAxis`, `compileLinearAxis` and `compileLogAxis`, and frames are encoded by Gpu's `frameBytes`; the clock-time axis is Scene's `compileTimeAxis`; `Axes.withTicks`, `linear`, `logarithmic`, `time`, `plane` and `Page.bytes` are gone, and `Reduce.Panel` is now `Frame`.
+
 ## v0.5.0
 
 - The Path Gap Clip page draws a series stepped before, stepped after and as a spline through its points, with the gap left open.
