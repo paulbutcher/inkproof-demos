@@ -16,5 +16,15 @@ private def areaFillTest : Except String Unit := do
   check (AreaFill.values 1 12 == #[-8, 9, 3, 7, -3, 0, -2, 9, 3, 3, -10, -3]) "series 1 differs from the recorded values, so a platform draws other data"
   check (AreaFill.values 2 12 == #[1, 5, 5, -9, -7, 0, -9, 9, -9, 4, -6, -3]) "series 2 differs from the recorded values, so a platform draws other data"
 
+private def axesTest : Except String Unit := do
+  let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
+  let drawings := AreaFill.axes AreaFill.frame measure
+  let [bottom, left] := drawings | throw "expected a bottom and a left axis"
+  check (!bottom.labels.isEmpty && !left.labels.isEmpty) "both axes keep labels"
+  let f := AreaFill.frame
+  check (left.labels.all fun l => l.anchor.y ≥ f.top && l.anchor.y ≤ f.bottom) "left labels lie within the plot's height"
+  check (bottom.labels.all fun l => l.anchor.x ≥ f.left && l.anchor.x ≤ f.right) "bottom labels lie within the plot's width"
+  check (left.labels.length ≥ 5) "the left axis keeps most of its labels"
+
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, platformTest (args.contains "--expect-wasm")]

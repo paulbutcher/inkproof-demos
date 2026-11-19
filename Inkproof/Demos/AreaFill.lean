@@ -5,10 +5,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Inkproof.Core
 import Inkproof.Scene
 import Inkproof.Scale
+import Inkproof.Demos.Axes
 
 namespace Inkproof.Demos.AreaFill
 
-open Inkproof.Core Inkproof.Scene Inkproof.Scale
+open Inkproof.Core Inkproof.Scene Inkproof.Scale Inkproof.Demos
 
 /-- An integer in `-10..10` from a draw of `randNat`, clamped because core states no bound on its result. -/
 def level (draw : Nat) : Int := ((min draw 20 : Nat) : Int) - 10
@@ -65,15 +66,35 @@ theorem projection_y (f : Frame) (y : Rat) :
 def colors : List (Color × Color) :=
   [(⟨255, 0, 0, 255⟩, ⟨255, 0, 0, 26⟩), (⟨0, 128, 0, 255⟩, ⟨0, 255, 0, 26⟩), (⟨0, 0, 255, 255⟩, ⟨0, 0, 255, 26⟩)]
 
-/-- Each series filled down to zero and stroked on top. -/
-def chart (f : Frame) : DisplayList :=
+def flt (r : Rat) : Float := Float.ofInt r.num / r.den.toFloat
+
+theorem flt_eq (r : Rat) : flt r = Float.ofInt r.num / r.den.toFloat := rfl
+
+def plot (f : Frame) : Rect := ⟨f.left, f.top, f.right, f.bottom⟩
+
+theorem plot_eq (f : Frame) : plot f = ⟨f.left, f.top, f.right, f.bottom⟩ := rfl
+
+/-- The bottom and left axes. Left labels stack vertically, so Axis gets each one with its height as its width. -/
+def axes (f : Frame) (measure : String → Float × Float) : List AxisDrawing :=
+  [Axes.linear .bottom (plot f) measure (flt f.xs.1) (flt f.xs.2) (flt f.left) (flt f.right),
+   Axes.linear .left (plot f) (fun t => (measure t).swap) (flt f.ys.1) (flt f.ys.2) (flt f.bottom) (flt f.top)]
+
+theorem axes_eq (f : Frame) (measure : String → Float × Float) :
+    axes f measure =
+      [Axes.linear .bottom (plot f) measure (flt f.xs.1) (flt f.xs.2) (flt f.left) (flt f.right),
+       Axes.linear .left (plot f) (fun t => (measure t).swap) (flt f.ys.1) (flt f.ys.2) (flt f.bottom) (flt f.top)] := rfl
+
+/-- Each series filled down to zero and stroked on top, over the axes. -/
+def chart (f : Frame) (measure : String → Float × Float) : DisplayList :=
+  (axes f measure).foldl (· ++ ·.display) #[] ++
   colors.zipIdx.toArray.flatMap fun ((stroke, fill), i) =>
     let g := Segmented.single (series (i + 1) 30)
     compileArea ⟨0, fill⟩ 0 (projection f) g ++ compileLine ⟨⟨1, stroke⟩, 1, false⟩ (projection f) g
 
-theorem chart_eq (f : Frame) :
-    chart f = colors.zipIdx.toArray.flatMap fun ((stroke, fill), i) =>
-      compileArea ⟨0, fill⟩ 0 (projection f) (Segmented.single (series (i + 1) 30)) ++
-        compileLine ⟨⟨1, stroke⟩, 1, false⟩ (projection f) (Segmented.single (series (i + 1) 30)) := rfl
+theorem chart_eq (f : Frame) (measure : String → Float × Float) :
+    chart f measure = (axes f measure).foldl (· ++ ·.display) #[] ++
+      colors.zipIdx.toArray.flatMap fun ((stroke, fill), i) =>
+        compileArea ⟨0, fill⟩ 0 (projection f) (Segmented.single (series (i + 1) 30)) ++
+          compileLine ⟨⟨1, stroke⟩, 1, false⟩ (projection f) (Segmented.single (series (i + 1) 30)) := rfl
 
 end Inkproof.Demos.AreaFill

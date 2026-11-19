@@ -6,7 +6,7 @@ The [uPlot demos](https://leeoniya.github.io/uPlot/demos/index.html), recreated 
 
 ## What it does
 
-- Show the Area Fill demo, three series with filled areas, from uPlot's page of that name: `Inkproof.Demos.AreaFill.chart`, at `area-fill/`.
+- Show the Area Fill demo, three series with filled areas and linear axes, from uPlot's page of that name: `Inkproof.Demos.AreaFill.chart`, `AreaFill.axes`, at `area-fill/`.
 - Turn a display list into the command list a chart element draws: `Inkproof.Demos.Page.bytes`.
 
 ## Build and run
