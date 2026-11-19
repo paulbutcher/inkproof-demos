@@ -132,7 +132,7 @@ test('axis control draws its red series and axis', async () => {
 });
 
 test('the time series pages draw every chart in their series colours', async () => {
-  for (const [path, charts, wanted] of [['missing-data/', 2, ['red', 'blue']], ['high-low-bands/', 1, ['red', 'blue', 'green']], ['path-gap-clip/', 2, ['green']]]) {
+  for (const [path, charts, wanted] of [['missing-data/', 2, ['red', 'blue']], ['log-scales/', 2, []], ['high-low-bands/', 1, ['red', 'blue', 'green']], ['path-gap-clip/', 2, ['green']]]) {
     const { page, problems } = await open(path);
     await page.waitForFunction(n => window.draws.length >= n, charts);
     assert.deepEqual(problems, [], path);

@@ -8,6 +8,7 @@ The [uPlot demos](https://leeoniya.github.io/uPlot/demos/index.html), recreated 
 
 - Show the Area Fill demo, three series with filled areas and linear axes, from uPlot's page of that name: `Inkproof.Demos.AreaFill.chart`, `Inkproof.Demos.axes`, at `area-fill/`.
 - Show the Points demo, four charts of random walks with markers and gaps, from uPlot's page of that name: `Inkproof.Demos.Points.multiChart`, `Points.singleChart`, `Points.sparseChart`, at `points/`.
+- Show the Log Scales demo, twelve servers' player counts over a day on log and linear y axes with unreported samples as gaps, from uPlot's `log-scales.html`: `Inkproof.Demos.LogScales.specs`, `Spec.chart`, at `log-scales/`.
 - Show the Log Scales 2 demo, the same data on linear, log10 and log2 y axes with zero and negative values as gaps, from uPlot's `log-scales2.html` (charts 1 to 4 and 7 to 10): `Inkproof.Demos.LogScales2.specs`, `Spec.chart`, at `log-scales2/`.
 - Show the Axis Control demo, half a million points on a fixed y range with a red right axis and axis titles, from uPlot's `axis-control.html`: `Inkproof.Demos.AxisControl.chart`, at `axis-control/`.
 - Show the Missing Data, High-Low Bands and Path Gap Clip demos, lines and bands over Unix-time x axes with gaps drawn as gaps, from uPlot's `missing-data.html`, `high-low-bands.html` and `path-gap-clip.html`: `Inkproof.Demos.Lines.Chart`, at `missing-data/`, `high-low-bands/` and `path-gap-clip/`.

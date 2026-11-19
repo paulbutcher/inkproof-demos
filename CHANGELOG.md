@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.0
+
+- The Log Scales page, twelve servers' player counts on log and linear y axes over a clock-time x axis.
+
 ## v0.4.0
 
 - The Axis Control page, half a million points with a red right axis and axis titles.

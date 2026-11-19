@@ -142,6 +142,38 @@ def Inkproof.Demos.Lines.values : List Inkproof.Demos.Lines.Layer → List Rat
 theorem Inkproof.Demos.Lines.values_eq : ∀ (layers : List Inkproof.Demos.Lines.Layer), Inkproof.Demos.Lines.values layers = List.flatMap (fun l => List.filterMap id l.data.values.toList) layers
 def Inkproof.Demos.Lines.withGaps : List Nat → Array Rat → Array (Option Rat)
 theorem Inkproof.Demos.Lines.withGaps_eq : ∀ (gaps : List Nat) (ys : Array Rat), Inkproof.Demos.Lines.withGaps gaps ys = Array.mapIdx (fun i y => if gaps.contains i = Bool.true then Option.none else Option.some y) ys
+structure Inkproof.Demos.LogScales.Spec : Type
+def Inkproof.Demos.LogScales.Spec.axes : Inkproof.Demos.LogScales.Spec → (String → Float × Float) → List Inkproof.Scene.AxisDrawing
+theorem Inkproof.Demos.LogScales.Spec.axes_eq : ∀ (s : Inkproof.Demos.LogScales.Spec) (measure : String → Float × Float), s.axes measure = [Inkproof.Demos.Axes.time Inkproof.Scene.Side.bottom (Inkproof.Demos.plot s.frame) measure Inkproof.Demos.LogScales.timeTarget s.frame.xs.fst.toFloat s.frame.xs.snd.toFloat s.frame.left.toFloat s.frame.right.toFloat, Inkproof.Demos.Axes.withTicks Inkproof.Scene.Side.left (Inkproof.Demos.plot s.frame) measure s.yPixel s.yTicks.fst s.yTicks.snd]
+def Inkproof.Demos.LogScales.Spec.chart : Inkproof.Demos.LogScales.Spec → (String → Float × Float) → Inkproof.Scene.DisplayList
+theorem Inkproof.Demos.LogScales.Spec.chart_eq : ∀ (s : Inkproof.Demos.LogScales.Spec) (measure : String → Float × Float), s.chart measure = List.foldl (fun x1 x2 => x1 ++ x2.display) #[] (s.axes measure) ++ List.foldl (fun out l => out ++ Inkproof.Scene.compileLine { paint := { layer := 1, color := l.color }, halfWidth := 1 / 2, reduce := Bool.false } s.projection (Inkproof.Core.Segmented.single l.data)) #[] Inkproof.Demos.LogScales.layers
+def Inkproof.Demos.LogScales.Spec.frame : Inkproof.Demos.LogScales.Spec → Inkproof.Demos.Frame
+theorem Inkproof.Demos.LogScales.Spec.frame_eq : ∀ (s : Inkproof.Demos.LogScales.Spec), s.frame = { left := 80, right := ↑Inkproof.Demos.LogScales.width - 20, top := 20, bottom := ↑Inkproof.Demos.LogScales.height - 40, xs := (Inkproof.Demos.LogScales.times.getD 0 0, Inkproof.Demos.LogScales.times.getD (Inkproof.Demos.LogScales.times.size - 1) 0), ys := s.ys }
+def Inkproof.Demos.LogScales.Spec.labelTexts : Inkproof.Demos.LogScales.Spec → List String
+theorem Inkproof.Demos.LogScales.Spec.labelTexts_eq : ∀ (s : Inkproof.Demos.LogScales.Spec), s.labelTexts = (Inkproof.Demos.Axes.timeTicks s.frame.xs.fst.toFloat s.frame.xs.snd.toFloat Inkproof.Demos.LogScales.timeTarget).snd ++ s.yTicks.snd
+field Inkproof.Demos.LogScales.Spec.log : Inkproof.Demos.LogScales.Spec → Bool
+constructor Inkproof.Demos.LogScales.Spec.mk : String → Bool → Inkproof.Demos.LogScales.Spec
+field Inkproof.Demos.LogScales.Spec.name : Inkproof.Demos.LogScales.Spec → String
+def Inkproof.Demos.LogScales.Spec.projection : Inkproof.Demos.LogScales.Spec → Inkproof.Scene.Projection Rat Rat
+theorem Inkproof.Demos.LogScales.Spec.projection_y : ∀ (s : Inkproof.Demos.LogScales.Spec) (v : Rat), s.projection.y v = Inkproof.Demos.Axes.plane (s.yPixel v.toFloat)
+def Inkproof.Demos.LogScales.Spec.yPixel : Inkproof.Demos.LogScales.Spec → Float → Float
+theorem Inkproof.Demos.LogScales.Spec.yPixel_eq : ∀ (s : Inkproof.Demos.LogScales.Spec), s.yPixel = if s.log = Bool.true then Inkproof.Scale.Log.map Float.log10 { domainStart := s.ys.fst.toFloat, domainEnd := s.ys.snd.toFloat, rangeStart := s.frame.bottom.toFloat, rangeEnd := s.frame.top.toFloat } else { domainStart := s.ys.fst.toFloat, domainEnd := s.ys.snd.toFloat, rangeStart := s.frame.bottom.toFloat, rangeEnd := s.frame.top.toFloat }.map
+def Inkproof.Demos.LogScales.Spec.yTicks : Inkproof.Demos.LogScales.Spec → List Float × List String
+theorem Inkproof.Demos.LogScales.Spec.yTicks_eq : ∀ (s : Inkproof.Demos.LogScales.Spec), s.yTicks = have ts := if s.log = Bool.true then Inkproof.Axis.logTicks s.ys.fst.toFloat s.ys.snd.toFloat 10 else Inkproof.Axis.linearTicks s.ys.fst.toFloat s.ys.snd.toFloat 10; (ts, Inkproof.Axis.tickLabels Inkproof.Axis.Locale.en ts)
+def Inkproof.Demos.LogScales.Spec.ys : Inkproof.Demos.LogScales.Spec → Rat × Rat
+theorem Inkproof.Demos.LogScales.Spec.ys_eq : ∀ (s : Inkproof.Demos.LogScales.Spec), s.ys = if s.log = Bool.true then (1, ↑(Inkproof.Demos.LogScales.decadeAbove Inkproof.Demos.LogScales.peak)) else Inkproof.Scale.autoRange (1 / 10) 1 ↑Inkproof.Demos.LogScales.peak
+def Inkproof.Demos.LogScales.colour : Nat → Inkproof.Scene.Color
+theorem Inkproof.Demos.LogScales.colour_eq : ∀ (rgb : Nat), Inkproof.Demos.LogScales.colour rgb = { r := (rgb / 65536 % 256).toUInt8, g := (rgb / 256 % 256).toUInt8, b := (rgb % 256).toUInt8, a := 255 }
+def Inkproof.Demos.LogScales.decadeAbove : Nat → Nat
+theorem Inkproof.Demos.LogScales.decadeAbove_eq : ∀ (n : Nat), Inkproof.Demos.LogScales.decadeAbove n = 10 ^ if n ≤ 1 then 0 else (ToString.toString (n - 1)).length
+def Inkproof.Demos.LogScales.height : Nat
+def Inkproof.Demos.LogScales.layers : List Inkproof.Demos.Lines.Layer
+def Inkproof.Demos.LogScales.peak : Nat
+theorem Inkproof.Demos.LogScales.peak_eq : Inkproof.Demos.LogScales.peak = Array.foldl (fun m ys => Array.foldl (fun m y => Max.max m y.toNat) m ys) 1 Inkproof.Demos.LogScalesSource.players
+def Inkproof.Demos.LogScales.specs : List Inkproof.Demos.LogScales.Spec
+def Inkproof.Demos.LogScales.timeTarget : Nat
+def Inkproof.Demos.LogScales.times : Array Rat
+def Inkproof.Demos.LogScales.width : Nat
 inductive Inkproof.Demos.LogScales2.Kind : Type
 constructor Inkproof.Demos.LogScales2.Kind.linear : Inkproof.Demos.LogScales2.Kind
 constructor Inkproof.Demos.LogScales2.Kind.log10 : Inkproof.Demos.LogScales2.Kind
@@ -198,6 +230,13 @@ def Inkproof.Demos.LogScales2.signed : List Rat
 theorem Inkproof.Demos.LogScales2.signed_eq : Inkproof.Demos.LogScales2.signed = (List.foldl (fun acc x => match randNat acc.snd 0 12 with | (draw, g) => ([-100, -10, -1, -1 / 10, -1 / 100, -1 / 1000, 0, 1 / 1000, 1 / 100, 1 / 10, 1, 10, 100].getD (Min.min draw 12) 0 :: acc.fst, g)) ([], mkStdGen 7) (List.range 130)).fst
 def Inkproof.Demos.LogScales2.specs : List Inkproof.Demos.LogScales2.Spec
 def Inkproof.Demos.LogScales2.sups : List Char
+def Inkproof.Demos.LogScalesSource.numbers : String → Array Int
+theorem Inkproof.Demos.LogScalesSource.numbers_eq : ∀ (text : String), Inkproof.Demos.LogScalesSource.numbers text = (Inkproof.Demos.LogScalesSource.parseNumbers text).getD #[]
+def Inkproof.Demos.LogScalesSource.parseNumbers : String → Option (Array Int)
+theorem Inkproof.Demos.LogScalesSource.parseNumbers_eq : ∀ (text : String), Inkproof.Demos.LogScalesSource.parseNumbers text = Array.mapM String.toInt? (text.splitOn ",").toArray
+def Inkproof.Demos.LogScalesSource.players : Array (Array Int)
+def Inkproof.Demos.LogScalesSource.servers : List (String × Nat)
+def Inkproof.Demos.LogScalesSource.times : Array Int
 def Inkproof.Demos.Million.axes : Inkproof.Demos.Reduce.Panel → (String → Float × Float) → List Inkproof.Scene.AxisDrawing
 theorem Inkproof.Demos.Million.axes_eq : ∀ (p : Inkproof.Demos.Reduce.Panel) (measure : String → Float × Float), Inkproof.Demos.Million.axes p measure = [Inkproof.Demos.Axes.linear Inkproof.Scene.Side.bottom (Inkproof.Demos.Reduce.plot p) measure 0 (↑Inkproof.Demos.Million.total).toFloat p.left.toFloat p.right.toFloat, Inkproof.Demos.Axes.linear Inkproof.Scene.Side.left (Inkproof.Demos.Reduce.plot p) measure Inkproof.Demos.Million.ys.fst.toFloat Inkproof.Demos.Million.ys.snd.toFloat p.bottom.toFloat p.top.toFloat]
 def Inkproof.Demos.Million.columnExtents : Inkproof.Core.Pyramid Inkproof.Demos.Reduce.Extent → Array Inkproof.Demos.Reduce.Extent

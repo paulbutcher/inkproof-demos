@@ -9,6 +9,7 @@ import Inkproof.Demos.Lines
 import Inkproof.Demos.PathGapClip
 import Inkproof.Demos.HighLowBands
 import Inkproof.Demos.MissingData
+import Inkproof.Demos.LogScales
 import Inkproof.Demos.LogScales2
 import Inkproof.Demos.Page
 import Inkproof.Demos.Points

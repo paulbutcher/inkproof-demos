@@ -38,6 +38,19 @@ private def logScales2Test : Except String Unit := do
   let signed := LogScales2.specs.find? (·.name == "signed") |>.map (·.data.values)
   check (signed.any fun vs => vs.any (·.isNone) && vs.any (·.isSome)) "non-positive values are gaps, not bridged or dropped wholesale"
 
+private def logScalesTest : Except String Unit := do
+  let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
+  check (!LogScalesSource.times.isEmpty && LogScalesSource.players.all (·.size == LogScalesSource.times.size)) "every literal of the Log Scales data parses and has a sample per time"
+  check (LogScales.layers.length == 12) "one line per server"
+  check (LogScales.layers.all fun l => l.data.xs.size == LogScales.times.size) "every server has every time"
+  check (LogScales.layers.any fun l => l.data.values.any (·.isNone)) "samples a server did not report are gaps"
+  for spec in LogScales.specs do
+    let f := spec.frame
+    check (LogScales.layers.all fun l => l.data.values.all fun v => v.all fun y => spec.ys.1 ≤ y && y ≤ spec.ys.2) s!"{spec.name}: every sample lies within the y range"
+    let [bottom, left] := spec.axes measure | throw s!"{spec.name}: expected two axes"
+    check (!bottom.labels.isEmpty && !left.labels.isEmpty) s!"{spec.name}: both axes keep labels"
+    check (left.labels.all fun l => l.anchor.y ≥ f.top && l.anchor.y ≤ f.bottom) s!"{spec.name}: y labels lie within the plot"
+
 private def millionTest : Except String Unit := do
   let exts := Million.columnExtents Million.pyramid
   check (exts.size == Million.columns) "one extent per column"
@@ -82,4 +95,4 @@ private def linesTest : Except String Unit := do
   check (gap == some 2) "samples further apart than the step are not joined"
 
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, platformTest (args.contains "--expect-wasm")]
