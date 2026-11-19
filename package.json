@@ -1,0 +1,11 @@
+{
+  "name": "inkproof-demos",
+  "private": true,
+  "description": "The npm packages Lasm resolves for the demos' Lean bindings, taken from the pinned inkproof-web package.",
+  "type": "module",
+  "dependencies": {
+    "inkproof-gpu-js": "file:.lake/packages/inkproof-web/gpu-js",
+    "inkproof-web-element": "file:.lake/packages/inkproof-web/shim/inkproof-web-element"
+  },
+  "engines": { "node": ">=24.0.0" }
+}

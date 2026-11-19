@@ -1,0 +1,10 @@
+{
+  "name": "inkproof-demos-test",
+  "private": true,
+  "description": "Lasm, for running the native tests under WebAssembly as well.",
+  "type": "module",
+  "devDependencies": {
+    "@lasm/cli": "0.8.0"
+  },
+  "engines": { "node": ">=24.0.0" }
+}
