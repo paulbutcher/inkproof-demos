@@ -102,7 +102,7 @@ theorem exponents_eq (lg : Float → Float) (lo hi : Float) :
 
 /-- The y axis's tick values and their labels. -/
 def Spec.yTicks (s : Spec) : List Float × List String :=
-  let (lo, hi) := (flt s.ys.1, flt s.ys.2)
+  let (lo, hi) := (Rat.toFloat s.ys.1, Rat.toFloat s.ys.2)
   match s.kind with
   | .linear => let ts := linearTicks lo hi 10; (ts, tickLabels .en ts)
   | .log10 =>
@@ -114,16 +114,16 @@ def Spec.yTicks (s : Spec) : List Float × List String :=
 
 theorem Spec.yTicks_eq (s : Spec) : s.yTicks =
     match s.kind with
-    | .linear => (linearTicks (flt s.ys.1) (flt s.ys.2) 10, tickLabels .en (linearTicks (flt s.ys.1) (flt s.ys.2) 10))
-    | .log10 => ((exponents Float.log10 (flt s.ys.1) (flt s.ys.2)).map (fun e => Float.pow 10 (Float.ofInt e)),
-        (exponents Float.log10 (flt s.ys.1) (flt s.ys.2)).map powerOfTen)
-    | .log2 => ((exponents Float.log2 (flt s.ys.1) (flt s.ys.2)).map (fun e => Float.pow 2 (Float.ofInt e)),
-        (exponents Float.log2 (flt s.ys.1) (flt s.ys.2)).map powerOfTwo) := by
+    | .linear => (linearTicks (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) 10, tickLabels .en (linearTicks (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) 10))
+    | .log10 => ((exponents Float.log10 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2)).map (fun e => Float.pow 10 (Float.ofInt e)),
+        (exponents Float.log10 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2)).map powerOfTen)
+    | .log2 => ((exponents Float.log2 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2)).map (fun e => Float.pow 2 (Float.ofInt e)),
+        (exponents Float.log2 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2)).map powerOfTwo) := by
   unfold Spec.yTicks; cases s.kind <;> rfl
 
 /-- Data to pixels along the y axis. -/
 def Spec.yPixel (s : Spec) : Float → Float :=
-  let (lo, hi, start, stop) := (flt s.ys.1, flt s.ys.2, flt s.frame.bottom, flt s.frame.top)
+  let (lo, hi, start, stop) := (Rat.toFloat s.ys.1, Rat.toFloat s.ys.2, Rat.toFloat s.frame.bottom, Rat.toFloat s.frame.top)
   match s.kind with
   | .linear => (Linear.mk lo hi start stop).map
   | .log10 => Log.map Float.log10 ⟨lo, hi, start, stop⟩
@@ -131,37 +131,37 @@ def Spec.yPixel (s : Spec) : Float → Float :=
 
 theorem Spec.yPixel_eq (s : Spec) : s.yPixel =
     match s.kind with
-    | .linear => (Linear.mk (flt s.ys.1) (flt s.ys.2) (flt s.frame.bottom) (flt s.frame.top)).map
-    | .log10 => Log.map Float.log10 ⟨flt s.ys.1, flt s.ys.2, flt s.frame.bottom, flt s.frame.top⟩
-    | .log2 => Log.map Float.log2 ⟨flt s.ys.1, flt s.ys.2, flt s.frame.bottom, flt s.frame.top⟩ := by
+    | .linear => (Linear.mk (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) (Rat.toFloat s.frame.bottom) (Rat.toFloat s.frame.top)).map
+    | .log10 => Log.map Float.log10 ⟨Rat.toFloat s.ys.1, Rat.toFloat s.ys.2, Rat.toFloat s.frame.bottom, Rat.toFloat s.frame.top⟩
+    | .log2 => Log.map Float.log2 ⟨Rat.toFloat s.ys.1, Rat.toFloat s.ys.2, Rat.toFloat s.frame.bottom, Rat.toFloat s.frame.top⟩ := by
   unfold Spec.yPixel; cases s.kind <;> rfl
 
 /-- Every label either axis may show: the browser measures these before the axes choose among them. -/
 def Spec.labelTexts (s : Spec) : List String :=
-  Axes.linearLabels (flt s.xs.1) (flt s.xs.2) ++ s.yTicks.2
+  Axes.linearLabels (Rat.toFloat s.xs.1) (Rat.toFloat s.xs.2) ++ s.yTicks.2
 
 theorem Spec.labelTexts_eq (s : Spec) :
-    s.labelTexts = Axes.linearLabels (flt s.xs.1) (flt s.xs.2) ++ s.yTicks.2 := rfl
+    s.labelTexts = Axes.linearLabels (Rat.toFloat s.xs.1) (Rat.toFloat s.xs.2) ++ s.yTicks.2 := rfl
 
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame
-  [Axes.linear .bottom (plot f) measure (flt f.xs.1) (flt f.xs.2) (flt f.left) (flt f.right),
+  [Axes.linear .bottom (plot f) measure (Rat.toFloat f.xs.1) (Rat.toFloat f.xs.2) (Rat.toFloat f.left) (Rat.toFloat f.right),
    Axes.withTicks .left (plot f) measure s.yPixel s.yTicks.1 s.yTicks.2]
 
 theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) :
     s.axes measure =
-      [Axes.linear .bottom (plot s.frame) measure (flt s.frame.xs.1) (flt s.frame.xs.2) (flt s.frame.left) (flt s.frame.right),
+      [Axes.linear .bottom (plot s.frame) measure (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) (Rat.toFloat s.frame.left) (Rat.toFloat s.frame.right),
        Axes.withTicks .left (plot s.frame) measure s.yPixel s.yTicks.1 s.yTicks.2] := rfl
 
 /-- Data to pixels: the y axis is the chart's own scale. -/
 def Spec.projection (s : Spec) : Projection Rat Rat :=
   let f := s.frame
-  ⟨(Linear.mk f.xs.1 f.xs.2 f.left f.right).map, fun v => Axes.plane (s.yPixel (flt v))⟩
+  ⟨(Linear.mk f.xs.1 f.xs.2 f.left f.right).map, fun v => Axes.plane (s.yPixel (Rat.toFloat v))⟩
 
 theorem Spec.projection_x (s : Spec) (x : Rat) :
     s.projection.x x = (Linear.mk s.frame.xs.1 s.frame.xs.2 s.frame.left s.frame.right).map x := rfl
 
-theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = Axes.plane (s.yPixel (flt v)) := rfl
+theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = Axes.plane (s.yPixel (Rat.toFloat v)) := rfl
 
 /-- The axes, then the series filled down to the bottom of the plot if it has a fill, and stroked. -/
 def Spec.chart (s : Spec) (measure : String → Float × Float) : DisplayList :=

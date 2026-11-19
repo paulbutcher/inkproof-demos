@@ -14,14 +14,21 @@ open Inkproof.Web.Host Inkproof.Scene
 def labelsOf (measure : String → Float × Float) (left : Bool) (axis : AxisDrawing) : Array Label :=
   axis.labels.toArray.map fun l =>
     let (w, h) := measure l.text
-    let x := flt l.anchor.x
-    let y := flt l.anchor.y
+    let x := Rat.toFloat l.anchor.x
+    let y := Rat.toFloat l.anchor.y
     if left then { text := l.text, x := x - w, y := y + h / 4 } else { text := l.text, x := x - w / 2, y := y + h }
 
 theorem labelsOf_eq (measure : String → Float × Float) (left : Bool) (axis : AxisDrawing) :
     labelsOf measure left axis = axis.labels.toArray.map fun l =>
       let (w, h) := measure l.text
-      if left then { text := l.text, x := flt l.anchor.x - w, y := flt l.anchor.y + h / 4 }
-      else { text := l.text, x := flt l.anchor.x - w / 2, y := flt l.anchor.y + h } := rfl
+      if left then { text := l.text, x := Rat.toFloat l.anchor.x - w, y := Rat.toFloat l.anchor.y + h / 4 }
+      else { text := l.text, x := Rat.toFloat l.anchor.x - w / 2, y := Rat.toFloat l.anchor.y + h } := rfl
+
+/-- The labels of a bottom axis followed by those of a left axis. -/
+def tickLabels (measure : String → Float × Float) (axes : List AxisDrawing) : Array Label :=
+  (axes.zip [false, true]).toArray.flatMap fun (a, left) => labelsOf measure left a
+
+theorem tickLabels_eq (measure : String → Float × Float) (axes : List AxisDrawing) :
+    tickLabels measure axes = (axes.zip [false, true]).toArray.flatMap fun (a, left) => labelsOf measure left a := rfl
 
 end Inkproof.Demos.Browser

@@ -1,0 +1,20 @@
+<!--
+Copyright (c) 2026 Paul Butcher. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Server events</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>inkproof-chart { display: block; width: 1200px; height: 640px; }</style>
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <h1>Server events</h1>
+    <p><a href="../">All demos</a></p>
+    <p>Three series of 55,550 samples, one a minute, drawn into 1120 pixel columns. Each column shows the lowest and highest sample it holds, as <code>Inkproof.Core.Pyramid.getElem_columns</code> and <code>Inkproof.Core.Maximum.fold_get_eq_some</code> state, so the highest value drawn is always the highest value in the data, which the labels compare.</p>
+    <inkproof-chart src="server-events"></inkproof-chart>
+  </body>
+</html>

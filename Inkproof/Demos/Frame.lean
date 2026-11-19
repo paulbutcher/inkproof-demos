@@ -28,10 +28,6 @@ theorem projection_x (f : Frame) (x : Rat) :
 theorem projection_y (f : Frame) (y : Rat) :
     (projection f).y y = (Linear.mk f.ys.1 f.ys.2 f.bottom f.top).map y := rfl
 
-def flt (r : Rat) : Float := Float.ofInt r.num / r.den.toFloat
-
-theorem flt_eq (r : Rat) : flt r = Float.ofInt r.num / r.den.toFloat := rfl
-
 def plot (f : Frame) : Rect := ⟨f.left, f.top, f.right, f.bottom⟩
 
 theorem plot_eq (f : Frame) : plot f = ⟨f.left, f.top, f.right, f.bottom⟩ := rfl

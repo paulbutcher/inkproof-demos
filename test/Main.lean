@@ -6,7 +6,7 @@ import Inkproof.Demos
 import InkproofTools.Test.Harness
 import InkproofTools.Test.Platform
 
-open InkproofTools.Test Inkproof.Demos Inkproof.Scene
+open InkproofTools.Test Inkproof.Demos Inkproof.Scene Inkproof
 
 private def areaFillTest : Except String Unit := do
   for seed in [1, 2, 3] do
@@ -38,5 +38,18 @@ private def logScales2Test : Except String Unit := do
   let signed := LogScales2.specs.find? (·.name == "signed") |>.map (·.data.values)
   check (signed.any fun vs => vs.any (·.isNone) && vs.any (·.isSome)) "non-positive values are gaps, not bridged or dropped wholesale"
 
+private def millionTest : Except String Unit := do
+  let exts := Million.columnExtents Million.pyramid
+  check (exts.size == Million.columns) "one extent per column"
+  check (Million.shownCount (Million.inkproofShown exts) == Million.spikes.size) "Inkproof shows every spike"
+  check (Million.shownCount Million.naiveShown < Million.spikes.size) "naive decimation loses a spike"
+
+private def serverEventsTest : Except String Unit := do
+  for f in ServerEvents.series do
+    let e := ServerEvents.extents f
+    check (e.size == ServerEvents.columns) "one extent per column"
+    check (ServerEvents.drawnHighest e == ServerEvents.highest f) "the envelope reaches the highest value of the data"
+    check (ServerEvents.highest f > 0) "the series is not flat"
+
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales 2", logScales2Test⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, platformTest (args.contains "--expect-wasm")]

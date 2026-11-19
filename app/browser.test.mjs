@@ -85,3 +85,31 @@ test('area fill draws its three series', async () => {
   assert.ok(red > 0 && green > 0 && blue > 0, `red ${red}, green ${green}, blue ${blue}`);
   await page.close();
 });
+
+test('the million-point page shows the spikes naive decimation loses', async () => {
+  const { page, problems } = await open('million/');
+  await page.waitForFunction(() => window.draws.length >= 1);
+  assert.deepEqual(problems, []);
+  const lost = await page.evaluate(() => {
+    const canvas = document.querySelector('inkproof-chart').shadowRoot.querySelector('canvas');
+    const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    const half = (canvas.height / 2) | 0;
+    const dark = (from, to) => {
+      let n = 0;
+      for (let i = from * canvas.width * 4; i < to * canvas.width * 4; i += 4) if (d[i] < 80 && d[i + 1] < 80 && d[i + 2] < 80) n++;
+      return n;
+    };
+    return { naive: dark(0, half), inkproof: dark(half, canvas.height) };
+  });
+  assert.ok(lost.naive > 0 && lost.inkproof > lost.naive, JSON.stringify(lost));
+  await page.close();
+});
+
+test('server events draws its three series as envelopes', async () => {
+  const { page, problems } = await open('server-events/');
+  await page.waitForFunction(() => window.draws.length >= 1);
+  assert.deepEqual(problems, []);
+  const { red, green, blue } = await colours(page);
+  assert.ok(red > 0 && green > 0 && blue > 0, `red ${red}, green ${green}, blue ${blue}`);
+  await page.close();
+});

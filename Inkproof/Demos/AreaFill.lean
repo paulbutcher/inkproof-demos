@@ -50,13 +50,13 @@ def colors : List (Color × Color) :=
 
 /-- The bottom and left axes. Left labels stack vertically, so Axis gets each one with its height as its width. -/
 def axes (f : Frame) (measure : String → Float × Float) : List AxisDrawing :=
-  [Axes.linear .bottom (plot f) measure (flt f.xs.1) (flt f.xs.2) (flt f.left) (flt f.right),
-   Axes.linear .left (plot f) measure (flt f.ys.1) (flt f.ys.2) (flt f.bottom) (flt f.top)]
+  [Axes.linear .bottom (plot f) measure (Rat.toFloat f.xs.1) (Rat.toFloat f.xs.2) (Rat.toFloat f.left) (Rat.toFloat f.right),
+   Axes.linear .left (plot f) measure (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) (Rat.toFloat f.bottom) (Rat.toFloat f.top)]
 
 theorem axes_eq (f : Frame) (measure : String → Float × Float) :
     axes f measure =
-      [Axes.linear .bottom (plot f) measure (flt f.xs.1) (flt f.xs.2) (flt f.left) (flt f.right),
-       Axes.linear .left (plot f) measure (flt f.ys.1) (flt f.ys.2) (flt f.bottom) (flt f.top)] := rfl
+      [Axes.linear .bottom (plot f) measure (Rat.toFloat f.xs.1) (Rat.toFloat f.xs.2) (Rat.toFloat f.left) (Rat.toFloat f.right),
+       Axes.linear .left (plot f) measure (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) (Rat.toFloat f.bottom) (Rat.toFloat f.top)] := rfl
 
 /-- Each series filled down to zero and stroked on top, over the axes. -/
 def chart (f : Frame) (measure : String → Float × Float) : DisplayList :=

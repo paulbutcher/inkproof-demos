@@ -6,3 +6,6 @@ import Inkproof.Demos.AreaFill
 import Inkproof.Demos.Frame
 import Inkproof.Demos.LogScales2
 import Inkproof.Demos.Page
+import Inkproof.Demos.Reduce
+import Inkproof.Demos.ServerEvents
+import Inkproof.Demos.Million

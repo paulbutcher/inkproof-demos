@@ -1,0 +1,20 @@
+<!--
+Copyright (c) 2026 Paul Butcher. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>A million points</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>inkproof-chart { display: block; width: 1200px; height: 760px; }</style>
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <h1>A million points</h1>
+    <p><a href="../">All demos</a></p>
+    <p>One million samples of noise with twelve spikes, each one sample wide, drawn into 1120 pixel columns. The top chart keeps one sample per column, as naive decimation does. The bottom chart draws the lowest and highest sample of each column, which Inkproof's pyramid returns exactly: <code>Inkproof.Core.Pyramid.getElem_columns</code> says each column is the query of its range, and <code>Inkproof.Core.Maximum.fold_get_eq_some</code> says the maximum of a range is one of its samples and at least every sample in it, so no spike can be lost. Red rings mark where the spikes are.</p>
+    <inkproof-chart src="million"></inkproof-chart>
+  </body>
+</html>
