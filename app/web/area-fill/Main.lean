@@ -11,6 +11,6 @@ def main : IO Unit :=
     let f := AreaFill.frame
     let numbers := (List.range 30).map (fun i => toString i) ++ (List.range 25).map (fun (i : Nat) => toString ((i : Int) - 12))
     let measure ← measurer "12px sans-serif" numbers.toArray
-    let axes := AreaFill.axes f measure
+    let axes := axes f measure
     let labels := (axes.zip [false, true]).toArray.flatMap fun (a, left) => Browser.labelsOf measure left a
     pure { commands := Page.bytes 1200 600 (AreaFill.chart f measure), labels }

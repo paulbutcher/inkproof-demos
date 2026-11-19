@@ -18,7 +18,7 @@ private def areaFillTest : Except String Unit := do
 
 private def axesTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
-  let drawings := AreaFill.axes AreaFill.frame measure
+  let drawings := axes AreaFill.frame measure
   let [bottom, left] := drawings | throw "expected a bottom and a left axis"
   check (!bottom.labels.isEmpty && !left.labels.isEmpty) "both axes keep labels"
   let f := AreaFill.frame

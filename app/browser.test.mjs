@@ -86,6 +86,14 @@ test('area fill draws its three series', async () => {
   await page.close();
 });
 
+test('points draws its four charts', async () => {
+  const { page } = await open('points/');
+  await page.waitForFunction(() => window.draws.length >= 4);
+  const { red, green, blue } = await colours(page);
+  assert.ok(red > 0 && green > 0 && blue > 0, `red ${red}, green ${green}, blue ${blue}`);
+  await page.close();
+});
+
 test('the million-point page shows the spikes naive decimation loses', async () => {
   const { page, problems } = await open('million/');
   await page.waitForFunction(() => window.draws.length >= 1);

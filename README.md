@@ -6,7 +6,8 @@ The [uPlot demos](https://leeoniya.github.io/uPlot/demos/index.html), recreated 
 
 ## What it does
 
-- Show the Area Fill demo, three series with filled areas and linear axes, from uPlot's page of that name: `Inkproof.Demos.AreaFill.chart`, `AreaFill.axes`, at `area-fill/`.
+- Show the Area Fill demo, three series with filled areas and linear axes, from uPlot's page of that name: `Inkproof.Demos.AreaFill.chart`, `Inkproof.Demos.axes`, at `area-fill/`.
+- Show the Points demo, four charts of random walks with markers and gaps, from uPlot's page of that name: `Inkproof.Demos.Points.multiChart`, `Points.singleChart`, `Points.sparseChart`, at `points/`.
 - Show the Log Scales 2 demo, the same data on linear, log10 and log2 y axes with zero and negative values as gaps, from uPlot's `log-scales2.html` (charts 1 to 4 and 7 to 10): `Inkproof.Demos.LogScales2.specs`, `Spec.chart`, at `log-scales2/`.
 - Show a million samples with twelve one-sample spikes drawn two ways, one sample per pixel column against the lowest and highest per column from Core's pyramid, and count the spikes each keeps: `Inkproof.Demos.Million.naiveChart`, `Million.inkproofChart`, at `million/`.
 - Show three dense series of 55,550 samples as per-column envelopes, with the highest value of each in the data and as drawn: `Inkproof.Demos.ServerEvents.chart`, at `server-events/`.

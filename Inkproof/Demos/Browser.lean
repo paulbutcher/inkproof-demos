@@ -5,6 +5,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Inkproof.Demos
 import Inkproof.Web.Host.Chart
 import Inkproof.Web.Host.Measure
+import Inkproof.Demos.Frame
+import Inkproof.Demos.Page
 
 namespace Inkproof.Demos.Browser
 
@@ -30,5 +32,11 @@ def tickLabels (measure : String → Float × Float) (axes : List AxisDrawing) :
 
 theorem tickLabels_eq (measure : String → Float × Float) (axes : List AxisDrawing) :
     tickLabels measure axes = (axes.zip [false, true]).toArray.flatMap fun (a, left) => labelsOf measure left a := rfl
+
+/-- The scene of a `width` by `height` chart in `f`: `chart` draws the data, given the width and height of text, and the axes' labels go over it. -/
+def frameScene (width height : Nat) (f : Frame) (chart : (String → Float × Float) → Scene.DisplayList) : IO Scene := do
+  let measure ← measurer "12px sans-serif" (texts f)
+  let labels := (axes f measure).zip [false, true] |>.toArray.flatMap fun (a, left) => labelsOf measure left a
+  pure { commands := Page.bytes width height (chart measure), labels }
 
 end Inkproof.Demos.Browser
