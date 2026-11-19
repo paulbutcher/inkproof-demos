@@ -17,7 +17,7 @@ def main : IO Unit :=
     let shown := Million.shownCount Million.naiveShown
     let kept := Million.shownCount (Million.inkproofShown exts)
     let n := Million.spikes.size
-    let axisLabels (p : Reduce.Panel) := Browser.tickLabels measure (Million.axes p measure)
+    let axisLabels (p : Reduce.Panel) := Browser.tickLabels (Million.axes p measure)
     let title (p : Reduce.Panel) (text : String) : Label := { text, x := Rat.toFloat p.left, y := Rat.toFloat p.top - 14, font := "bold 14px sans-serif" }
     let labels := axisLabels Million.naivePanel ++ axisLabels Million.inkproofPanel ++
       #[title Million.naivePanel s!"One sample per column: {shown} of {n} spikes shown, {n - shown} lost",

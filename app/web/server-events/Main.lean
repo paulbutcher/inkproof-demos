@@ -17,7 +17,7 @@ def main : IO Unit :=
     let measure ← measurer "12px sans-serif" numbers.toArray
     let exts := ServerEvents.series.map fun f => ServerEvents.extents f
     let axes := ServerEvents.axes measure
-    let ticks := Browser.tickLabels measure axes
+    let ticks := Browser.tickLabels axes
     let css := ["#f00", "#008000", "#00f"]
     let notes := ((ServerEvents.names.zip ServerEvents.series).zip exts).zipIdx.toArray.map fun (((name, f), e), i) =>
       { text := s!"{name}: highest {percent (ServerEvents.highest f)} %, drawn {percent (ServerEvents.drawnHighest e)} %",

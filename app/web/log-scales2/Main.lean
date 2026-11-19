@@ -13,5 +13,5 @@ def main : IO Unit :=
 
     let measure ← measurer "12px sans-serif" s.labelTexts.toArray
     let axes := s.axes measure
-    let labels := (axes.zip [false, true]).toArray.flatMap fun (a, left) => Browser.labelsOf measure left a
+    let labels := Browser.tickLabels axes
     pure { commands := Page.bytes s.width s.height (s.chart measure), labels }

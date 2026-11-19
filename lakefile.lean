@@ -12,7 +12,7 @@ package «inkproof-demos» where
     ⟨`warningAsError, true⟩
   ]
 
-require «inkproof-web» from git "https://github.com/paulbutcher/inkproof-web" @ "v0.6.1"
+require «inkproof-web» from git "https://github.com/paulbutcher/inkproof-web" @ "v0.6.2"
 require «inkproof-export» from git "https://github.com/paulbutcher/inkproof-export" @ "v0.5.0"
 require «inkproof-viewport» from git "https://github.com/paulbutcher/inkproof-viewport" @ "v0.6.0"
 require «inkproof-scene» from git "https://github.com/paulbutcher/inkproof-scene" @ "v0.13.0"
