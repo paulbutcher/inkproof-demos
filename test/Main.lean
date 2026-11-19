@@ -26,5 +26,17 @@ private def axesTest : Except String Unit := do
   check (bottom.labels.all fun l => l.anchor.x ≥ f.left && l.anchor.x ≤ f.right) "bottom labels lie within the plot's width"
   check (left.labels.length ≥ 5) "the left axis keeps most of its labels"
 
+private def logScales2Test : Except String Unit := do
+  let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
+  for spec in LogScales2.specs do
+    let f := spec.frame
+    check (spec.data.xs.all fun x => spec.xs.1 ≤ x && x ≤ spec.xs.2) s!"{spec.name}: points lie within the x range"
+    check (spec.data.values.all fun v => v.all fun y => spec.kind == .linear || (0 < y && spec.ys.1 ≤ y && y ≤ spec.ys.2)) s!"{spec.name}: a log chart holds only values its scale can place"
+    let [_, left] := spec.axes measure | throw s!"{spec.name}: expected two axes"
+    check (!left.labels.isEmpty) s!"{spec.name}: the y axis keeps labels"
+    check (left.labels.all fun l => l.anchor.y ≥ f.top && l.anchor.y ≤ f.bottom) s!"{spec.name}: y labels lie within the plot"
+  let signed := LogScales2.specs.find? (·.name == "signed") |>.map (·.data.values)
+  check (signed.any fun vs => vs.any (·.isNone) && vs.any (·.isSome)) "non-positive values are gaps, not bridged or dropped wholesale"
+
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales 2", logScales2Test⟩, platformTest (args.contains "--expect-wasm")]

@@ -31,3 +31,7 @@ script tests do
   let child ← IO.Process.spawn
     { cmd := "lake", args := #["test"], cwd := __dir__ / "test" }
   child.wait
+
+/-- The code the pages share. It imports Lasm, so only Lasm's build compiles it. -/
+lean_lib InkproofDemosBrowser where
+  roots := #[`Inkproof.Demos.Browser]

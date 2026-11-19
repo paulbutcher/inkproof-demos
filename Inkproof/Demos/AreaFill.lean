@@ -6,6 +6,7 @@ import Inkproof.Core
 import Inkproof.Scene
 import Inkproof.Scale
 import Inkproof.Demos.Axes
+import Inkproof.Demos.Frame
 
 namespace Inkproof.Demos.AreaFill
 
@@ -42,39 +43,12 @@ theorem values_size (seed n : Nat) : (values seed n).size = n := by
 def series (seed n : Nat) : Series Rat Rat :=
   Series.ofUnsorted ((values seed n).zipIdx.map fun (v, i) => (((i + 1 : Nat) : Rat), some ((v : Int) : Rat)))
 
-/-- Plot rectangle and data ranges of the chart. -/
-structure Frame where
-  left : Rat
-  right : Rat
-  top : Rat
-  bottom : Rat
-  xs : Rat × Rat
-  ys : Rat × Rat
-
 def frame : Frame := ⟨60, 1180, 20, 560, (1, 30), (-12, 12)⟩
-
-/-- Data to pixels: x increases rightwards and y upwards, so the y range is reversed. -/
-def projection (f : Frame) : Projection Rat Rat :=
-  .linear ⟨f.xs.1, f.xs.2, f.left, f.right⟩ ⟨f.ys.1, f.ys.2, f.bottom, f.top⟩
-
-theorem projection_x (f : Frame) (x : Rat) :
-    (projection f).x x = (Linear.mk f.xs.1 f.xs.2 f.left f.right).map x := rfl
-
-theorem projection_y (f : Frame) (y : Rat) :
-    (projection f).y y = (Linear.mk f.ys.1 f.ys.2 f.bottom f.top).map y := rfl
 
 def colors : List (Color × Color) :=
   [(⟨255, 0, 0, 255⟩, ⟨255, 0, 0, 26⟩), (⟨0, 128, 0, 255⟩, ⟨0, 255, 0, 26⟩), (⟨0, 0, 255, 255⟩, ⟨0, 0, 255, 26⟩)]
 
-def flt (r : Rat) : Float := Float.ofInt r.num / r.den.toFloat
-
-theorem flt_eq (r : Rat) : flt r = Float.ofInt r.num / r.den.toFloat := rfl
-
-def plot (f : Frame) : Rect := ⟨f.left, f.top, f.right, f.bottom⟩
-
-theorem plot_eq (f : Frame) : plot f = ⟨f.left, f.top, f.right, f.bottom⟩ := rfl
-
-/-- The bottom and left axes. -/
+/-- The bottom and left axes. Left labels stack vertically, so Axis gets each one with its height as its width. -/
 def axes (f : Frame) (measure : String → Float × Float) : List AxisDrawing :=
   [Axes.linear .bottom (plot f) measure (flt f.xs.1) (flt f.xs.2) (flt f.left) (flt f.right),
    Axes.linear .left (plot f) measure (flt f.ys.1) (flt f.ys.2) (flt f.bottom) (flt f.top)]
