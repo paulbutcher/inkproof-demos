@@ -35,6 +35,23 @@ def bandGap : Chart :=
   { name := "band-gap", width := 800, height := 400, xs := (xs.getD 0 0, xs.getD 6 0), time := true,
     left := autoYAxis layers, layers, bands := [⟨1, 0, ⟨0, 255, 0, 51⟩⟩] }
 
-def charts : List Chart := [zoomedOut, bandGap]
+/-- One series with a missing value, drawn with the given join. -/
+def joined (name : String) (join : Join) : Chart :=
+  let xs : Array Rat := (#[0, 1, 2, 3, 4, 5, 6, 7] : Array Nat).map fun (t : Nat) => (t : Rat)
+  let ys : Array (Option Rat) := #[some 3, some 7, some 4, none, some 8, some 2, some 6, some 5]
+  let layers : List Layer := [{ data := series xs ys, color := ⟨0, 0, 255, 255⟩, join }]
+  { name, width := 400, height := 250, xs := (0, 7), time := false, left := autoYAxis layers, layers }
+
+theorem joined_eq (name : String) (join : Join) : joined name join =
+    let xs : Array Rat := (#[0, 1, 2, 3, 4, 5, 6, 7] : Array Nat).map fun (t : Nat) => (t : Rat)
+    let ys : Array (Option Rat) := #[some 3, some 7, some 4, none, some 8, some 2, some 6, some 5]
+    let layers : List Layer := [{ data := series xs ys, color := ⟨0, 0, 255, 255⟩, join }]
+    { name, width := 400, height := 250, xs := (0, 7), time := false, left := autoYAxis layers, layers } := rfl
+
+def steppedBefore := joined "stepped-before" .stepBefore
+def steppedAfter := joined "stepped-after" .stepAfter
+def spline := joined "spline" (.spline 16)
+
+def charts : List Chart := [zoomedOut, bandGap, steppedBefore, steppedAfter, spline]
 
 end Inkproof.Demos.PathGapClip

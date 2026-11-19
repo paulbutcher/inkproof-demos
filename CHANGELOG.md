@@ -2,6 +2,7 @@
 
 ## v0.5.0
 
+- The Path Gap Clip page draws a series stepped before, stepped after and as a spline through its points, with the gap left open.
 - The Log Scales page, twelve servers' player counts on log and linear y axes over a clock-time x axis.
 
 ## v0.4.0

@@ -106,11 +106,11 @@ theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = Axes.plane (
 /-- The axes, then every server's line. -/
 def Spec.chart (s : Spec) (measure : String → Float × Float) : DisplayList :=
   (s.axes measure).foldl (· ++ ·.display) #[] ++
-    layers.foldl (fun out l => out ++ compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none⟩ s.projection (Segmented.single l.data)) #[]
+    layers.foldl (fun out l => out ++ compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ s.projection (Segmented.single l.data)) #[]
 
 theorem Spec.chart_eq (s : Spec) (measure : String → Float × Float) : s.chart measure =
     (s.axes measure).foldl (· ++ ·.display) #[] ++
-      layers.foldl (fun out l => out ++ compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none⟩ s.projection (Segmented.single l.data)) #[] := rfl
+      layers.foldl (fun out l => out ++ compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ s.projection (Segmented.single l.data)) #[] := rfl
 
 def specs : List Spec := [⟨"log", true⟩, ⟨"linear", false⟩]
 

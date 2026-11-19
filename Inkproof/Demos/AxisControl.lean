@@ -90,10 +90,10 @@ theorem axes_eq (measure : String → Float × Float) : axes measure =
 /-- The axes, then the series as a line thinned to what its pixel columns show. -/
 def chart (measure : String → Float × Float) : DisplayList :=
   (axes measure).foldl (· ++ ·.display) #[] ++
-  compileLine ⟨⟨1, red⟩, 1, true, none⟩ (projection frame) (Segmented.single series)
+  compileLine ⟨⟨1, red⟩, 1, true, none, .straight⟩ (projection frame) (Segmented.single series)
 
 theorem chart_eq (measure : String → Float × Float) : chart measure =
     (axes measure).foldl (· ++ ·.display) #[] ++
-    compileLine ⟨⟨1, red⟩, 1, true, none⟩ (projection frame) (Segmented.single series) := rfl
+    compileLine ⟨⟨1, red⟩, 1, true, none, .straight⟩ (projection frame) (Segmented.single series) := rfl
 
 end Inkproof.Demos.AxisControl

@@ -97,7 +97,7 @@ field Inkproof.Demos.Lines.Chart.height : Inkproof.Demos.Lines.Chart → Nat
 def Inkproof.Demos.Lines.Chart.labelTexts : Inkproof.Demos.Lines.Chart → List String
 theorem Inkproof.Demos.Lines.Chart.labelTexts_eq : ∀ (c : Inkproof.Demos.Lines.Chart), c.labelTexts = (if c.time = Bool.true then (Inkproof.Demos.Axes.timeTicks c.xs.fst.toFloat c.xs.snd.toFloat c.timeTarget).snd else Inkproof.Demos.Axes.linearLabels c.xs.fst.toFloat c.xs.snd.toFloat) ++ c.left.ticks.snd ++ (Option.map (fun x => x.ticks.snd) c.right).getD []
 def Inkproof.Demos.Lines.Chart.layerDisplay : Inkproof.Demos.Lines.Chart → Inkproof.Demos.Lines.Layer → Inkproof.Scene.DisplayList
-theorem Inkproof.Demos.Lines.Chart.layerDisplay_eq : ∀ (c : Inkproof.Demos.Lines.Chart) (l : Inkproof.Demos.Lines.Layer), c.layerDisplay l = (match l.fill with | Option.some f => Inkproof.Scene.compileArea { layer := 0, color := f } (if l.onRight = Bool.true then (c.right.getD c.left).range.fst else c.left.range.fst) (c.projection l) l.segments | Option.none => #[]) ++ Inkproof.Scene.compileLine { paint := { layer := 1, color := l.color }, halfWidth := l.halfWidth, reduce := Bool.false, dash := l.dash } (c.projection l) l.segments
+theorem Inkproof.Demos.Lines.Chart.layerDisplay_eq : ∀ (c : Inkproof.Demos.Lines.Chart) (l : Inkproof.Demos.Lines.Layer), c.layerDisplay l = (match l.fill with | Option.some f => Inkproof.Scene.compileArea { layer := 0, color := f } (if l.onRight = Bool.true then (c.right.getD c.left).range.fst else c.left.range.fst) (c.projection l) l.segments l.join | Option.none => #[]) ++ Inkproof.Scene.compileLine { paint := { layer := 1, color := l.color }, halfWidth := l.halfWidth, reduce := Bool.false, dash := l.dash, join := l.join } (c.projection l) l.segments
 field Inkproof.Demos.Lines.Chart.layers : Inkproof.Demos.Lines.Chart → List Inkproof.Demos.Lines.Layer
 field Inkproof.Demos.Lines.Chart.left : Inkproof.Demos.Lines.Chart → Inkproof.Demos.Lines.YAxis
 constructor Inkproof.Demos.Lines.Chart.mk : String → Nat → Nat → Rat × Rat → Bool → Inkproof.Demos.Lines.YAxis → Option Inkproof.Demos.Lines.YAxis → List Inkproof.Demos.Lines.Layer → List Inkproof.Demos.Lines.Band → Inkproof.Demos.Lines.Chart
@@ -120,8 +120,9 @@ field Inkproof.Demos.Lines.Layer.dash : Inkproof.Demos.Lines.Layer → Option In
 field Inkproof.Demos.Lines.Layer.data : Inkproof.Demos.Lines.Layer → Inkproof.Core.Series Rat Rat
 field Inkproof.Demos.Lines.Layer.fill : Inkproof.Demos.Lines.Layer → Option Inkproof.Scene.Color
 field Inkproof.Demos.Lines.Layer.halfWidth : Inkproof.Demos.Lines.Layer → Rat
+field Inkproof.Demos.Lines.Layer.join : Inkproof.Demos.Lines.Layer → Inkproof.Scene.Join
 field Inkproof.Demos.Lines.Layer.maxStep : Inkproof.Demos.Lines.Layer → Option Rat
-constructor Inkproof.Demos.Lines.Layer.mk : Inkproof.Core.Series Rat Rat → Inkproof.Scene.Color → Option Inkproof.Scene.Color → Rat → Option Inkproof.Scene.DashPattern → Bool → Option Rat → Inkproof.Demos.Lines.Layer
+constructor Inkproof.Demos.Lines.Layer.mk : Inkproof.Core.Series Rat Rat → Inkproof.Scene.Color → Option Inkproof.Scene.Color → Rat → Option Inkproof.Scene.DashPattern → Bool → Option Rat → Inkproof.Scene.Join → Inkproof.Demos.Lines.Layer
 field Inkproof.Demos.Lines.Layer.onRight : Inkproof.Demos.Lines.Layer → Bool
 def Inkproof.Demos.Lines.Layer.segments : Inkproof.Demos.Lines.Layer → Inkproof.Core.Segmented Rat Rat
 theorem Inkproof.Demos.Lines.Layer.segments_eq : ∀ (l : Inkproof.Demos.Lines.Layer), l.segments = match l.maxStep with | Option.some d => Inkproof.Core.Segmented.splitWhere l.data fun a b => Decidable.decide (d < b - a) | Option.none => Inkproof.Core.Segmented.single l.data
@@ -295,7 +296,12 @@ def Inkproof.Demos.PathGapClip.bandGap : Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.PathGapClip.charts : List Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.PathGapClip.highSeries : Inkproof.Core.Series Rat Rat
 def Inkproof.Demos.PathGapClip.hole : List Nat
+def Inkproof.Demos.PathGapClip.joined : String → Inkproof.Scene.Join → Inkproof.Demos.Lines.Chart
+theorem Inkproof.Demos.PathGapClip.joined_eq : ∀ (name : String) (join : Inkproof.Scene.Join), Inkproof.Demos.PathGapClip.joined name join = have xs := Array.map (fun t => ↑t) #[0, 1, 2, 3, 4, 5, 6, 7]; have ys := #[Option.some 3, Option.some 7, Option.some 4, Option.none, Option.some 8, Option.some 2, Option.some 6, Option.some 5]; have layers := [{ data := Inkproof.Demos.Lines.series xs ys, color := { r := 0, g := 0, b := 255, a := 255 }, join := join }]; { name := name, width := 400, height := 250, xs := (0, 7), time := Bool.false, left := Inkproof.Demos.Lines.autoYAxis layers, layers := layers }
 def Inkproof.Demos.PathGapClip.lowSeries : Inkproof.Core.Series Rat Rat
+def Inkproof.Demos.PathGapClip.spline : Inkproof.Demos.Lines.Chart
+def Inkproof.Demos.PathGapClip.steppedAfter : Inkproof.Demos.Lines.Chart
+def Inkproof.Demos.PathGapClip.steppedBefore : Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.PathGapClip.times : Array Rat
 def Inkproof.Demos.PathGapClip.zoomedOut : Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.PathGapClipSource.highs : Array Int

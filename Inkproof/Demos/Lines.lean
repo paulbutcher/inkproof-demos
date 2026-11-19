@@ -47,6 +47,7 @@ structure Layer where
   onRight : Bool := false
   /-- Adjacent points further apart than this are not joined. -/
   maxStep : Option Rat := none
+  join : Join := .straight
 
 /-- The filled space between two layers, where both have a value. -/
 structure Band where
@@ -178,15 +179,15 @@ theorem Chart.bandDisplay_eq (c : Chart) (b : Band) : c.bandDisplay b =
 /-- The layer filled down to the bottom of its axis, then stroked. -/
 def Chart.layerDisplay (c : Chart) (l : Layer) : DisplayList :=
   (match l.fill with
-    | some f => compileArea ⟨0, f⟩ (if l.onRight then (c.right.getD c.left).range.1 else c.left.range.1) (c.projection l) l.segments
+    | some f => compileArea ⟨0, f⟩ (if l.onRight then (c.right.getD c.left).range.1 else c.left.range.1) (c.projection l) l.segments l.join
     | none => #[]) ++
-  compileLine ⟨⟨1, l.color⟩, l.halfWidth, false, l.dash⟩ (c.projection l) l.segments
+  compileLine ⟨⟨1, l.color⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments
 
 theorem Chart.layerDisplay_eq (c : Chart) (l : Layer) : c.layerDisplay l =
     (match l.fill with
-      | some f => compileArea ⟨0, f⟩ (if l.onRight then (c.right.getD c.left).range.1 else c.left.range.1) (c.projection l) l.segments
+      | some f => compileArea ⟨0, f⟩ (if l.onRight then (c.right.getD c.left).range.1 else c.left.range.1) (c.projection l) l.segments l.join
       | none => #[]) ++
-    compileLine ⟨⟨1, l.color⟩, l.halfWidth, false, l.dash⟩ (c.projection l) l.segments := rfl
+    compileLine ⟨⟨1, l.color⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments := rfl
 
 /-- The axes, then the bands and each layer in turn. -/
 def Chart.display (c : Chart) (measure : String → Float × Float) : DisplayList :=

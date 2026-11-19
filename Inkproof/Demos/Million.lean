@@ -119,13 +119,13 @@ theorem spikeMarks_eq (p : Panel) : spikeMarks p = compileScatter ⟨⟨2, spike
 /-- The naive panel: one sample per column, joined by a line. -/
 def naiveChart (measure : String → Float × Float) : DisplayList :=
   (axes naivePanel measure).foldl (· ++ ·.display) #[] ++
-  compileLine ⟨⟨1, ink⟩, 1, true, none⟩ (projection naivePanel)
+  compileLine ⟨⟨1, ink⟩, 1, true, none, .straight⟩ (projection naivePanel)
     (Segmented.single (Series.ofUnsorted ((Array.range columns).map fun c => (c, some (naive c))))) ++
   spikeMarks naivePanel
 
 theorem naiveChart_eq (measure : String → Float × Float) : naiveChart measure =
     (axes naivePanel measure).foldl (· ++ ·.display) #[] ++
-    compileLine ⟨⟨1, ink⟩, 1, true, none⟩ (projection naivePanel)
+    compileLine ⟨⟨1, ink⟩, 1, true, none, .straight⟩ (projection naivePanel)
       (Segmented.single (Series.ofUnsorted ((Array.range columns).map fun c => (c, some (naive c))))) ++
     spikeMarks naivePanel := rfl
 

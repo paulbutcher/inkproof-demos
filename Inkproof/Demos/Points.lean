@@ -79,7 +79,7 @@ def seriesD : Series Rat Rat := walk 4 200 75 [1, 100, 102, 130, 133, 198]
 
 def multiChart (f : Frame) (measure : String → Float × Float) : DisplayList :=
   let proj := projection f
-  let line (c : Color) (s : Series Rat Rat) := compileLine ⟨⟨2, c⟩, 1, false, none⟩ proj (Segmented.single s)
+  let line (c : Color) (s : Series Rat Rat) := compileLine ⟨⟨2, c⟩, 1, false, none, .straight⟩ proj (Segmented.single s)
   axisDisplay f measure ++
     line green seriesA ++
     compileArea ⟨0, ⟨255, 0, 0, 26⟩⟩ f.ys.1 proj (Segmented.single seriesB) ++ line red seriesB ++
@@ -90,12 +90,12 @@ def multiChart (f : Frame) (measure : String → Float × Float) : DisplayList :
 theorem multiChart_eq (f : Frame) (measure : String → Float × Float) :
     multiChart f measure =
       axisDisplay f measure ++
-        compileLine ⟨⟨2, green⟩, 1, false, none⟩ (projection f) (Segmented.single seriesA) ++
+        compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesA) ++
         compileArea ⟨0, ⟨255, 0, 0, 26⟩⟩ f.ys.1 (projection f) (Segmented.single seriesB) ++
-        compileLine ⟨⟨2, red⟩, 1, false, none⟩ (projection f) (Segmented.single seriesB) ++
+        compileLine ⟨⟨2, red⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesB) ++
         compileScatter ⟨⟨3, red⟩, .circle, 5/2⟩ (projection f) seriesB ++
         rings 3 blue (5/2) (projection f) seriesC ++
-        compileLine ⟨⟨2, orange⟩, 1, false, none⟩ (projection f) (Segmented.single seriesD) ++
+        compileLine ⟨⟨2, orange⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesD) ++
         compileIsolated ⟨⟨3, orange⟩, .circle, 5/2⟩ (projection f) (Segmented.single seriesD) := rfl
 
 /-- Two charts of one walk of 180 samples, the second over a range wide enough that its markers would overlap, so none are drawn. -/
@@ -107,13 +107,13 @@ def singleSeries : Series Rat Rat := walk 5 180 50
 
 def singleChart (f : Frame) (measure : String → Float × Float) (markers : Bool) : DisplayList :=
   axisDisplay f measure ++
-    compileLine ⟨⟨2, green⟩, 1, false, none⟩ (projection f) (Segmented.single singleSeries) ++
+    compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single singleSeries) ++
     if markers then rings 3 green (5/2) (projection f) singleSeries else #[]
 
 theorem singleChart_eq (f : Frame) (measure : String → Float × Float) (markers : Bool) :
     singleChart f measure markers =
       axisDisplay f measure ++
-        compileLine ⟨⟨2, green⟩, 1, false, none⟩ (projection f) (Segmented.single singleSeries) ++
+        compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single singleSeries) ++
         if markers then rings 3 green (5/2) (projection f) singleSeries else #[] := rfl
 
 /-- The sparse series: 96 samples among 2761, each drawn as a marker because the samples around it are missing. -/
