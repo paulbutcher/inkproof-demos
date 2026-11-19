@@ -53,12 +53,12 @@ def chart (f : Frame) (measure : String → Float × Float) : DisplayList :=
   axisDisplay f measure ++
   colors.zipIdx.toArray.flatMap fun ((stroke, fill), i) =>
     let g := Segmented.single (series (i + 1) 30)
-    compileArea ⟨0, fill⟩ 0 (projection f) g ++ compileLine ⟨⟨1, stroke⟩, 1, false⟩ (projection f) g
+    compileArea ⟨0, fill⟩ 0 (projection f) g ++ compileLine ⟨⟨1, stroke⟩, 1, false, none⟩ (projection f) g
 
 theorem chart_eq (f : Frame) (measure : String → Float × Float) :
     chart f measure = axisDisplay f measure ++
       colors.zipIdx.toArray.flatMap fun ((stroke, fill), i) =>
         compileArea ⟨0, fill⟩ 0 (projection f) (Segmented.single (series (i + 1) 30)) ++
-          compileLine ⟨⟨1, stroke⟩, 1, false⟩ (projection f) (Segmented.single (series (i + 1) 30)) := rfl
+          compileLine ⟨⟨1, stroke⟩, 1, false, none⟩ (projection f) (Segmented.single (series (i + 1) 30)) := rfl
 
 end Inkproof.Demos.AreaFill
