@@ -10,7 +10,7 @@ namespace Inkproof.Demos.Axes
 open Inkproof.Scale Inkproof.Scene Inkproof.Axis
 
 def style : AxisStyle :=
-  ⟨⟨0, ⟨0, 0, 0, 255⟩⟩, 1/2, ⟨0, ⟨0, 0, 0, 255⟩⟩, 1/2, 6, some (⟨0, ⟨0, 0, 0, 30⟩⟩, 1/2), 14⟩
+  ⟨⟨0, .flat ⟨0, 0, 0, 255⟩⟩, 1/2, ⟨0, .flat ⟨0, 0, 0, 255⟩⟩, 1/2, 6, some (⟨0, .flat ⟨0, 0, 0, 30⟩⟩, 1/2), 14⟩
 
 /-- Ten ticks in English, with at least eight pixels between labels. -/
 def spec : TickSpec := ⟨.en, 10, 8⟩

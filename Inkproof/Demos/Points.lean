@@ -82,7 +82,7 @@ def multiChart (f : Frame) (measure : String → Float × Float) : DisplayList :
   let line (c : Color) (s : Series Rat Rat) := compileLine ⟨⟨2, c⟩, 1, false, none, .straight⟩ proj (Segmented.single s)
   axisDisplay f measure ++
     line green seriesA ++
-    compileArea ⟨0, ⟨255, 0, 0, 26⟩⟩ f.ys.1 proj (Segmented.single seriesB) ++ line red seriesB ++
+    compileArea ⟨0, .flat ⟨255, 0, 0, 26⟩⟩ f.ys.1 proj (Segmented.single seriesB) ++ line red seriesB ++
     compileScatter ⟨⟨3, red⟩, .circle, 5/2⟩ proj seriesB ++
     rings 3 blue (5/2) proj seriesC ++
     line orange seriesD ++ compileIsolated ⟨⟨3, orange⟩, .circle, 5/2⟩ proj (Segmented.single seriesD)
@@ -91,7 +91,7 @@ theorem multiChart_eq (f : Frame) (measure : String → Float × Float) :
     multiChart f measure =
       axisDisplay f measure ++
         compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesA) ++
-        compileArea ⟨0, ⟨255, 0, 0, 26⟩⟩ f.ys.1 (projection f) (Segmented.single seriesB) ++
+        compileArea ⟨0, .flat ⟨255, 0, 0, 26⟩⟩ f.ys.1 (projection f) (Segmented.single seriesB) ++
         compileLine ⟨⟨2, red⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesB) ++
         compileScatter ⟨⟨3, red⟩, .circle, 5/2⟩ (projection f) seriesB ++
         rings 3 blue (5/2) (projection f) seriesC ++

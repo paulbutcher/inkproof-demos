@@ -41,11 +41,11 @@ theorem series_eq : series = Series.ofUnsorted (ys.mapIdx fun i v => (((i + 1 : 
 
 /-- The dashed line at zero, over the whole width. -/
 def zero : DisplayList :=
-  compileLine ⟨⟨0, ⟨128, 128, 128, 255⟩⟩, 1 / 2, false, some ⟨3, 3⟩, .straight⟩ (projection frame)
+  compileLine ⟨⟨0, .flat ⟨128, 128, 128, 255⟩⟩, 1 / 2, false, some ⟨3, 3⟩, .straight⟩ (projection frame)
     (Segmented.single (Series.ofUnsorted #[(1, some 0), (16, some 0)]))
 
 theorem zero_eq : zero =
-    compileLine ⟨⟨0, ⟨128, 128, 128, 255⟩⟩, 1 / 2, false, some ⟨3, 3⟩, .straight⟩ (projection frame)
+    compileLine ⟨⟨0, .flat ⟨128, 128, 128, 255⟩⟩, 1 / 2, false, some ⟨3, 3⟩, .straight⟩ (projection frame)
       (Segmented.single (Series.ofUnsorted #[(1, some 0), (16, some 0)])) := rfl
 
 /-- The bar of the point at `x`, 60% of the space between points wide. -/
@@ -74,12 +74,12 @@ theorem split_eq (up down : Color) (dl : DisplayList) :
 def lineLayer : DisplayList :=
   let g := Segmented.single series
   let p := projection frame
-  split ⟨0, 128, 0, 90⟩ ⟨255, 0, 0, 90⟩ (compileArea ⟨1, ⟨0, 0, 0, 0⟩⟩ 0 p g) ++
-    split green red (compileLine ⟨⟨1, ⟨0, 0, 0, 0⟩⟩, 1 / 2, false, none, .straight⟩ p g)
+  split ⟨0, 128, 0, 90⟩ ⟨255, 0, 0, 90⟩ (compileArea ⟨1, .flat ⟨0, 0, 0, 0⟩⟩ 0 p g) ++
+    split green red (compileLine ⟨⟨1, .flat ⟨0, 0, 0, 0⟩⟩, 1 / 2, false, none, .straight⟩ p g)
 
 theorem lineLayer_eq : lineLayer =
-    split ⟨0, 128, 0, 90⟩ ⟨255, 0, 0, 90⟩ (compileArea ⟨1, ⟨0, 0, 0, 0⟩⟩ 0 (projection frame) (Segmented.single series)) ++
-      split green red (compileLine ⟨⟨1, ⟨0, 0, 0, 0⟩⟩, 1 / 2, false, none, .straight⟩ (projection frame) (Segmented.single series)) := rfl
+    split ⟨0, 128, 0, 90⟩ ⟨255, 0, 0, 90⟩ (compileArea ⟨1, .flat ⟨0, 0, 0, 0⟩⟩ 0 (projection frame) (Segmented.single series)) ++
+      split green red (compileLine ⟨⟨1, .flat ⟨0, 0, 0, 0⟩⟩, 1 / 2, false, none, .straight⟩ (projection frame) (Segmented.single series)) := rfl
 
 /-- The bars, each green above zero and red below it. -/
 def splitBars : DisplayList :=
