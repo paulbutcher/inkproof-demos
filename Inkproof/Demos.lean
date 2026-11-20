@@ -23,3 +23,4 @@ import Inkproof.Demos.SparklinesBars
 import Inkproof.Demos.Reduce
 import Inkproof.Demos.ServerEvents
 import Inkproof.Demos.Million
+import Inkproof.Demos.Zoom

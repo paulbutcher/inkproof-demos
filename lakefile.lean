@@ -34,4 +34,4 @@ script tests do
 
 /-- The code the pages share. It imports Lasm, so only Lasm's build compiles it. -/
 lean_lib InkproofDemosBrowser where
-  roots := #[`Inkproof.Demos.Browser]
+  roots := #[`Inkproof.Demos.Browser, `Inkproof.Demos.ZoomPage]

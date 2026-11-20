@@ -148,5 +148,21 @@ private def latencyTest : Except String Unit := do
   check (LatencyHistogram.samples.all (25 ≤ ·)) "no latency falls below the 25 ms floor"
   check (LatencyHistogram.counts.foldl max 0 > 0) "the histogram is not empty"
 
+private def zoomTest : Except String Unit := do
+  let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
+  for c in [Zoom.basic, Zoom.variation] do
+    let home := Viewport.View.home c.config
+    let zoomed := Viewport.View.step c.config home (.wheel 100 100 4)
+    check (zoomed != home) "a wheel notch changes the view"
+    check (Viewport.View.step c.config zoomed .reset == home) "reset returns to the home view"
+    let (cache, first) := c.commands {} true home measure
+    let (_, second) := c.commands cache false zoomed measure
+    let uploads (cmds : List Gpu.Cmd) := cmds.filterMap fun cmd => match cmd.args with
+      | [_, .words ws] => if cmd.op == 1 then some ws else none
+      | _ => none
+    let lines := c.data.toList.map (Gpu.tessellateStroke ⟨0, 0⟩)
+    check (lines.all (uploads first).contains) "the first frame uploads every line"
+    check (lines.all fun l => !(uploads second).contains l) "a frame under another view uploads no line again"
+
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"zoom", zoomTest⟩, platformTest (args.contains "--expect-wasm")]

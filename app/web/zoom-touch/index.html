@@ -1,0 +1,20 @@
+<!--
+Copyright (c) 2026 Paul Butcher. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Pinch Zoom &amp; Pan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>inkproof-chart { display: block; width: 600px; height: 400px; margin-bottom: 20px; }</style>
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <h1>Pinch Zoom &amp; Pan</h1>
+    <p><a href="../">All demos</a></p>
+    <p>On a touch screen, pinch with two fingers to zoom and drag with one to pan; a mouse wheel and drag work as well. The lines are uploaded to the GPU once and every view draws the same buffers.</p>
+    <inkproof-chart id="chart" src="zoom-touch"></inkproof-chart>
+  </body>
+</html>

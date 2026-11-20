@@ -18,6 +18,7 @@ The [uPlot demos](https://leeoniya.github.io/uPlot/demos/index.html), recreated 
 - Show the Missing Data, High-Low Bands and Path Gap Clip demos, lines and bands over Unix-time x axes with gaps drawn as gaps, and stepped and spline joins, from uPlot's `missing-data.html`, `high-low-bands.html` and `path-gap-clip.html`: `Inkproof.Demos.Lines.Chart`, at `missing-data/`, `high-low-bands/` and `path-gap-clip/`.
 - Show a million samples with twelve one-sample spikes drawn two ways, one sample per pixel column against the lowest and highest per column from Core's pyramid, and count the spikes each keeps: `Inkproof.Demos.Million.naiveChart`, `Million.inkproofChart`, at `million/`.
 - Show three dense series of 55,550 samples as per-column envelopes, with the highest value of each in the data and as drawn: `Inkproof.Demos.ServerEvents.chart`, at `server-events/`.
+- Zoom and pan a line chart with the wheel, a drag, a shift-drag box and a two-finger pinch, redrawing under each visible range from buffers uploaded once, and reset it to the full range, from uPlot's `zoom-wheel.html`, `zoom-touch.html` and `zoom-variations.html` and a reset button that uPlot's demos lack: `Inkproof.Demos.Zoom.Chart.commands`, `Zoom.Chart.config`, at `zoom-wheel/`, `zoom-touch/`, `zoom-variations/` and `zoom-reset-range/`.
 
 ## Build and run
 
@@ -25,4 +26,4 @@ Needs git, Node 24 and [elan](https://github.com/leanprover/elan). From the repo
 
 ## Credits
 
-The demos recreate pages of [uPlot](https://github.com/leeoniya/uPlot) by Leon Sorokin (MIT license). Server events recreates the shape of uPlot's `bench/uPlot.html` data (three series over 55,550 samples) with generated values; uPlot has no demo of reduction accuracy. The Sparklines stock records are uPlot's `demos/data/*.csv`, the Multi-Bars library figures its `bench/results.json`, and the skew normal draw follows its `demos/lib/rand.js`.
+The demos recreate pages of [uPlot](https://github.com/leeoniya/uPlot) by Leon Sorokin (MIT license). Server events recreates the shape of uPlot's `bench/uPlot.html` data (three series over 55,550 samples) with generated values; uPlot has no demo of reduction accuracy. The Sparklines stock records are uPlot's `demos/data/*.csv`, the Multi-Bars library figures its `bench/results.json`, and the skew normal draw follows its `demos/lib/rand.js`. The zoom pages draw uPlot's wheel and touch zoom data (seven points, two series) and a fixed hash for the variations page, whose points uPlot draws at random; uPlot 1.6.32 has no zoom-reset-range page, so that one is the wheel zoom chart with a reset button. A plain drag pans, where uPlot's variations page zooms to the dragged box; the box is a shift-drag.

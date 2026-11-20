@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.8.0
+
+- The Wheel Zoom & Drag, Pinch Zoom & Pan, Zoom variations and Zoom with reset pages, charts that the pointer zooms and pans from retained GPU buffers.
+- Web v0.9.1, Viewport v0.7.0 and Gpu v0.10.0.
+
 ## v0.7.0
 
 - The Scatter & Bubble page (bubble plot only), the Sparklines page and the Sparklines (w/ floating bars) page.

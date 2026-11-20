@@ -9,3 +9,7 @@
 ## Data
 
 uPlot's demos draw random data; these use a fixed hash so each visit shows the same chart.
+
+## Zooming charts
+
+A zoom page draws its lines once, in data coordinates, and `Zoom.Chart.commands` draws them under each visible range with Gpu's `viewTile`, so a frame after the first uploads only the axes, which are in pixels and follow the range. Zoom and pan state is Web's `Nav`: the page listens for `inkproof-view`, builds the scene for that range and gives it to `Host.setScene`, which keeps the state. Each chart numbers its buffers from its own range, since every chart draws on one WebGL context, and starts again when the context is lost.

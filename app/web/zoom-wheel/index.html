@@ -1,0 +1,20 @@
+<!--
+Copyright (c) 2026 Paul Butcher. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Wheel Zoom &amp; Drag</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>inkproof-chart { display: block; width: 600px; height: 400px; margin-bottom: 20px; }</style>
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <h1>Wheel Zoom &amp; Drag</h1>
+    <p><a href="../">All demos</a></p>
+    <p>Scroll the wheel over the chart to zoom about the pointer, and drag to pan. Shift-drag draws a box to zoom to; the keys <code>+</code>, <code>-</code>, the arrows and <code>0</code> zoom, pan and reset. The zoom and pan state is Inkproof.Web's <code>Nav</code> over Inkproof.Viewport's <code>View</code>; the lines are uploaded to the GPU once and every view draws the same buffers.</p>
+    <inkproof-chart id="chart" src="zoom-wheel"></inkproof-chart>
+  </body>
+</html>
