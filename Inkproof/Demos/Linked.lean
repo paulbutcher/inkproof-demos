@@ -20,6 +20,22 @@ def syncCharts : List (String × Zoom.Chart) :=
     (s!"sync-{i}", ⟨800, 240, (List.range 3).zip colours |>.map fun (k, colour) =>
       ⟨xs, (Array.range 1000).map fun j => ((f (1000 * k + j) : Int) : Rat) / 100, colour⟩, none⟩)
 
+/-- Two thousand minutes of the first server events series, drawn small as the overview and large as the chart that shows the selected range, as uPlot's zoom-ranger page does. -/
+def rangerCharts : List (String × Zoom.Chart) :=
+  let xs : Array Rat := (Array.range 2000).map fun i => ((i : Nat) : Rat)
+  let line : Zoom.Line := ⟨xs, (Array.range 2000).map fun j => ((ServerEvents.busy j : Int) : Rat) / 100, ⟨0, 0, 255, 255⟩⟩
+  [("ranger-main", ⟨800, 300, [line], none⟩), ("ranger-overview", ⟨800, 120, [line], none⟩)]
+
+/-- The range of minutes the large chart shows when the page opens. -/
+def rangerStart : Float := 600
+
+def rangerEnd : Float := 1200
+
+theorem rangerCharts_eq : rangerCharts =
+    let xs : Array Rat := (Array.range 2000).map fun i => ((i : Nat) : Rat)
+    let line : Zoom.Line := ⟨xs, (Array.range 2000).map fun j => ((ServerEvents.busy j : Int) : Rat) / 100, ⟨0, 0, 255, 255⟩⟩
+    [("ranger-main", ⟨800, 300, [line], none⟩), ("ranger-overview", ⟨800, 120, [line], none⟩)] := rfl
+
 /-- Three series of thirty integers in `-10..10` over `1..30`, the data of uPlot's cursor-bind page. -/
 def bindChart : Zoom.Chart :=
   let xs : Array Rat := (Array.range 30).map fun i => ((i + 1 : Nat) : Rat)

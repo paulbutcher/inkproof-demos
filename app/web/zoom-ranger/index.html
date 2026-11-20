@@ -1,0 +1,21 @@
+<!--
+Copyright (c) 2026 Paul Butcher. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Zoom ranger</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>inkproof-chart { display: block; width: 800px; margin-bottom: 20px; } #ranger-main { height: 300px; } #ranger-overview { height: 120px; }</style>
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <h1>Zoom ranger</h1>
+    <p><a href="../">All demos</a></p>
+    <p>Drag across the small overview to select a range, which the large chart then shows; drag the band to move it or its edges to resize it. The overview always shows all the data. Zooming or panning the large chart moves the band.</p>
+    <inkproof-chart id="ranger-main" src="ranger-main" group="ranger"></inkproof-chart>
+    <inkproof-chart id="ranger-overview" src="ranger-overview" group="ranger" select="x"></inkproof-chart>
+  </body>
+</html>

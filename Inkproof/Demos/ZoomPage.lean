@@ -91,4 +91,17 @@ def mount (charts : List (String × Zoom.Chart)) : IO Unit := do
     doc.callMethod "addEventListener" #[toJS event, toJS (← Function.ofSyncFn (redraw restore))] Unit
   showReading
 
+/-- Select the x range `range` on the chart with id `id` the first time it is drawn, so that a range selector starts with a band to move. -/
+def selectWhenDrawn (id : String) (range : Float × Float) : IO Unit := do
+  let doc ← (← global).get "document"
+  let done ← IO.mkRef false
+  let listener ← Function.ofSyncFn fun args => do
+    if let some (Data.ref event _) := args[0]? then
+      let el ← event.get "target" Value
+      if !(← done.get) && (← el.get "id" String) == id then
+        done.set true
+        setSelection el (some range)
+    return .undefined
+  doc.callMethod "addEventListener" #[toJS "inkproof-draw", toJS listener] Unit
+
 end Inkproof.Demos.ZoomPage

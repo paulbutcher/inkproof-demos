@@ -414,3 +414,33 @@ test('zoom fetch: zooming requests the samples of the new range and redraws', as
   assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
   await page.close();
 });
+
+test('zoom ranger: dragging the overview sets the main chart range, and the overview keeps its own', async () => {
+  const { page, problems } = await open('zoom-ranger/');
+  await page.waitForFunction(() => window.draws.length >= 2);
+  await page.evaluate(() => {
+    window.seen = {};
+    addEventListener('inkproof-view', e => (window.seen[e.target.id] ??= []).push(e.detail));
+    addEventListener('inkproof-select', e => (window.picked ??= []).push(e.detail));
+  });
+  const box = await page.locator('#ranger-overview').boundingBox();
+  const drag = async (x0, x1) => {
+    await page.mouse.move(box.x + x0, box.y + 60);
+    await page.mouse.down();
+    await page.mouse.move(box.x + x1, box.y + 60, { steps: 5 });
+    await page.mouse.up();
+  };
+  await drag(650, 750);
+  await page.waitForFunction(() => window.seen['ranger-main']?.length);
+  const first = await page.evaluate(() => ({ main: window.seen['ranger-main'].at(-1), band: window.picked.at(-1), overview: window.seen['ranger-overview'] }));
+  assert.ok(first.main.xEnd - first.main.xStart < 1000 && first.main.xEnd - first.main.xStart > 100, JSON.stringify(first.main));
+  assert.equal(first.main.xStart, first.band.xStart);
+  assert.equal(first.main.xEnd, first.band.xEnd);
+  assert.equal(first.overview, undefined, 'the overview keeps its range');
+  await drag(700, 600);
+  await page.waitForTimeout(300);
+  const moved = await page.evaluate(() => window.picked.at(-1));
+  assert.ok(moved.xStart < first.band.xStart && Math.abs((moved.xEnd - moved.xStart) - (first.band.xEnd - first.band.xStart)) < 1e-6, `${JSON.stringify(first.band)} moved to ${JSON.stringify(moved)}`);
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});

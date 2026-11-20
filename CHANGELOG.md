@@ -3,7 +3,8 @@
 ## v0.9.0
 
 - The Sync cursor, Cursor bind and Zoom fetch pages, charts that share a cursor and x range through Web's `group` and `cursor` attributes, and one that fetches the samples of its zoomed range.
-- Web v0.11.0 and Viewport v0.9.0.
+- The Zoom ranger page, an overview chart whose dragged band sets the range of a larger one.
+- Web v0.12.0 and Viewport v0.10.0.
 
 ## v0.8.0
 

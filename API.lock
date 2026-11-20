@@ -301,6 +301,10 @@ theorem Inkproof.Demos.Linked.file_size : ∀ (stride : Nat), (Inkproof.Demos.Li
 def Inkproof.Demos.Linked.points : Nat → Nat → ByteArray → Array (Rat × Rat)
 theorem Inkproof.Demos.Linked.points_get : ∀ (stride first : Nat) (body : ByteArray) (i : Nat) (h : i < (Inkproof.Demos.Linked.points stride first body).size), (Inkproof.Demos.Linked.points stride first body)[i] = (↑((first + i) * stride), ↑body.data[i].toNat)
 theorem Inkproof.Demos.Linked.points_size : ∀ (stride first : Nat) (body : ByteArray), (Inkproof.Demos.Linked.points stride first body).size = body.size
+def Inkproof.Demos.Linked.rangerCharts : List (String × Inkproof.Demos.Zoom.Chart)
+theorem Inkproof.Demos.Linked.rangerCharts_eq : Inkproof.Demos.Linked.rangerCharts = have xs := Array.map (fun i => ↑i) (Array.range 2000); have line := { xs := xs, ys := Array.map (fun j => ↑(Inkproof.Demos.ServerEvents.busy j) / 100) (Array.range 2000), color := { r := 0, g := 0, b := 255, a := 255 } }; [("ranger-main", { width := 800, height := 300, lines := [line] }), ("ranger-overview", { width := 800, height := 120, lines := [line] })]
+def Inkproof.Demos.Linked.rangerEnd : Float
+def Inkproof.Demos.Linked.rangerStart : Float
 def Inkproof.Demos.Linked.sample : Nat → Nat
 theorem Inkproof.Demos.Linked.sample_eq : ∀ (i : Nat), Inkproof.Demos.Linked.sample i = 20 + Inkproof.Demos.ServerEvents.hash 8 (i / 40) % 150 + Inkproof.Demos.ServerEvents.hash 9 i % 60
 theorem Inkproof.Demos.Linked.sample_lt : ∀ (i : Nat), Inkproof.Demos.Linked.sample i < 256

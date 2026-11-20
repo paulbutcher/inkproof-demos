@@ -12,9 +12,9 @@ package «inkproof-demos» where
     ⟨`warningAsError, true⟩
   ]
 
-require «inkproof-web» from git "https://github.com/paulbutcher/inkproof-web" @ "v0.11.0"
+require «inkproof-web» from git "https://github.com/paulbutcher/inkproof-web" @ "v0.12.0"
 require «inkproof-export» from git "https://github.com/paulbutcher/inkproof-export" @ "v0.5.0"
-require «inkproof-viewport» from git "https://github.com/paulbutcher/inkproof-viewport" @ "v0.9.0"
+require «inkproof-viewport» from git "https://github.com/paulbutcher/inkproof-viewport" @ "v0.10.0"
 require «inkproof-scene» from git "https://github.com/paulbutcher/inkproof-scene" @ "v0.19.0"
 require «inkproof-scale» from git "https://github.com/paulbutcher/inkproof-scale" @ "v0.10.0"
 require «inkproof-axis» from git "https://github.com/paulbutcher/inkproof-axis" @ "v0.7.0"
