@@ -201,7 +201,6 @@ private def candlesTest : Except String Unit := do
     check (p.plot.x0 ≤ b.x0 && b.x1 ≤ p.plot.x1 && b.x1 - b.x0 ≤ 20) s!"candle {i}: the body lies within the plot and is at most 20 pixels wide"
     check ((Candles.volumeBar i c).y1 == p.plot.y1) s!"candle {i}: the volume bar stands on the bottom of the plot"
   check ((List.range (n - 1)).all fun i => (Candles.body i (Candles.candles.getD i ⟨0, 0, 0, 0, 0, 0⟩)).x1 < (Candles.body (i + 1) (Candles.candles.getD (i + 1) ⟨0, 0, 0, 0, 0, 0⟩)).x0) "neighbouring bodies do not touch"
-  check (Candles.dateOf 1546300800 == "2019-01-01" && Candles.dateOf 1551398400 == "2019-03-01") "dates are written as the days they stand for"
   let fills := Candles.candles.zipIdx.map fun (c, i) =>
     (decide (c.close < c.open_), match ((Candles.commands i c).getD 2 ⟨0, Candles.black, .rect ⟨0, 0, 0, 0⟩⟩).color with
       | .flat col => col == (if c.close < c.open_ then Candles.bearish else Candles.bullish)

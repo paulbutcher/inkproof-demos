@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.11.0
+
+- The candlestick page writes its dates with Core v0.15.0's `Calendar.isoDate`.
+
 ## v0.10.0
 
 - The Candlestick, Box & Whisker, Timeline / Discrete and Annotations pages, composed shapes built from Scene's rectangles, strips and markers, with notes on a zooming chart that stay at their data positions.

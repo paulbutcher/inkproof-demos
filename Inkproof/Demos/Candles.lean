@@ -2,6 +2,7 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+import Inkproof.Core.Calendar
 import Inkproof.Demos.Data
 import Inkproof.Demos.GoldSource
 import Inkproof.Demos.Pane
@@ -32,43 +33,16 @@ theorem candles_eq : candles =
       let (o, h, l, c) := ((GoldSource.opens.getD i 0 : Nat), GoldSource.highs.getD i 0, GoldSource.lows.getD i 0, GoldSource.closes.getD i 0)
       ⟨t, (o : Rat) / 100, ((max h (max o c) : Nat) : Rat) / 100, ((min l (min o c) : Nat) : Rat) / 100, (c : Rat) / 100, (volumes.getD i 0 : Nat)⟩) := rfl
 
-/-- The date of the day that starts at Unix time `t`, as `YYYY-MM-DD`. -/
-def dateOf (t : Nat) : String :=
-  let z := t / 86400 + 719468
-  let era := z / 146097
-  let doe := z % 146097
-  let yoe := (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365
-  let doy := doe - (365 * yoe + yoe / 4 - yoe / 100)
-  let mp := (5 * doy + 2) / 153
-  let day := doy - (153 * mp + 2) / 5 + 1
-  let month := if mp < 10 then mp + 3 else mp - 9
-  let year := yoe + era * 400 + (if month ≤ 2 then 1 else 0)
-  let two (n : Nat) := (if n < 10 then "0" else "") ++ toString n
-  s!"{year}-{two month}-{two day}"
-
-theorem dateOf_eq (t : Nat) : dateOf t =
-    let z := t / 86400 + 719468
-    let era := z / 146097
-    let doe := z % 146097
-    let yoe := (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365
-    let doy := doe - (365 * yoe + yoe / 4 - yoe / 100)
-    let mp := (5 * doy + 2) / 153
-    let day := doy - (153 * mp + 2) / 5 + 1
-    let month := if mp < 10 then mp + 3 else mp - 9
-    let year := yoe + era * 400 + (if month ≤ 2 then 1 else 0)
-    let two (n : Nat) := (if n < 10 then "0" else "") ++ toString n
-    s!"{year}-{two month}-{two day}" := rfl
-
 /-- The prices on the left axis, and the volume on the right against a range of 0 to 2000, so the volume bars stay low. -/
 def pane : Pane :=
   let prices := candles.flatMap fun c => #[c.low, c.high]
-  { width := 1920, height := 600, groups := candles.map (dateOf ·.time),
+  { width := 1920, height := 600, groups := candles.map (fun c => Core.Calendar.isoDate ((c.time / 86400 : Nat) : Int)),
     left := Scale.autoRange (1 / 10) (prices.foldl min (prices.getD 0 0)) (prices.foldl max (prices.getD 0 0)),
     right := some (0, 2000), below := 80 }
 
 theorem pane_eq : pane =
     let prices := candles.flatMap fun c => #[c.low, c.high]
-    { width := 1920, height := 600, groups := candles.map (dateOf ·.time),
+    { width := 1920, height := 600, groups := candles.map (fun c => Core.Calendar.isoDate ((c.time / 86400 : Nat) : Int)),
       left := Scale.autoRange (1 / 10) (prices.foldl min (prices.getD 0 0)) (prices.foldl max (prices.getD 0 0)),
       right := some (0, 2000), below := 80 } := rfl
 
