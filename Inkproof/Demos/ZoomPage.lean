@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Lasm.JS
 import Inkproof.Web.Access
 import Inkproof.Web.Host.Chart
+import Inkproof.Web.Host.SceneCache
 import Inkproof.Web.Host.Measure
 import Inkproof.Demos.Browser
 import Inkproof.Demos.Zoom
@@ -13,83 +14,40 @@ namespace Inkproof.Demos.ZoomPage
 
 open Lasm.JS Inkproof.Web Inkproof.Web.Host Inkproof.Gpu Inkproof.Viewport Inkproof.Demos
 
-/-- What a zooming chart keeps between frames: the buffers on the GPU, the context they were uploaded under, and the view last drawn. -/
-structure State where
-  cache : Cache
-  generation : Nat
-  view : View Float
-  drawn : Bool
-
-/-- The scene of `c` under `v`. Each chart numbers its buffers from its own range, since every chart draws on one context. -/
-def sceneOf (c : Zoom.Chart) (name : String) (base : Nat) (states : IO.Ref (Std.HashMap String State)) (v : View Float) : IO Scene := do
+/-- The scene of `c` under `v`, built from the buffers `cache` keeps on the GPU. -/
+def sceneOf (c : Zoom.Chart) (name : String) (cache : SceneCache) (v : View Float) : IO Scene := do
   let f := c.viewFrame v
   let measure ← measurer "12px sans-serif" (texts f)
-  let generation ← contextGeneration
-  let old := (← states.get)[name]?
-  let kept := old.filter (·.generation == generation)
-  let (cache, cmds) := c.commands (kept.map (·.cache) |>.getD { next := base }) (!(kept.any (·.drawn))) v measure
-  states.modify (·.insert name { cache, generation, view := v, drawn := true })
+  let cmds ← cache.build fun old first => pure (c.commands old first v measure)
   let points := (c.lines.map (·.xs.size)).foldl max 0
   pure { commands := ⟨(encode cmds).toArray⟩, labels := Browser.tickLabels (axes f measure),
          access := { name, series := (c.lines.map fun _ => "line").toArray, points, view := some c.config, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top) } }
 
-def viewOf (detail : Value) : IO (View Float) := do
-  let x0 ← detail.get "xStart" Float
-  let x1 ← detail.get "xEnd" Float
-  let y0 ← detail.get "yStart" Float
-  let y1 ← detail.get "yEnd" Float
-  pure ⟨⟨x0, x1 - x0⟩, ⟨y0, y1 - y0⟩⟩
-
-/-- Show the data position under the pointer, as the `inkproof-pointer` event reports it, in the element with id `reading` if the page has one. -/
-def showReading : IO Unit := do
-  let doc ← (← global).get "document"
-  let listener ← Function.ofSyncFn fun args => do
-    if let some (Data.ref event _) := args[0]? then
-      let detail ← event.get "detail" Value
-      let x ← detail.get "x" Float
-      let y ← detail.get "y" Float
-      if let .ref el _ := ← doc.callMethod "getElementById" #[toJS "reading"] Data then
-        el.set "textContent" s!"x = {showFloat x}, y = {showFloat y}"
-    return .undefined
-  doc.callMethod "addEventListener" #[toJS "inkproof-pointer", toJS listener] Unit
-
-/-- Draw each named chart, and draw it again under the range the pointer or keys move it to. A button with `data-reset` naming a chart's id returns that chart to its full range, and one with `data-unlink` naming a chart's id takes it out of its `group`, or puts it back in the one `data-group` names. -/
+/-- Draw each named chart, and draw it again under the range the pointer or keys move it to. -/
 def mount (charts : List (String × Zoom.Chart)) : IO Unit := do
-  let states ← IO.mkRef ({} : Std.HashMap String State)
-  let find (name : String) : Option (Nat × Zoom.Chart) :=
-    (charts.zipIdx.find? (·.1.1 == name)).map fun ((_, c), i) => (i * 1000000, c)
-  register "inkproof-chart" fun name => do
-    let some (base, c) := find name | throw (IO.userError s!"no chart {name}")
-    sceneOf c name base states (View.home c.config)
+  let caches ← charts.mapM fun (name, c) => do pure (name, c, ← SceneCache.new, ← IO.mkRef (View.home c.config))
+  let find (name : String) := caches.find? (·.1 == name)
+  register "inkproof-chart" (buttons := true) fun name => do
+    let some (_, c, cache, view) := find name | throw (IO.userError s!"no chart {name}")
+    sceneOf c name cache (← view.get)
   let redraw (restore : Bool) (args : Array Data) : IO Data := do
     if let some (Data.ref event _) := args[0]? then
       let el ← event.get "target" Value
       let name ← el.callMethod "getAttribute" #[toJS "src"] String
-      if let some (base, c) := find name then
-        let v ← if restore then
-            pure ((← states.get)[name]?.map (·.view) |>.getD (View.home c.config))
-          else viewOf (← event.get "detail" Value)
-        setScene el (← sceneOf c name base states v)
+      if let some (_, c, cache, view) := find name then
+        unless restore do view.set (← viewOf (← event.get "detail" Value))
+        setScene el (← sceneOf c name cache (← view.get))
     return .undefined
   let doc ← (← global).get "document"
-  let click ← Function.ofSyncFn fun args => do
-    if let some (Data.ref event _) := args[0]? then
-      let hit ← (← event.get "target" Value).callMethod "closest" #[toJS "button[data-reset]"] Data
-      if let .ref button _ := hit then
-        let id ← button.callMethod "getAttribute" #[toJS "data-reset"] String
-        if let .ref el _ := ← doc.callMethod "getElementById" #[toJS id] Data then apply el .reset
-      let toggle ← (← event.get "target" Value).callMethod "closest" #[toJS "button[data-unlink]"] Data
-      if let .ref button _ := toggle then
-        let id ← button.callMethod "getAttribute" #[toJS "data-unlink"] String
-        let group ← button.callMethod "getAttribute" #[toJS "data-group"] String
-        if let .ref el _ := ← doc.callMethod "getElementById" #[toJS id] Data then
-          if ← el.callMethod "hasAttribute" #[toJS "group"] Bool then el.callMethod "removeAttribute" #[toJS "group"] Unit
-          else el.callMethod "setAttribute" #[toJS "group", toJS group] Unit
-    return .undefined
-  doc.callMethod "addEventListener" #[toJS "click", toJS click] Unit
   for (event, restore) in [("inkproof-view", false), ("inkproof-contextrestored", true)] do
     doc.callMethod "addEventListener" #[toJS event, toJS (← Function.ofSyncFn (redraw restore))] Unit
-  showReading
+  let reading ← Function.ofSyncFn fun args => do
+    if let some (Data.ref event _) := args[0]? then
+      let (x, y) ← pointerOf (← event.get "detail" Value)
+      if let .ref el _ := ← doc.callMethod "getElementById" #[toJS "reading"] Data then
+        el.set "textContent" s!"x = {showFloat x}, y = {showFloat y}"
+    return .undefined
+  doc.callMethod "addEventListener" #[toJS "inkproof-pointer", toJS reading] Unit
 
 /-- Select the x range `range` on the chart with id `id` the first time it is drawn, so that a range selector starts with a band to move. -/
 def selectWhenDrawn (id : String) (range : Float × Float) : IO Unit := do

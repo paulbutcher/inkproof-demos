@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.9.1
+
+- Web v0.13.0: the zoom and fetch pages use its declarative buttons, scene cache and event decoding in place of their own.
+
 ## v0.9.0
 
 - The Sync cursor, Cursor bind and Zoom fetch pages, charts that share a cursor and x range through Web's `group` and `cursor` attributes, and one that fetches the samples of its zoomed range.
