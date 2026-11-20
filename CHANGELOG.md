@@ -6,6 +6,7 @@
 - Scene v0.20.0, and a Stacked Series page of stacked areas and stacked bars drawn by its `compileStackedAreas` and `compileStackedBars`.
 - The Tooltip and legend page: the tooltip names the point nearest the pointer and the legend gives each series at the cursor and hides or shows it.
 - Web v0.14.1.
+- The Area Fill page fills the window, draws one pixel lines with an open circle at each point, and uses a random seed unless the URL gives `?seed=`.
 
 ## v0.10.0
 

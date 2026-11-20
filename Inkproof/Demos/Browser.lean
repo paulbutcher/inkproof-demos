@@ -9,10 +9,34 @@ import Inkproof.Web.Host.Measure
 import Inkproof.Demos.Frame
 import Inkproof.Demos.Bars
 import Inkproof.Web.Access
+import Inkproof.Web.Host.Console
+import Lasm.JS
 
 namespace Inkproof.Demos.Browser
 
-open Inkproof.Web.Host Inkproof.Scene Inkproof.Axis
+open Inkproof.Web.Host Inkproof.Scene Inkproof.Axis Lasm.JS
+
+private def randomSeed : IO Nat := do
+  let r ← (← (← global).get "Math").callMethod "random" #[] Float
+  pure (r * 4294967296).toUInt64.toNat
+
+/-- The seed of the page's random data: the `seed` query parameter if it is a natural number, otherwise a fresh random one. A malformed value is logged and ignored. -/
+def seed : IO Nat := do
+  let g ← global
+  let params ← (← g.get "URLSearchParams").new #[toJS (← (← g.get "location").get "search" String)]
+  match ← params.callMethod "get" #[toJS "seed"] (Option String) with
+  | none => randomSeed
+  | some text =>
+    match text.toNat? with
+    | some n => pure n
+    | none =>
+      log .warn "seed is not a natural number, using a random one" [("seed", text)]
+      randomSeed
+
+/-- The width of the window in CSS pixels. -/
+def windowWidth : IO Nat := do
+  let w ← (← global).get "innerWidth" Float
+  pure w.round.toUInt64.toNat
 
 /-- The labels of a bottom axis followed by those of a left axis. -/
 def tickLabels (axes : List AxisDrawing) : Array Label :=

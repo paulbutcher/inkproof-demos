@@ -6,7 +6,7 @@ The [uPlot demos](https://leeoniya.github.io/uPlot/demos/index.html), recreated 
 
 ## What it does
 
-- Show the Area Fill demo, three series with filled areas and linear axes, from uPlot's page of that name: `Inkproof.Demos.AreaFill.chart`, `Inkproof.Demos.axes`, at `area-fill/`.
+- Show the Area Fill demo, three series with filled areas and linear axes, from uPlot's page of that name: `Inkproof.Demos.AreaFill.chart`, `Inkproof.Demos.axes`, at `area-fill/`; `?seed=<n>` fixes the random data (`Browser.seed`).
 - Show the Points demo, four charts of random walks with markers and gaps, from uPlot's page of that name: `Inkproof.Demos.Points.multiChart`, `Points.singleChart`, `Points.sparseChart`, at `points/`.
 - Show the Scatter & Bubble demo, 200 bubbles sized by area on two y axes and four clouds of 10000 markers, from uPlot's `scatter.html`: `Inkproof.Demos.Scatter.bubbleChart` and `scatterChart`, at `scatter/`.
 - Show the Sparklines demo, ten stocks' volumes and closing prices as 150 by 30 charts sharing one WebGL context, and the Sparklines (w/ floating bars) demo, a line with floating bars either side of zero, from uPlot's `sparklines.html` and `sparklines-bars.html`: `Inkproof.Demos.Sparklines.chart`, `SparklinesBars.chartSplit`, at `sparklines/` and `sparklines-bars/`.

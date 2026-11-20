@@ -35,7 +35,7 @@ after(async () => {
   server?.close();
 });
 
-const open = async path => {
+const open = async (path, seed = '1') => {
   const page = await browser.newPage();
   const problems = [];
   page.on('console', m => { if (['error', 'warning'].includes(m.type())) problems.push(m.text()); });
@@ -54,7 +54,7 @@ const open = async path => {
       return bufferData.call(this, target, data, usage);
     };
   });
-  await page.goto(base + path);
+  await page.goto(base + path + (path.includes('?') || seed === null ? '' : `?seed=${seed}`));
   return { page, problems };
 };
 
@@ -91,6 +91,33 @@ test('area fill draws its three series', async () => {
   await page.waitForFunction(() => window.draws.length >= 1);
   const { red, green, blue } = await colours(page);
   assert.ok(red > 0 && green > 0 && blue > 0, `red ${red}, green ${green}, blue ${blue}`);
+  await page.close();
+});
+
+test('area fill fills the window at a similar aspect ratio, and draws other data for another seed', async () => {
+  const drawn = async (seed, viewport) => {
+    const { page, problems } = await open('area-fill/', seed);
+    if (viewport) await page.setViewportSize(viewport);
+    await page.reload();
+    await page.waitForFunction(() => window.draws.length >= 1);
+    return { page, problems };
+  };
+  const a = await drawn('1', { width: 1400, height: 900 });
+  const size = await a.page.evaluate(() => { const r = document.querySelector('inkproof-chart').getBoundingClientRect(); return [r.width, r.height]; });
+  assert.equal(size[0], 1400);
+  assert.ok(size[0] / size[1] > 2.5 && size[0] / size[1] < 4, `aspect ${size}`);
+  const first = await a.page.evaluate(() => window.uploads.map(u => u.data).join(';'));
+  const b = await drawn('2', null);
+  const second = await b.page.evaluate(() => window.uploads.map(u => u.data).join(';'));
+  assert.notEqual(first, second);
+  await a.page.close();
+  await b.page.close();
+});
+
+test('area fill takes a malformed seed with a warning and draws', async () => {
+  const { page, problems } = await open('area-fill/?seed=abc');
+  await page.waitForFunction(() => window.draws.length >= 1);
+  assert.ok(problems.some(p => p.includes('seed is not a natural number')), problems.join('|'));
   await page.close();
 });
 

@@ -28,10 +28,10 @@ private def stackedTest : Except String Unit := do
 
 private def axesTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
-  let drawings := axes AreaFill.frame measure
+  let drawings := axes (AreaFill.frame 1200) measure
   let [bottom, left] := drawings | throw "expected a bottom and a left axis"
   check (!bottom.labels.isEmpty && !left.labels.isEmpty) "both axes keep labels"
-  let f := AreaFill.frame
+  let f := AreaFill.frame 1200
   check (left.labels.all fun l => l.anchor.y ≥ f.top && l.anchor.y ≤ f.bottom) "left labels lie within the plot's height"
   check (bottom.labels.all fun l => l.anchor.x ≥ f.left && l.anchor.x ≤ f.right) "bottom labels lie within the plot's width"
   check (left.labels.length ≥ 5) "the left axis keeps most of its labels"

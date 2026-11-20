@@ -24,7 +24,7 @@ def step (acc : Array Int × StdGen) : Array Int × StdGen :=
   let (draw, g) := randNat acc.2 0 20
   (acc.1.push (level draw), g)
 
-/-- The `n` values of series `seed`: uPlot's page draws these at random, here from a fixed seed so that every visit shows the same chart. -/
+/-- The `n` values drawn from the generator seeded with `seed`. -/
 def values (seed n : Nat) : Array Int :=
   (n.fold (fun _ _ acc => step acc) (#[], mkStdGen seed)).1
 
@@ -43,22 +43,38 @@ theorem values_size (seed n : Nat) : (values seed n).size = n := by
 def series (seed n : Nat) : Series Rat Rat :=
   Series.ofUnsorted ((values seed n).zipIdx.map fun (v, i) => (((i + 1 : Nat) : Rat), some ((v : Int) : Rat)))
 
-def frame : Frame := ⟨60, 1180, 20, 560, (1, 30), (-12, 12)⟩
+/-- The height of a chart `width` wide, about a third of it. -/
+def height (width : Nat) : Nat := min 600 (max 240 (width / 3))
+
+theorem height_eq (width : Nat) : height width = min 600 (max 240 (width / 3)) := rfl
+
+def frame (width : Nat) : Frame := Frame.sized width (height width) (1, 30) (-12, 12)
+
+theorem frame_eq (width : Nat) : frame width = Frame.sized width (height width) (1, 30) (-12, 12) := rfl
 
 def colors : List (Color × Color) :=
   [(⟨255, 0, 0, 255⟩, ⟨255, 0, 0, 26⟩), (⟨0, 128, 0, 255⟩, ⟨0, 255, 0, 26⟩), (⟨0, 0, 255, 255⟩, ⟨0, 0, 255, 26⟩)]
 
-/-- Each series filled down to zero and stroked on top, over the axes. -/
-def chart (f : Frame) (measure : String → Float × Float) : DisplayList :=
+/-- Series `i` of a page seeded with `seed`. -/
+def pageSeries (seed i : Nat) : Series Rat Rat := series (seed + i) 30
+
+theorem pageSeries_eq (seed i : Nat) : pageSeries seed i = series (seed + i) 30 := rfl
+
+/-- Each series filled down to zero, stroked on top with a one pixel line and marked with an open circle at each point, over the axes. -/
+def chart (seed : Nat) (f : Frame) (measure : String → Float × Float) : DisplayList :=
   axisDisplay f measure ++
   colors.zipIdx.toArray.flatMap fun ((stroke, fill), i) =>
-    let g := Segmented.single (series (i + 1) 30)
-    compileArea ⟨0, fill⟩ 0 (projection f) g ++ compileLine ⟨⟨1, stroke⟩, 1, false, none, .straight⟩ (projection f) g
+    let s := pageSeries seed i
+    let g := Segmented.single s
+    compileArea ⟨0, fill⟩ 0 (projection f) g ++ compileLine ⟨⟨1, stroke⟩, 1/2, false, none, .straight⟩ (projection f) g ++
+      (s.xs.zip s.values).flatMap fun (x, y) => y.elim #[] fun y => compileRing ⟨2, stroke, background, 3, 1⟩ ⟨(projection f).x x, (projection f).y y⟩
 
-theorem chart_eq (f : Frame) (measure : String → Float × Float) :
-    chart f measure = axisDisplay f measure ++
+theorem chart_eq (seed : Nat) (f : Frame) (measure : String → Float × Float) :
+    chart seed f measure = axisDisplay f measure ++
       colors.zipIdx.toArray.flatMap fun ((stroke, fill), i) =>
-        compileArea ⟨0, fill⟩ 0 (projection f) (Segmented.single (series (i + 1) 30)) ++
-          compileLine ⟨⟨1, stroke⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single (series (i + 1) 30)) := rfl
+        let s := pageSeries seed i
+        let g := Segmented.single s
+        compileArea ⟨0, fill⟩ 0 (projection f) g ++ compileLine ⟨⟨1, stroke⟩, 1/2, false, none, .straight⟩ (projection f) g ++
+          (s.xs.zip s.values).flatMap fun (x, y) => y.elim #[] fun y => compileRing ⟨2, stroke, background, 3, 1⟩ ⟨(projection f).x x, (projection f).y y⟩ := rfl
 
 end Inkproof.Demos.AreaFill
