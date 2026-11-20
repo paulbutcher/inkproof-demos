@@ -96,17 +96,13 @@ def Chart.commands (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewport.View
   let f := c.viewFrame v
   let w := c.width
   let h := c.height
-  let axes := { pixelTile w h (axisDisplay f measure) with stride := 6, size := strokeSizeWords }
-  let data := viewTile w h (Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2) (plot f) c.data
-  let r := compileCmds (tessellateStroke ⟨0, 0⟩) cache [axes, data]
-  (r.1, frameSetup fresh background ++ r.2)
+  let data := Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2
+  viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh w h data (plot f) c.data (axisDisplay f measure) background
 
 theorem Chart.commands_eq (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float) :
     c.commands cache fresh v measure =
       let f := c.viewFrame v
-      let axes := { pixelTile c.width c.height (axisDisplay f measure) with stride := 6, size := strokeSizeWords }
-      let data := viewTile c.width c.height (Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2) (plot f) c.data
-      let r := compileCmds (tessellateStroke ⟨0, 0⟩) cache [axes, data]
-      (r.1, frameSetup fresh background ++ r.2) := rfl
+      viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh c.width c.height (Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2)
+        (plot f) c.data (axisDisplay f measure) background := rfl
 
 end Inkproof.Demos.Zoom

@@ -20,7 +20,7 @@ require «inkproof-scale» from git "https://github.com/paulbutcher/inkproof-sca
 require «inkproof-axis» from git "https://github.com/paulbutcher/inkproof-axis" @ "v0.7.0"
 require «inkproof-core» from git "https://github.com/paulbutcher/inkproof-core" @ "v0.13.0"
 require «inkproof-float» from git "https://github.com/paulbutcher/inkproof-float" @ "v0.7.0"
-require «inkproof-gpu» from git "https://github.com/paulbutcher/inkproof-gpu" @ "v0.10.0"
+require «inkproof-gpu» from git "https://github.com/paulbutcher/inkproof-gpu" @ "v0.11.0"
 
 @[default_target]
 lean_lib InkproofDemos where
