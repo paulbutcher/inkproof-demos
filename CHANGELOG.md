@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.10.0
+
+- The Candlestick, Box & Whisker, Timeline / Discrete and Annotations pages, composed shapes built from Scene's rectangles, strips and markers, with notes on a zooming chart that stay at their data positions.
+
 ## v0.9.1
 
 - Web v0.13.0: the zoom and fetch pages use its declarative buttons, scene cache and event decoding in place of their own.

@@ -10,33 +10,45 @@ import Inkproof.Demos.Axes
 import Inkproof.Demos.Data
 import Inkproof.Demos.Frame
 import Inkproof.Demos.Lines
+import Inkproof.Demos.Pane
 
 namespace Inkproof.Demos.Zoom
 
-open Inkproof.Core Inkproof.Gpu Inkproof.Scene Inkproof.Scale Inkproof.Viewport Inkproof.Demos
+open Inkproof.Core Inkproof.Gpu Inkproof.Scene Inkproof.Scale Inkproof.Viewport Inkproof.Demos Inkproof.Demos.Pane
 
-/-- One line of a zooming chart. -/
+/-- One line of a zooming chart, filled down to the bottom of the chart where it has a `fill`. -/
 structure Line where
   xs : Array Rat
   ys : Array Rat
   color : Color
+  fill : Option Color
+
+/-- A note on the x axis: a line at `start`, or a band from `start` to `stop`, drawn dashed over the data with its label in a box on the top or the bottom edge of the plot. -/
+structure Mark where
+  start : Rat
+  stop : Rat
+  label : String
+  stroke : Color
+  fill : Color
+  atTop : Bool
 
 /-- A chart of lines that the pointer zooms and pans. A chart that shows only part of its data, such as one fetched for a range, gives the extent of all of it as `bounds`. -/
 structure Chart where
   width : Nat
   height : Nat
   lines : List Line
-  bounds : Option ((Rat × Rat) × (Rat × Rat)) := none
+  bounds : Option ((Rat × Rat) × (Rat × Rat))
+  marks : List Mark
 
 /-- The two series of uPlot's wheel and touch zoom pages. -/
 def basic : Chart :=
   let xs : Array Rat := #[1, 2, 3, 4, 5, 6, 7]
-  ⟨600, 400, [⟨xs, #[40, 43, 60, 65, 71, 73, 80], ⟨255, 0, 0, 255⟩⟩, ⟨xs, #[18, 24, 37, 55, 55, 60, 63], ⟨0, 0, 255, 255⟩⟩], none⟩
+  ⟨600, 400, [⟨xs, #[40, 43, 60, 65, 71, 73, 80], ⟨255, 0, 0, 255⟩, none⟩, ⟨xs, #[18, 24, 37, 55, 55, 60, 63], ⟨0, 0, 255, 255⟩, none⟩], none, []⟩
 
 /-- Thirty points of a fixed hash of the index in `-10..10`, drawn in purple, as the variations page does. -/
 def variation : Chart :=
   let xs : Array Rat := (Array.range 30).map fun i => ((i + 1 : Nat) : Rat)
-  ⟨600, 400, [⟨xs, (Data.ints 7 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), ⟨128, 0, 128, 255⟩⟩], none⟩
+  ⟨600, 400, [⟨xs, (Data.ints 7 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), ⟨128, 0, 128, 255⟩, none⟩], none, []⟩
 
 /-- The extent of every x value of the chart, and of every y value padded as an automatic axis would. -/
 def Chart.ranges (c : Chart) : (Rat × Rat) × (Rat × Rat) :=
@@ -71,13 +83,76 @@ theorem Chart.config_eq (c : Chart) : c.config =
       ⟨Rat.toFloat length, span / 1000, span, ⟨Rat.toFloat r.1, span⟩, 5 / 4, 1 / 10⟩
     ⟨axis (f.right - f.left) f.xs, axis (f.bottom - f.top) f.ys⟩ := rfl
 
-/-- The lines in data coordinates, which a frame draws under any view without a new upload. -/
+/-- The lines in data coordinates, which a frame draws under any view without a new upload, each under the area it fills down to the least y of the chart. A mark that spans a range is a rectangle over the whole height of the chart, drawn first because a pixel takes the colour of the last command to cover it. -/
 def Chart.data (c : Chart) : DisplayList :=
+  (c.marks.filter (fun m => m.start < m.stop)).toArray.map (fun m => (⟨0, m.fill, .rect ⟨m.start, c.ranges.2.1, m.stop, c.ranges.2.2⟩⟩ : Command)) ++
   c.lines.foldl (fun d l =>
-    d ++ compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))) #[]
+    d ++ (l.fill.map fun f => compileArea ⟨0, f⟩ c.ranges.2.1 ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))).getD #[] ++
+      compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))) #[]
 
-theorem Chart.data_eq (c : Chart) : c.data = c.lines.foldl (fun d l =>
-    d ++ compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))) #[] := rfl
+theorem Chart.data_eq (c : Chart) : c.data =
+  (c.marks.filter (fun m => m.start < m.stop)).toArray.map (fun m => (⟨0, m.fill, .rect ⟨m.start, c.ranges.2.1, m.stop, c.ranges.2.2⟩⟩ : Command)) ++
+  c.lines.foldl (fun d l =>
+    d ++ (l.fill.map fun f => compileArea ⟨0, f⟩ c.ranges.2.1 ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))).getD #[] ++
+      compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))) #[] := rfl
+
+/-- The pixel columns of the mark's start and stop in the frame `f`. -/
+def Mark.columns (f : Frame) (m : Mark) : Rat × Rat :=
+  let scale : Linear Rat := ⟨f.xs.1, f.xs.2, f.left, f.right⟩
+  (scale.map m.start, scale.map m.stop)
+
+theorem Mark.columns_eq (f : Frame) (m : Mark) : Mark.columns f m =
+    (Linear.mk f.xs.1 f.xs.2 f.left f.right |>.map m.start, Linear.mk f.xs.1 f.xs.2 f.left f.right |>.map m.stop) := rfl
+
+/-- Whether any of the mark lies within the x range of `f`. -/
+def Mark.shown (f : Frame) (m : Mark) : Bool := m.start ≤ f.xs.2 && f.xs.1 ≤ m.stop
+
+theorem Mark.shown_eq (f : Frame) (m : Mark) : Mark.shown f m = (m.start ≤ f.xs.2 && f.xs.1 ≤ m.stop) := rfl
+
+/-- The box round the mark's label, at its left edge on the top or bottom of the plot; none where the measure is not a finite size. -/
+def Mark.box (f : Frame) (measure : String → Float × Float) (m : Mark) : Option Rect :=
+  let (w, h) := measure m.label
+  match Inkproof.Float.Float.toRat w, Inkproof.Float.Float.toRat h with
+  | some w, some h =>
+    let (w, h) := (w + 10, h + 6)
+    let x := (Mark.columns f m).1
+    some (if m.atTop then ⟨x, f.top, x + w, f.top + h⟩ else ⟨x, f.bottom - h, x + w, f.bottom⟩)
+  | _, _ => none
+
+theorem Mark.box_eq (f : Frame) (measure : String → Float × Float) (m : Mark) : Mark.box f measure m =
+    let (w, h) := measure m.label
+    match Inkproof.Float.Float.toRat w, Inkproof.Float.Float.toRat h with
+    | some w, some h =>
+      let (w, h) := (w + 10, h + 6)
+      let x := (Mark.columns f m).1
+      some (if m.atTop then ⟨x, f.top, x + w, f.top + h⟩ else ⟨x, f.bottom - h, x + w, f.bottom⟩)
+    | _, _ => none := rfl
+
+/-- The mark's dashed edges and the box of its label; nothing where it lies outside the range, and no box where the label cannot be measured. -/
+def Mark.commands (f : Frame) (measure : String → Float × Float) (m : Mark) : DisplayList :=
+  let (a, b) := Mark.columns f m
+  if !Mark.shown f m then #[] else
+  DisplayList.clip (plot f)
+    ((if m.start < m.stop then line m.stroke 2 (some ⟨5, 5⟩) b f.top b f.bottom else #[]) ++
+      line m.stroke 2 (some ⟨5, 5⟩) a f.top a f.bottom ++
+      ((Mark.box f measure m).map (outlined 3 m.stroke m.fill 2)).getD #[])
+
+theorem Mark.commands_eq (f : Frame) (measure : String → Float × Float) (m : Mark) : Mark.commands f measure m =
+    let (a, b) := Mark.columns f m
+    if !Mark.shown f m then #[] else
+    DisplayList.clip (plot f)
+      ((if m.start < m.stop then line m.stroke 2 (some ⟨5, 5⟩) b f.top b f.bottom else #[]) ++
+        line m.stroke 2 (some ⟨5, 5⟩) a f.top a f.bottom ++
+        ((Mark.box f measure m).map (outlined 3 m.stroke m.fill 2)).getD #[]) := rfl
+
+/-- The text of each mark in view, with the top left of where it is written: inside its box, which is where the mark begins. -/
+def Chart.markTexts (c : Chart) (f : Frame) (measure : String → Float × Float) : List (String × Rat × Rat) :=
+  (c.marks.filter fun m => Mark.shown f m && f.left ≤ (Mark.columns f m).1 && (Mark.columns f m).1 ≤ f.right).filterMap fun m =>
+    (Mark.box f measure m).map fun b => (m.label, b.x0 + 5, b.y0 + 3)
+
+theorem Chart.markTexts_eq (c : Chart) (f : Frame) (measure : String → Float × Float) : c.markTexts f measure =
+    (c.marks.filter fun m => Mark.shown f m && f.left ≤ (Mark.columns f m).1 && (Mark.columns f m).1 ≤ f.right).filterMap fun m =>
+      (Mark.box f measure m).map fun b => (m.label, b.x0 + 5, b.y0 + 3) := rfl
 
 /-- The frame showing `v`: the axes follow the visible ranges. -/
 def Chart.viewFrame (c : Chart) (v : Viewport.View Float) : Frame :=
@@ -99,12 +174,12 @@ def Chart.commands (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewport.View
   let w := c.width
   let h := c.height
   let data := Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2
-  viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh w h data (plot f) c.data (axisDisplay f measure) background
+  viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh w h data (plot f) c.data (axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]) background
 
 theorem Chart.commands_eq (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float) :
     c.commands cache fresh v measure =
       let f := c.viewFrame v
       viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh c.width c.height (Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2)
-        (plot f) c.data (axisDisplay f measure) background := rfl
+        (plot f) c.data (axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]) background := rfl
 
 end Inkproof.Demos.Zoom

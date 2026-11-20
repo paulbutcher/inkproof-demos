@@ -27,3 +27,8 @@ import Inkproof.Demos.ServerEvents
 import Inkproof.Demos.Million
 import Inkproof.Demos.Zoom
 import Inkproof.Demos.Linked
+import Inkproof.Demos.Pane
+import Inkproof.Demos.Candles
+import Inkproof.Demos.Boxes
+import Inkproof.Demos.Timeline
+import Inkproof.Demos.Annotations

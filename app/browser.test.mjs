@@ -444,3 +444,63 @@ test('zoom ranger: dragging the overview sets the main chart range, and the over
   assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
   await page.close();
 });
+
+const countPixels = (page, index, wanted) => page.evaluate(([index, wanted]) => {
+  const canvas = document.querySelectorAll('inkproof-chart')[index].shadowRoot.querySelector('canvas');
+  const d = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data;
+  const counts = wanted.map(() => 0);
+  for (let i = 0; i < d.length; i += 4)
+    wanted.forEach(([r, g, b, a], k) => { if (d[i] === r && d[i + 1] === g && d[i + 2] === b && d[i + 3] === a) counts[k]++; });
+  return counts;
+}, [index, wanted]);
+
+test('the composed shape pages draw their shapes in their colours', async () => {
+  const pages = [
+    ['candlestick/', 1, [[74, 182, 80, 255], [229, 66, 69, 255], [0, 0, 0, 255]]],
+    ['box-whisker/', 3, [[0, 0, 0, 255], [238, 238, 238, 255]]],
+    ['timeline-discrete/', 3, [[255, 0, 0, 255], [0, 255, 0, 255], [255, 165, 0, 255], [255, 255, 0, 255], [255, 0, 0, 51]]],
+  ];
+  for (const [path, charts, wanted] of pages) {
+    const { page, problems } = await open(path);
+    await page.waitForFunction(n => window.draws.length >= n, charts);
+    assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), [], path);
+    for (let i = 0; i < charts; i++) {
+      const found = await countPixels(page, i, wanted);
+      if (path !== 'timeline-discrete/' || i < 2) assert.ok(found.every(n => n > 0), `${path} chart ${i}: ${JSON.stringify(found)}`);
+    }
+    await page.close();
+  }
+});
+
+test('annotations sit at the data positions they name, and stay there after a zoom', async () => {
+  const { page, problems } = await open('annotations/');
+  await page.waitForFunction(() => window.draws.length >= 1);
+  // The plot of the 1920 pixel wide chart runs from column 60 to column 1900; the range's dashed edges are the only amber pixels that are not text.
+  const band = () => page.evaluate(() => {
+    const canvas = document.querySelector('inkproof-chart').shadowRoot.querySelector('canvas');
+    const d = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data;
+    const xs = [];
+    for (let y = 100; y < 500; y += 7) for (let x = 0; x < canvas.width; x++) {
+      const i = 4 * (y * canvas.width + x);
+      if (d[i] === 255 && d[i + 1] === 193 && d[i + 2] === 7 && d[i + 3] === 255) xs.push(x);
+    }
+    return xs.length ? [Math.min(...xs), Math.max(...xs)] : null;
+  });
+  const column = (view, v) => 60 + (v - view.xStart) / (view.xEnd - view.xStart) * (1900 - 60);
+  const near = (found, view, what) => {
+    assert.ok(found, what + ': no shaded range drawn');
+    assert.ok(Math.abs(found[0] - column(view, 9.3)) < 4 && Math.abs(found[1] - column(view, 18.5)) < 4, `${what}: ${JSON.stringify(found)} against ${column(view, 9.3)}, ${column(view, 18.5)}`);
+  };
+  near(await band(), { xStart: 1, xEnd: 30 }, 'full range');
+  const chart = page.locator('inkproof-chart');
+  const box = await chart.boundingBox();
+  await page.mouse.move(box.x + column({ xStart: 1, xEnd: 30 }, 14), box.y + 300);
+  await page.mouse.wheel(0, -300);
+  await settled(page, 1);
+  const zoomed = await lastView(page);
+  assert.ok(zoomed.xEnd - zoomed.xStart < 25, JSON.stringify(zoomed));
+  await page.waitForTimeout(200);
+  near(await band(), zoomed, 'zoomed');
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});

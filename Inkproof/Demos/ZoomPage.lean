@@ -17,10 +17,11 @@ open Lasm.JS Inkproof.Web Inkproof.Web.Host Inkproof.Gpu Inkproof.Viewport Inkpr
 /-- The scene of `c` under `v`, built from the buffers `cache` keeps on the GPU. -/
 def sceneOf (c : Zoom.Chart) (name : String) (cache : SceneCache) (v : View Float) : IO Scene := do
   let f := c.viewFrame v
-  let measure ← measurer "12px sans-serif" (texts f)
+  let measure ← measurer "12px sans-serif" (texts f ++ (c.marks.map (·.label)).toArray)
   let cmds ← cache.build fun old first => pure (c.commands old first v measure)
   let points := (c.lines.map (·.xs.size)).foldl max 0
-  pure { commands := ⟨(encode cmds).toArray⟩, labels := Browser.tickLabels (axes f measure),
+  pure { commands := ⟨(encode cmds).toArray⟩, labels := Browser.tickLabels (axes f measure) ++
+           (c.markTexts f measure).toArray.map fun (text, x, y) => { text, x := Rat.toFloat x, y := Rat.toFloat y, baseline := .top },
          access := { name, series := (c.lines.map fun _ => "line").toArray, points, view := some c.config, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top) } }
 
 /-- Draw each named chart, and draw it again under the range the pointer or keys move it to. -/

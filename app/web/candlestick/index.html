@@ -1,0 +1,20 @@
+<!--
+Copyright (c) 2026 Paul Butcher. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Candlestick (OHLC)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>inkproof-chart { display: block; margin-bottom: 20px; }</style>
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <h1>Candlestick (OHLC)</h1>
+    <p><a href="../">All demos</a></p>
+    <p>Gold prices as candles: the body runs from open to close, green where the price rose and red where it fell, the wick from low to high, and a volume bar stands on the right-hand scale. The days are spaced evenly, so weekends leave no gaps.</p>
+    <inkproof-chart id="gold" src="gold" cursor="x" style="width: 1920px; height: 600px"></inkproof-chart>
+  </body>
+</html>

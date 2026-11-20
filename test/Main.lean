@@ -189,5 +189,75 @@ private def linkedTest : Except String Unit := do
     check (pts.all fun (x, y) => y == (Linked.sample x.floor.toNat : Nat)) "fetched points hold the samples at their index"
   check ((Linked.windowOf 100 50).2 > 0) "a reversed range still fetches a sample"
 
+private def candlesTest : Except String Unit := do
+  let p := Candles.pane
+  let n := Candles.candles.size
+  check (n == 218 && Candles.candles.all fun c => c.low ≤ c.open_ && c.low ≤ c.close && c.open_ ≤ c.high && c.close ≤ c.high) "every candle's open and close lie between its low and high"
+  for (c, i) in Candles.candles.zipIdx do
+    let (b, w) := (Candles.body i c, Candles.wick i c)
+    check (b.y0 == min (p.row p.left c.open_) (p.row p.left c.close) && b.y1 == max (p.row p.left c.open_) (p.row p.left c.close)) s!"candle {i}: the body spans open to close"
+    check (w.y0 == p.row p.left c.high && w.y1 == p.row p.left c.low) s!"candle {i}: the wick spans high to low"
+    check (w.y0 ≤ b.y0 && b.y1 ≤ w.y1) s!"candle {i}: the body lies within the wick"
+    check (p.plot.x0 ≤ b.x0 && b.x1 ≤ p.plot.x1 && b.x1 - b.x0 ≤ 20) s!"candle {i}: the body lies within the plot and is at most 20 pixels wide"
+    check ((Candles.volumeBar i c).y1 == p.plot.y1) s!"candle {i}: the volume bar stands on the bottom of the plot"
+  check ((List.range (n - 1)).all fun i => (Candles.body i (Candles.candles.getD i ⟨0, 0, 0, 0, 0, 0⟩)).x1 < (Candles.body (i + 1) (Candles.candles.getD (i + 1) ⟨0, 0, 0, 0, 0, 0⟩)).x0) "neighbouring bodies do not touch"
+  check (Candles.dateOf 1546300800 == "2019-01-01" && Candles.dateOf 1551398400 == "2019-03-01") "dates are written as the days they stand for"
+  let fills := Candles.candles.zipIdx.map fun (c, i) =>
+    (decide (c.close < c.open_), match ((Candles.commands i c).getD 2 ⟨0, Candles.black, .rect ⟨0, 0, 0, 0⟩⟩).color with
+      | .flat col => col == (if c.close < c.open_ then Candles.bearish else Candles.bullish)
+      | _ => false)
+  check (fills.all (·.2)) "a candle is red where the price fell and green where it rose"
+  check (fills.any (·.1) && fills.any (!·.1)) "both rising and falling days are drawn"
+
+private def boxesTest : Except String Unit := do
+  for c in Boxes.charts do
+    let p := c.pane
+    check (c.boxes.size == Boxes.frameworks.size) s!"{c.name}: a box for each framework"
+    check (c.boxes.all fun b => b.min ≤ b.q1 && b.q1 ≤ b.median && b.median ≤ b.q3 && b.q3 ≤ b.max) s!"{c.name}: the quartiles lie in order within the whiskers"
+    check (c.boxes.all fun b => b.outliers.all fun v => v < b.min || b.max < v) s!"{c.name}: outliers lie beyond the whiskers"
+    check (c.boxes.any (!·.outliers.isEmpty)) s!"{c.name}: some runs are outliers"
+    check ((c.boxes.toList.zip (c.boxes.toList.drop 1)).all fun (a, b) => a.median ≤ b.median) s!"{c.name}: boxes run from the fastest median"
+    for (b, i) in c.boxes.zipIdx do
+      let r := Boxes.body p i b
+      let m := Boxes.medianBar p i b
+      check (r.y0 ≤ (m.y0 + m.y1) / 2 && (m.y0 + m.y1) / 2 ≤ r.y1 && r.y0 == p.row p.left b.q3 && r.y1 == p.row p.left b.q1) s!"{c.name} {b.name}: the median lies within the box, which spans the quartiles"
+      check (p.plot.y0 ≤ p.row p.left b.max && p.row p.left b.min ≤ p.plot.y1 && p.row p.left b.max ≤ r.y0 && r.y1 ≤ p.row p.left b.min) s!"{c.name} {b.name}: the whiskers reach beyond the box within the plot"
+      check (p.plot.x0 ≤ r.x0 && r.x1 ≤ p.plot.x1) s!"{c.name} {b.name}: the box lies within the plot"
+  let b := Boxes.Box.ofRuns "x" #[1, 2, 3, 4, 5, 6, 7, 8, 9, 100]
+  check (b.median == 11 / 2 && b.outliers == #[100] && b.max == 9 && b.min == 1) "a run far from the rest is an outlier and not a whisker"
+
+private def timelineTest : Except String Unit := do
+  for c in Timeline.charts do
+    let f := c.frame
+    check (c.rows.size == 3) s!"{c.name}: three rows"
+    for (r, i) in c.rows.zipIdx do
+      let rects := r.spans.map (c.rect i)
+      check ((rects.toList.zip (rects.toList.drop 1)).all fun (a, b) => a.x1 ≤ b.x0) s!"{c.name} {r.name}: bars do not overlap"
+      check (r.spans.all fun s => (c.rect i s).x0 == c.xMap s.start && (c.rect i s).x1 == c.xMap s.stop) s!"{c.name} {r.name}: each bar covers its state's interval"
+      check (r.spans.all fun s => s.start < s.stop) s!"{c.name} {r.name}: every interval has a length"
+      check (rects.all fun b => f.left ≤ b.x0 && b.x1 ≤ f.right && f.top ≤ b.y0 && b.y1 ≤ f.bottom) s!"{c.name} {r.name}: bars lie within the plot"
+    check ((List.range 2).all fun i => (c.lane i).2 ≤ (c.lane (i + 1)).1) s!"{c.name}: rows do not overlap"
+  let [spans, periodic, letters] := Timeline.charts | throw "expected three charts"
+  check (spans.rows.all fun r => r.spans.size ≥ 3) "the first chart holds several states for each device"
+  check ((periodic.rows.map (·.spans.size)).toList == [29, 30, 29]) "a missing sample leaves a gap in the periodic chart"
+  check (periodic.rows.all fun r => r.spans.all fun s => s.stop - s.start == 9 * Timeline.hour / 10) "periodic bars are equally wide"
+  check ((letters.rows.getD 2 ⟨"", #[]⟩).spans.size == 4) "the gaps in a series of flags have no bars"
+
+private def annotationsTest : Except String Unit := do
+  let c := Annotations.chart
+  let f := c.frame
+  check (c.marks.length == 2) "two notes"
+  let zoomed := { f with xs := (6, 12) }
+  for m in c.marks do
+    for g in [f, zoomed] do
+      let (a, b) := Zoom.Mark.columns g m
+      check (g.xs.1 + (a - g.left) / (g.right - g.left) * (g.xs.2 - g.xs.1) == m.start) s!"{m.label}: starts at the data position it names"
+      check (g.xs.1 + (b - g.left) / (g.right - g.left) * (g.xs.2 - g.xs.1) == m.stop) s!"{m.label}: ends at the data position it names"
+    check ((Zoom.Mark.columns zoomed m).1 != (Zoom.Mark.columns f m).1) s!"{m.label}: moves with the chart when it zooms"
+  let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
+  check ((c.markTexts f measure).length == 2 && (c.markTexts { f with xs := (20, 25) } measure).isEmpty) "a note outside the range has no label"
+  check (c.marks.all fun m => (Zoom.Mark.commands { f with xs := (20, 25) } measure m).isEmpty || m.stop ≥ 20) "a note outside the range draws nothing"
+  check (c.data.any fun cmd => match cmd.shape with | .rect r => r.x0 == 9.3 && r.x1 == 18.5 | _ => false) "the shaded range is a rectangle over its data interval"
+
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, platformTest (args.contains "--expect-wasm")]

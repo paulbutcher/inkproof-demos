@@ -58,4 +58,14 @@ def barScene (c : Bars.Chart) : IO Scene := do
   let s ← sidedScene c.width c.height background c.texts c.sides c.axes c.display
   pure { s with labels := s.labels ++ barLabels c }
 
+/-- The scene of a pane whose shapes are `shapes`. -/
+def paneScene (p : Pane.Pane) (shapes : Scene.DisplayList) : IO Scene :=
+  sidedScene p.width p.height background p.texts p.sides p.axes (p.display shapes)
+
+/-- The scene of a timeline: its axes and bars, with each bar's state written on it. -/
+def timelineScene (c : Timeline.Chart) : IO Scene := do
+  let s ← sidedScene c.width c.height background c.labelTexts [.bottom, .left] c.axes c.display
+  pure { s with labels := s.labels ++ c.texts.map fun (text, x, y) =>
+    { text, x := Rat.toFloat x, y := Rat.toFloat y, align := if c.centred then .center else .start, baseline := .middle, font := "14px Arial" } }
+
 end Inkproof.Demos.Browser
