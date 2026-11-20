@@ -3,6 +3,8 @@
 ## v0.11.0
 
 - The candlestick page writes its dates with Core v0.15.0's `Calendar.isoDate`.
+- The Tooltip and legend page: the tooltip names the point nearest the pointer and the legend gives each series at the cursor and hides or shows it.
+- Web v0.14.1.
 
 ## v0.10.0
 

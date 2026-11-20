@@ -31,7 +31,7 @@ def mount : IO Unit := do
   let latest ← IO.mkRef 0
   let name := "zoom-fetch"
   register "inkproof-chart" (buttons := true) fun _ => do
-    ZoomPage.sceneOf (← current.get) name cache (View.home (← current.get).config)
+    ZoomPage.sceneOf (← current.get) name cache #[] (View.home (← current.get).config)
   let doc ← (← global).get "document"
   let update (view : View Float) : IO Unit := do
     let ticket := (← latest.get) + 1
@@ -42,7 +42,7 @@ def mount : IO Unit := do
         current.set chart
         cache.invalidate
         if let .ref el _ := ← doc.callMethod "getElementById" #[toJS "chart"] Data then
-          setScene el (← ZoomPage.sceneOf chart name cache view))
+          setScene el (← ZoomPage.sceneOf chart name cache #[] view))
   let onView ← Function.ofSyncFn fun args => do
     if let some (Data.ref event _) := args[0]? then
       update (← viewOf (← event.get "detail" Value))

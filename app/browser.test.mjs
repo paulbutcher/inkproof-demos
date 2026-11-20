@@ -504,3 +504,37 @@ test('annotations sit at the data positions they name, and stay there after a zo
   assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
   await page.close();
 });
+
+test('tooltip and legend: the tooltip names the nearest point, the legend reads each series at the cursor and toggles it', async () => {
+  const { page, problems } = await open('tooltip-legend/');
+  await page.waitForFunction(() => window.draws.length >= 1);
+  await page.evaluate(() => addEventListener('inkproof-pointer', e => (window.pointers ??= []).push(e.detail)));
+  await page.evaluate(() => addEventListener('inkproof-series', e => (window.toggles ??= []).push(e.detail)));
+  const shadow = (sel) => page.evaluate(sel => [...document.querySelector('inkproof-chart').shadowRoot.querySelectorAll(sel)].map(e => e.textContent), sel);
+  const numbers = text => text.match(/-?\d+(\.\d+)?/g).map(Number);
+  await pointerAt(page, 'chart', 'pointermove', 400, 150);
+  await page.waitForFunction(() => window.pointers?.length);
+  const at = await page.evaluate(() => window.pointers.at(-1));
+  await page.waitForFunction(() => document.querySelector('inkproof-chart').shadowRoot.querySelector('.tip')?.textContent);
+  const [tip] = await shadow('.tip');
+  const [series, x, y] = [Number(tip.match(/Series (\d)/)[1]), ...numbers(tip.replace(/Series \d/, ''))];
+  assert.ok(Math.abs(x - at.x) <= 0.5 + 1e-6, `tooltip names x = ${x}, the pointer is at ${at.x}`);
+  const rows = await shadow('.legend button');
+  assert.equal(rows.length, 3);
+  const values = rows.map(r => numbers(r.replace(/Series \d/, ''))[0]);
+  assert.equal(values[series - 1], y, 'the legend row of the tooltip series shows the tooltip value, which is its value at the nearest x');
+  const before = await page.evaluate(() => window.draws.length);
+  await page.locator('inkproof-chart button[data-series="1"]').click();
+  await page.waitForFunction(() => window.toggles?.length, null, { timeout: 3000 });
+  assert.deepEqual(await page.evaluate(() => window.toggles.at(-1)), { series: 1, hidden: true });
+  await page.waitForFunction(n => window.draws.length > n, before);
+  assert.equal(await page.evaluate(() => document.querySelector('inkproof-chart').shadowRoot.querySelector('button[data-series="1"]').getAttribute('aria-pressed')), 'false');
+  for (const px of [200, 300, 400, 500, 600]) {
+    await pointerAt(page, 'chart', 'pointermove', px, 150);
+    await page.waitForTimeout(100);
+    const [t] = await shadow('.tip');
+    assert.ok(!t.startsWith('Series 2'), `a hidden series is not named: ${t}`);
+  }
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});
