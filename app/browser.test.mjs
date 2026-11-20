@@ -94,6 +94,15 @@ test('points draws its four charts', async () => {
   await page.close();
 });
 
+test('the gallery B pages draw their charts', async () => {
+  for (const [path, charts] of [['scatter/', 1], ['sparklines/', 20], ['sparklines-bars/', 2], ['multi-bars/', 4], ['grouped-bars/', 10], ['latency-heatmap/', 2]]) {
+    const { page, problems } = await open(path);
+    await page.waitForFunction(n => window.draws.length >= n, charts);
+    assert.deepEqual(problems, [], path);
+    await page.close();
+  }
+});
+
 test('the million-point page shows the spikes naive decimation loses', async () => {
   const { page, problems } = await open('million/');
   await page.waitForFunction(() => window.draws.length >= 1);

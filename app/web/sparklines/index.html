@@ -1,0 +1,76 @@
+<!--
+Copyright (c) 2026 Paul Butcher. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Sparklines</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      th { text-align: right; }
+      #heading { text-align: center; padding-bottom: 10px; }
+      inkproof-chart { display: block; width: 150px; height: 30px; }
+    </style>
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <p><a href="../">All demos</a></p>
+    <table id="stocks">
+      <tr>
+        <th colspan="3" id="heading">Sparklines</th>
+      </tr>
+      <tr>
+        <th>AAPL</th>
+        <td><inkproof-chart src="AAPL-volume"></inkproof-chart></td>
+        <td><inkproof-chart src="AAPL-close"></inkproof-chart></td>
+      </tr>
+      <tr>
+        <th>AMD</th>
+        <td><inkproof-chart src="AMD-volume"></inkproof-chart></td>
+        <td><inkproof-chart src="AMD-close"></inkproof-chart></td>
+      </tr>
+      <tr>
+        <th>AMZN</th>
+        <td><inkproof-chart src="AMZN-volume"></inkproof-chart></td>
+        <td><inkproof-chart src="AMZN-close"></inkproof-chart></td>
+      </tr>
+      <tr>
+        <th>CSCO</th>
+        <td><inkproof-chart src="CSCO-volume"></inkproof-chart></td>
+        <td><inkproof-chart src="CSCO-close"></inkproof-chart></td>
+      </tr>
+      <tr>
+        <th>FB</th>
+        <td><inkproof-chart src="FB-volume"></inkproof-chart></td>
+        <td><inkproof-chart src="FB-close"></inkproof-chart></td>
+      </tr>
+      <tr>
+        <th>MSFT</th>
+        <td><inkproof-chart src="MSFT-volume"></inkproof-chart></td>
+        <td><inkproof-chart src="MSFT-close"></inkproof-chart></td>
+      </tr>
+      <tr>
+        <th>QCOM</th>
+        <td><inkproof-chart src="QCOM-volume"></inkproof-chart></td>
+        <td><inkproof-chart src="QCOM-close"></inkproof-chart></td>
+      </tr>
+      <tr>
+        <th>SBUX</th>
+        <td><inkproof-chart src="SBUX-volume"></inkproof-chart></td>
+        <td><inkproof-chart src="SBUX-close"></inkproof-chart></td>
+      </tr>
+      <tr>
+        <th>TSLA</th>
+        <td><inkproof-chart src="TSLA-volume"></inkproof-chart></td>
+        <td><inkproof-chart src="TSLA-close"></inkproof-chart></td>
+      </tr>
+      <tr>
+        <th>ZNGA</th>
+        <td><inkproof-chart src="ZNGA-volume"></inkproof-chart></td>
+        <td><inkproof-chart src="ZNGA-close"></inkproof-chart></td>
+      </tr>
+    </table>
+  </body>
+</html>

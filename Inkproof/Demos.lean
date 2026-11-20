@@ -2,7 +2,12 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+import Inkproof.Demos.Bars
 import Inkproof.Demos.AreaFill
+import Inkproof.Demos.GroupedBars
+import Inkproof.Demos.Latency
+import Inkproof.Demos.LatencyHistogram
+import Inkproof.Demos.MultiBars
 import Inkproof.Demos.AxisControl
 import Inkproof.Demos.Frame
 import Inkproof.Demos.Lines
@@ -12,6 +17,9 @@ import Inkproof.Demos.MissingData
 import Inkproof.Demos.LogScales
 import Inkproof.Demos.LogScales2
 import Inkproof.Demos.Points
+import Inkproof.Demos.Scatter
+import Inkproof.Demos.Sparklines
+import Inkproof.Demos.SparklinesBars
 import Inkproof.Demos.Reduce
 import Inkproof.Demos.ServerEvents
 import Inkproof.Demos.Million

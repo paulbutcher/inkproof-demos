@@ -1,0 +1,24 @@
+<!--
+Copyright (c) 2026 Paul Butcher. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Latency Heatmap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      inkproof-chart { display: block; width: 1800px; height: 600px; }
+    </style>
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <h1>Latency Heatmap</h1>
+    <p><a href="../">All demos</a></p>
+    <h2>Latency Histogram (align: 1, gap: 0, stroke: 2, border collapse)</h2>
+    <inkproof-chart src="outlined"></inkproof-chart>
+    <h2>Latency Histogram (align: 1, gap: 2, stroke: 1, disp-gap-shift)</h2>
+    <inkproof-chart src="gapped"></inkproof-chart>
+  </body>
+</html>

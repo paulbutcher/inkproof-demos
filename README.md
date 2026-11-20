@@ -8,6 +8,10 @@ The [uPlot demos](https://leeoniya.github.io/uPlot/demos/index.html), recreated 
 
 - Show the Area Fill demo, three series with filled areas and linear axes, from uPlot's page of that name: `Inkproof.Demos.AreaFill.chart`, `Inkproof.Demos.axes`, at `area-fill/`.
 - Show the Points demo, four charts of random walks with markers and gaps, from uPlot's page of that name: `Inkproof.Demos.Points.multiChart`, `Points.singleChart`, `Points.sparseChart`, at `points/`.
+- Show the bubble half of the Scatter & Bubble demo, 200 bubbles sized by area on two y axes, from uPlot's `scatter.html`: `Inkproof.Demos.Scatter.bubbleChart`, at `scatter/`.
+- Show the Sparklines demo, ten stocks' volumes and closing prices as 150 by 30 charts sharing one WebGL context, and the Sparklines (w/ floating bars) demo, a line with floating bars either side of zero, from uPlot's `sparklines.html` and `sparklines-bars.html`: `Inkproof.Demos.Sparklines.chart`, `SparklinesBars.chartSplit`, at `sparklines/` and `sparklines-bars/`.
+- Show the Multi-Bars and Grouped and stacked bars demos, bars over categories with values written at their ends, per-bar colours, separate scales per series and stacked or horizontal layouts, from uPlot's `multi-bars.html` and `bars-grouped-stacked.html`: `Inkproof.Demos.Bars.Chart`, `MultiBars.benchmark`, `GroupedBars.charts`, at `multi-bars/` and `grouped-bars/`.
+- Show the histograms of the Latency Heatmap demo, latencies of a skew normal counted in 5 ms buckets, from uPlot's `latency-heatmap.html`: `Inkproof.Demos.LatencyHistogram.chart`, at `latency-heatmap/`.
 - Show the Log Scales demo, twelve servers' player counts over a day on log and linear y axes with unreported samples as gaps, from uPlot's `log-scales.html`: `Inkproof.Demos.LogScales.specs`, `Spec.chart`, at `log-scales/`.
 - Show the Log Scales 2 demo, the same data on linear, log10 and log2 y axes with zero and negative values as gaps, from uPlot's `log-scales2.html` (charts 1 to 4 and 7 to 10): `Inkproof.Demos.LogScales2.specs`, `Spec.chart`, at `log-scales2/`.
 - Show the Axis Control demo, half a million points on a fixed y range with a red right axis and axis titles, from uPlot's `axis-control.html`: `Inkproof.Demos.AxisControl.chart`, at `axis-control/`.
@@ -21,4 +25,4 @@ Needs git, Node 24 and [elan](https://github.com/leanprover/elan). From the repo
 
 ## Credits
 
-The demos recreate pages of [uPlot](https://github.com/leeoniya/uPlot) by Leon Sorokin (MIT license). Server events recreates the shape of uPlot's `bench/uPlot.html` data (three series over 55,550 samples) with generated values; uPlot has no demo of reduction accuracy.
+The demos recreate pages of [uPlot](https://github.com/leeoniya/uPlot) by Leon Sorokin (MIT license). Server events recreates the shape of uPlot's `bench/uPlot.html` data (three series over 55,550 samples) with generated values; uPlot has no demo of reduction accuracy. The Sparklines stock records are uPlot's `demos/data/*.csv`, the Multi-Bars library figures its `bench/results.json`, and the skew normal draw follows its `demos/lib/rand.js`.

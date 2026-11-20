@@ -69,4 +69,34 @@ theorem walk_size (seed n : Nat) (start lo hi : Rat) : (walk seed n start lo hi)
     | succ k ih => intro a; rw [Nat.fold_succ]; simp [ih]; omega
   simp [walk, h]
 
+/-- `n` integers in `lo..hi` from the fixed seed `seed`; uPlot's demos draw theirs at random. -/
+def ints (seed n lo hi : Nat) : Array Nat :=
+  ((List.range n).foldl (fun (acc : Array Nat × StdGen) _ =>
+    let (d, g) := draw acc.2 (hi - lo)
+    (acc.1.push (lo + d), g)) (#[], mkStdGen seed)).1
+
+theorem ints_eq (seed n lo hi : Nat) :
+    ints seed n lo hi =
+      ((List.range n).foldl (fun (acc : Array Nat × StdGen) _ =>
+        let (d, g) := draw acc.2 (hi - lo)
+        (acc.1.push (lo + d), g)) (#[], mkStdGen seed)).1 := rfl
+
+theorem ints_size (seed n lo hi : Nat) : (ints seed n lo hi).size = n := by
+  have h : ∀ (l : List Nat) (a : Array Nat × StdGen),
+      (l.foldl (fun (acc : Array Nat × StdGen) _ =>
+        let (d, g) := draw acc.2 (hi - lo)
+        (acc.1.push (lo + d), g)) a).1.size = a.1.size + l.length := by
+    intro l
+    induction l with
+    | nil => intro a; simp
+    | cons x l ih => intro a; simp only [List.foldl_cons, List.length_cons]; rw [ih]; simp; omega
+  simp [ints, h]
+
+/-- The smallest and the largest of `vals`, or `(0, 1)` when there are none. -/
+def extent (vals : Array Rat) : Rat × Rat := (vals.min?.getD 0, vals.max?.getD 1)
+
+theorem extent_eq (vals : Array Rat) : extent vals = (vals.min?.getD 0, vals.max?.getD 1) := rfl
+
+theorem extent_empty : extent #[] = (0, 1) := rfl
+
 end Inkproof.Demos.Data

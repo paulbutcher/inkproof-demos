@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.7.0
+
+- The Scatter & Bubble page (bubble plot only), the Sparklines page and the Sparklines (w/ floating bars) page.
+- The Multi-Bars, Grouped and stacked bars and Latency Heatmap (histograms only) pages.
+
 ## v0.6.0
 
 - Tick labels are converted with Web's `Label.ofDrawing`.
