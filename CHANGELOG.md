@@ -3,6 +3,7 @@
 ## v0.11.0
 
 - The candlestick page writes its dates with Core v0.15.0's `Calendar.isoDate`.
+- Scene v0.20.0, and a Stacked Series page of stacked areas and stacked bars drawn by its `compileStackedAreas` and `compileStackedBars`.
 - The Tooltip and legend page: the tooltip names the point nearest the pointer and the legend gives each series at the cursor and hides or shows it.
 - Web v0.14.1.
 

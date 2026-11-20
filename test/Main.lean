@@ -16,6 +16,16 @@ private def areaFillTest : Except String Unit := do
   check (AreaFill.values 1 12 == #[-8, 9, 3, 7, -3, 0, -2, 9, 3, 3, -10, -3]) "series 1 differs from the recorded values, so a platform draws other data"
   check (AreaFill.values 2 12 == #[1, 5, 5, -9, -7, 0, -9, 9, -9, 4, -6, -3]) "series 2 differs from the recorded values, so a platform draws other data"
 
+private def stackedTest : Except String Unit := do
+  let ss := Stacked.areaSeries
+  for k in [0:ss.size] do
+    for i in [0:(ss.getD k default).size] do
+      let sum := (Stacked.levels.take (k + 1)).foldl (fun a l => a + l.getD i 0) 0
+      check (Core.Series.stackAt ss k i == some sum) s!"series {k} at point {i} stacks to the sum of the series up to it"
+  let bars := Stacked.barSeries
+  check (bars.all fun s => s.size == Stacked.base.length) "the bar series share their x values"
+  check ((bars.getD 0 default).values.any (·.isNone)) "the first bar series keeps its gap"
+
 private def axesTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
   let drawings := axes AreaFill.frame measure
@@ -259,4 +269,4 @@ private def annotationsTest : Except String Unit := do
   check (c.data.any fun cmd => match cmd.shape with | .rect r => r.x0 == 9.3 && r.x1 == 18.5 | _ => false) "the shaded range is a rectangle over its data interval"
 
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, platformTest (args.contains "--expect-wasm")]

@@ -787,6 +787,17 @@ def Inkproof.Demos.SparklinesBars.ys : Array Int
 theorem Inkproof.Demos.SparklinesBars.ys_size : Inkproof.Demos.SparklinesBars.ys.size = 16
 def Inkproof.Demos.SparklinesBars.zero : Inkproof.Scene.DisplayList
 theorem Inkproof.Demos.SparklinesBars.zero_eq : Inkproof.Demos.SparklinesBars.zero = Inkproof.Scene.compileLine { paint := { layer := 0, color := Inkproof.Scene.Shading.flat { r := 128, g := 128, b := 128, a := 255 } }, halfWidth := 1 / 2, reduce := Bool.false, dash := Option.some { on := 3, off := 3 } } (Inkproof.Demos.projection Inkproof.Demos.SparklinesBars.frame) (Inkproof.Core.Segmented.single (Inkproof.Core.Series.ofUnsorted #[(1, Option.some 0), (16, Option.some 0)]))
+def Inkproof.Demos.Stacked.areaChart : Inkproof.Demos.Frame → (String → Float × Float) → Inkproof.Scene.DisplayList
+theorem Inkproof.Demos.Stacked.areaChart_eq : ∀ (f : Inkproof.Demos.Frame) (measure : String → Float × Float), Inkproof.Demos.Stacked.areaChart f measure = Inkproof.Demos.axisDisplay f measure ++ Inkproof.Scene.compileStackedAreas Inkproof.Demos.Stacked.paint✝ (Inkproof.Demos.projection f) Inkproof.Demos.Stacked.areaSeries
+def Inkproof.Demos.Stacked.areaFrame : Inkproof.Demos.Frame
+def Inkproof.Demos.Stacked.areaSeries : Array (Inkproof.Core.Series Rat Rat)
+def Inkproof.Demos.Stacked.barChart : Inkproof.Demos.Frame → (String → Float × Float) → Inkproof.Scene.DisplayList
+theorem Inkproof.Demos.Stacked.barChart_eq : ∀ (f : Inkproof.Demos.Frame) (measure : String → Float × Float), Inkproof.Demos.Stacked.barChart f measure = Inkproof.Demos.axisDisplay f measure ++ Inkproof.Scene.compileStackedBars Inkproof.Demos.Stacked.paint✝ (3 / 5) (Inkproof.Demos.projection f) Inkproof.Demos.Stacked.barSeries
+def Inkproof.Demos.Stacked.barFrame : Inkproof.Demos.Frame
+def Inkproof.Demos.Stacked.barSeries : Array (Inkproof.Core.Series Rat Rat)
+def Inkproof.Demos.Stacked.base : List Rat
+def Inkproof.Demos.Stacked.levels : List (List Rat)
+def Inkproof.Demos.Stacked.xs : List Nat
 structure Inkproof.Demos.StocksSource.Stock : Type
 field Inkproof.Demos.StocksSource.Stock.closeCents : Inkproof.Demos.StocksSource.Stock → Array Nat
 constructor Inkproof.Demos.StocksSource.Stock.mk : String → Array Nat → Array Nat → Inkproof.Demos.StocksSource.Stock

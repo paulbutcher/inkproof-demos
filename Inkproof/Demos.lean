@@ -32,3 +32,4 @@ import Inkproof.Demos.Candles
 import Inkproof.Demos.Boxes
 import Inkproof.Demos.Timeline
 import Inkproof.Demos.Annotations
+import Inkproof.Demos.Stacked

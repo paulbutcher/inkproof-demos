@@ -94,6 +94,15 @@ test('area fill draws its three series', async () => {
   await page.close();
 });
 
+test('stacked series draws its areas and bars', async () => {
+  const { page, problems } = await open('stacked/');
+  await page.waitForFunction(() => window.draws.length >= 2);
+  assert.deepEqual(problems, []);
+  const { red, blue } = await colours(page);
+  assert.ok(red > 0 && blue > 0, `red ${red}, blue ${blue}`);
+  await page.close();
+});
+
 test('points draws its four charts', async () => {
   const { page } = await open('points/');
   await page.waitForFunction(() => window.draws.length >= 4);
