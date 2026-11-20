@@ -3,6 +3,7 @@
 ## v0.8.0
 
 - The Wheel Zoom & Drag, Pinch Zoom & Pan, Zoom variations and Zoom with reset pages, charts that the pointer zooms and pans from retained GPU buffers.
+- The scatter plot, the latency heatmaps and the Heatmap / Scatter page, completing the Scatter & Bubble and Latency Heatmap pages.
 - Web v0.9.1, Viewport v0.7.0 and Gpu v0.10.0.
 
 ## v0.7.0

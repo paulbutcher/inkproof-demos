@@ -10,4 +10,5 @@ def main : IO Unit :=
   register "inkproof-chart" fun
     | "bubble" => Browser.sidedScene 1920 600 background (labelTexts bubbleFrame) [.bottom, .left, .right]
         (bubbleAxes bubbleFrame) (bubbleChart bubbleFrame)
+    | "scatter" => Browser.frameScene 1920 600 scatterFrame (scatterChart scatterFrame)
     | src => throw (IO.userError s!"no chart {src}")

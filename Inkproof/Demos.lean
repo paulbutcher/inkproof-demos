@@ -6,6 +6,8 @@ import Inkproof.Demos.Bars
 import Inkproof.Demos.AreaFill
 import Inkproof.Demos.GroupedBars
 import Inkproof.Demos.Latency
+import Inkproof.Demos.LatencyHeatmap
+import Inkproof.Demos.HeatmapCells
 import Inkproof.Demos.LatencyHistogram
 import Inkproof.Demos.MultiBars
 import Inkproof.Demos.AxisControl

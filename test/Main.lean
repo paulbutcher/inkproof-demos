@@ -148,6 +148,18 @@ private def latencyTest : Except String Unit := do
   check (LatencyHistogram.samples.all (25 ≤ ·)) "no latency falls below the 25 ms floor"
   check (LatencyHistogram.counts.foldl max 0 > 0) "the histogram is not empty"
 
+private def heatmapTest : Except String Unit := do
+  let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
+  check (Scatter.clouds.size == 4 && Scatter.clouds.all (·.points.size == 10000)) "four clouds of ten thousand points"
+  check ((Scatter.scatterChart Scatter.scatterFrame measure).size > 40000) "every scatter point is drawn"
+  check (LatencyHeatmap.columns.all fun c => 200 ≤ c.size && c.size ≤ 500 && c.all (50 ≤ ·)) "each column holds 200 to 500 latencies of at least 5 ms"
+  let total := LatencyHeatmap.bucketCells.foldl (fun n c => n + (c.value.map (·.1)).getD 0) 0
+  check (total == LatencyHeatmap.columns.foldl (· + ·.size) 0) "every latency is counted in a bucket"
+  check (LatencyHeatmap.bucketCells.all fun c => match c.value with | some (n, most) => 0 < n && n ≤ most | none => false) "a bucket's count never exceeds its column's largest"
+  check (LatencyHeatmap.sampleCells.size == LatencyHeatmap.columns.foldl (· + ·.size) 0) "a cell for every latency"
+  check (HeatmapCells.counts.foldl (· + ·) 0 == HeatmapCells.samples) "every sample falls in a cell"
+  check (HeatmapCells.cells.size > 0) "the heatmap is not empty"
+
 private def zoomTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
   for c in [Zoom.basic, Zoom.variation] do
@@ -165,4 +177,4 @@ private def zoomTest : Except String Unit := do
     check (lines.all fun l => !(uploads second).contains l) "a frame under another view uploads no line again"
 
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"zoom", zoomTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, platformTest (args.contains "--expect-wasm")]

@@ -135,4 +135,36 @@ theorem bubbleChart_eq (f : Frame) (measure : String → Float × Float) :
       DisplayList.clip (plot f) (regions.toArray.flatMap fun r =>
         bubbleDisplay r (if r.onRight then .linear ⟨f.xs.1, f.xs.2, f.left, f.right⟩ ⟨rightRange.1, rightRange.2, f.bottom, f.top⟩ else projection f)) := rfl
 
+/-- The scatter plot's series: ten thousand points with both coordinates in `0..500`, in the colour of their markers. -/
+structure Cloud where
+  color : Color
+  points : Array (Rat × Rat)
+
+/-- Four clouds of ten thousand points each. -/
+def clouds : Array Cloud :=
+  #[(red, 1), (green, 2), (blue, 3), (orange, 4)].map fun (color, seed) =>
+    ⟨color, ((Data.ints (2 * seed) 10000 0 500).zip (Data.ints (2 * seed + 1) 10000 0 500)).map fun (x, y) => ((x : Rat), (y : Rat))⟩
+
+theorem clouds_eq : clouds =
+    #[(red, 1), (green, 2), (blue, 3), (orange, 4)].map fun (color, seed) =>
+      ⟨color, ((Data.ints (2 * seed) 10000 0 500).zip (Data.ints (2 * seed + 1) 10000 0 500)).map fun (x, y) => ((x : Rat), (y : Rat))⟩ := rfl
+
+/-- The scatter chart's frame, 1920 by 600: the ranges of all the points. -/
+def scatterFrame : Frame :=
+  let all := clouds.flatMap (·.points)
+  ⟨60, 1900, 20, 560, Data.extent (all.map (·.1)), Data.extent (all.map (·.2))⟩
+
+theorem scatterFrame_eq : scatterFrame =
+    let all := clouds.flatMap (·.points)
+    ⟨60, 1900, 20, 560, Data.extent (all.map (·.1)), Data.extent (all.map (·.2))⟩ := rfl
+
+/-- The axes, then a disc of diameter 5 at each point of each cloud. -/
+def scatterChart (f : Frame) (measure : String → Float × Float) : DisplayList :=
+  axisDisplay f measure ++ DisplayList.clip (plot f) (clouds.flatMap fun c =>
+    compileScatter ⟨⟨1, c.color⟩, .circle, 5 / 2⟩ (projection f) (Series.ofUnsorted (c.points.map fun (x, y) => (x, some y))))
+
+theorem scatterChart_eq (f : Frame) (measure : String → Float × Float) : scatterChart f measure =
+    axisDisplay f measure ++ DisplayList.clip (plot f) (clouds.flatMap fun c =>
+      compileScatter ⟨⟨1, c.color⟩, .circle, 5 / 2⟩ (projection f) (Series.ofUnsorted (c.points.map fun (x, y) => (x, some y)))) := rfl
+
 end Inkproof.Demos.Scatter

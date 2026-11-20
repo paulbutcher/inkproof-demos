@@ -139,6 +139,32 @@ def Inkproof.Demos.GroupedBars.multiGroupOneBar : List (Inkproof.Scene.Color × 
 def Inkproof.Demos.GroupedBars.oneGroupMultiBar : List (Inkproof.Scene.Color × Array Rat)
 def Inkproof.Demos.GroupedBars.oneGroupOneBar : List (Inkproof.Scene.Color × Array Rat)
 def Inkproof.Demos.GroupedBars.purple : Inkproof.Scene.Color
+def Inkproof.Demos.HeatmapCells.cells : Array (Inkproof.Scene.Cell Rat Rat Nat)
+theorem Inkproof.Demos.HeatmapCells.cells_eq : Inkproof.Demos.HeatmapCells.cells = Array.filterMap (fun x => match x with | (n, i) => if (n == 0) = Bool.true then Option.none else have x := ↑(Inkproof.Demos.HeatmapCells.xFirst + i / Inkproof.Demos.HeatmapCells.yCount) * 15; have y := ↑((Inkproof.Demos.HeatmapCells.yRange.fst + ↑(i % Inkproof.Demos.HeatmapCells.yCount)) * ↑Inkproof.Demos.HeatmapCells.yBin); Option.some { x0 := x - 15 / 2, x1 := x + 15 / 2, y0 := y - 1, y1 := y + 1, value := Option.some n }) Inkproof.Demos.HeatmapCells.counts.zipIdx
+def Inkproof.Demos.HeatmapCells.chart : Inkproof.Demos.Lines.Chart
+def Inkproof.Demos.HeatmapCells.counts : Array Nat
+theorem Inkproof.Demos.HeatmapCells.counts_eq : Inkproof.Demos.HeatmapCells.counts = Array.foldl (fun acc x => match x with | (v, i) => acc.modify ((Inkproof.Demos.HeatmapCells.xIndex i - Inkproof.Demos.HeatmapCells.xFirst) * Inkproof.Demos.HeatmapCells.yCount + (Inkproof.Demos.HeatmapCells.yIndex v - Inkproof.Demos.HeatmapCells.yRange.fst).toNat) fun x => x + 1) (Array.replicate (Inkproof.Demos.HeatmapCells.xCount * Inkproof.Demos.HeatmapCells.yCount) 0) Inkproof.Demos.HeatmapCells.latencies.zipIdx
+def Inkproof.Demos.HeatmapCells.display : (String → Float × Float) → Inkproof.Scene.DisplayList
+theorem Inkproof.Demos.HeatmapCells.display_eq : ∀ (measure : String → Float × Float), Inkproof.Demos.HeatmapCells.display measure = have most := Array.foldl Max.max 0 Inkproof.Demos.HeatmapCells.counts; have least := Array.foldl Min.min most (Array.filter (fun x => Decidable.decide (x > 0)) Inkproof.Demos.HeatmapCells.counts); Inkproof.Demos.HeatmapCells.chart.display measure ++ Inkproof.Scene.DisplayList.clip (Inkproof.Demos.plot Inkproof.Demos.HeatmapCells.chart.frame) (Inkproof.Scene.compileHeatmap 1 (fun n => Inkproof.Demos.HeatmapCells.palette.getD (Inkproof.Demos.HeatmapCells.paletteIndex least most n) { r := 0, g := 0, b := 0, a := 255 }) { x := Inkproof.Demos.HeatmapCells.chart.xScale.map, y := (Inkproof.Demos.HeatmapCells.chart.yScale Inkproof.Demos.HeatmapCells.chart.left).map } Inkproof.Demos.HeatmapCells.cells)
+def Inkproof.Demos.HeatmapCells.latencies : Array Float
+def Inkproof.Demos.HeatmapCells.palette : Array Inkproof.Scene.Color
+def Inkproof.Demos.HeatmapCells.paletteIndex : Nat → Nat → Nat → Nat
+theorem Inkproof.Demos.HeatmapCells.paletteIndex_eq : ∀ (least most count : Nat), Inkproof.Demos.HeatmapCells.paletteIndex least most count = if most ≤ least then 0 else Min.min (Inkproof.Demos.HeatmapCells.palette.size - 1) (Inkproof.Demos.HeatmapCells.palette.size * (count - least) / (most - least))
+theorem Inkproof.Demos.HeatmapCells.paletteIndex_lt : ∀ (least most count : Nat), Inkproof.Demos.HeatmapCells.paletteIndex least most count < Inkproof.Demos.HeatmapCells.palette.size
+def Inkproof.Demos.HeatmapCells.samples : Nat
+def Inkproof.Demos.HeatmapCells.start : Nat
+def Inkproof.Demos.HeatmapCells.xBin : Nat
+def Inkproof.Demos.HeatmapCells.xCount : Nat
+def Inkproof.Demos.HeatmapCells.xFirst : Nat
+def Inkproof.Demos.HeatmapCells.xIndex : Nat → Nat
+theorem Inkproof.Demos.HeatmapCells.xIndex_eq : ∀ (i : Nat), Inkproof.Demos.HeatmapCells.xIndex i = (Inkproof.Demos.HeatmapCells.start + i) / Inkproof.Demos.HeatmapCells.xBin
+theorem Inkproof.Demos.HeatmapCells.xIndex_mono : ∀ {i j : Nat}, i ≤ j → Inkproof.Demos.HeatmapCells.xIndex i ≤ Inkproof.Demos.HeatmapCells.xIndex j
+def Inkproof.Demos.HeatmapCells.yBin : Nat
+def Inkproof.Demos.HeatmapCells.yCount : Nat
+def Inkproof.Demos.HeatmapCells.yIndex : Float → Int
+theorem Inkproof.Demos.HeatmapCells.yIndex_eq : ∀ (v : Float), Inkproof.Demos.HeatmapCells.yIndex v = (v / Inkproof.Demos.HeatmapCells.yBin.toFloat).floor.toInt64.toInt
+def Inkproof.Demos.HeatmapCells.yRange : Int × Int
+theorem Inkproof.Demos.HeatmapCells.yRange_eq : Inkproof.Demos.HeatmapCells.yRange = (Array.foldl Min.min ((Array.map Inkproof.Demos.HeatmapCells.yIndex Inkproof.Demos.HeatmapCells.latencies).getD 0 0) (Array.map Inkproof.Demos.HeatmapCells.yIndex Inkproof.Demos.HeatmapCells.latencies), Array.foldl Max.max ((Array.map Inkproof.Demos.HeatmapCells.yIndex Inkproof.Demos.HeatmapCells.latencies).getD 0 0) (Array.map Inkproof.Demos.HeatmapCells.yIndex Inkproof.Demos.HeatmapCells.latencies))
 def Inkproof.Demos.HighLowBands.charts : List Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.HighLowBands.days : Array Rat
 def Inkproof.Demos.HighLowBands.highSeries : Inkproof.Core.Series Rat Rat
@@ -156,6 +182,31 @@ theorem Inkproof.Demos.Latency.skewNormal_eq : ∀ (ξ ω α : Float) (g : StdGe
 theorem Inkproof.Demos.Latency.skewNormal_snd : ∀ (ξ ω α : Float) (g : StdGen), (Inkproof.Demos.Latency.skewNormal ξ ω α g).snd = (Inkproof.Demos.Latency.uniform (Inkproof.Demos.Latency.uniform g).snd).snd
 def Inkproof.Demos.Latency.uniform : StdGen → Float × StdGen
 theorem Inkproof.Demos.Latency.uniform_eq : ∀ (g : StdGen), Inkproof.Demos.Latency.uniform g = (((Inkproof.Demos.Data.draw g 1000000).fst.toFloat + 1) / 1000002, (Inkproof.Demos.Data.draw g 1000000).snd)
+def Inkproof.Demos.LatencyHeatmap.bucket : Nat
+def Inkproof.Demos.LatencyHeatmap.bucketCells : Array (Inkproof.Scene.Cell Rat Rat (Nat × Nat))
+theorem Inkproof.Demos.LatencyHeatmap.bucketCells_eq : Inkproof.Demos.LatencyHeatmap.bucketCells = Array.flatMap (fun x => match x with | (col, i) => have counts := Array.foldl (fun acc v => have b := v / (10 * Inkproof.Demos.LatencyHeatmap.bucket); match acc.back? with | Option.some (b', n) => if (b' == b) = Bool.true then acc.pop.push (b, n + 1) else acc.push (b, 1) | Option.none => #[(b, 1)]) #[] col; have most := Array.foldl (fun m x => match x with | (fst, n) => Max.max m n) 1 counts; Array.map (fun x => match x with | (b, n) => Inkproof.Demos.LatencyHeatmap.cell i ↑(b * Inkproof.Demos.LatencyHeatmap.bucket) ↑((b + 1) * Inkproof.Demos.LatencyHeatmap.bucket) (n, most)) counts) Inkproof.Demos.LatencyHeatmap.columns.zipIdx
+def Inkproof.Demos.LatencyHeatmap.bucketsDisplay : (String → Float × Float) → Inkproof.Scene.DisplayList
+theorem Inkproof.Demos.LatencyHeatmap.bucketsDisplay_eq : ∀ (measure : String → Float × Float), Inkproof.Demos.LatencyHeatmap.bucketsDisplay measure = Inkproof.Demos.LatencyHeatmap.chart.display measure ++ Inkproof.Scene.DisplayList.clip (Inkproof.Demos.plot Inkproof.Demos.LatencyHeatmap.chart.frame) (Inkproof.Scene.compileHeatmap 1 Inkproof.Demos.LatencyHeatmap.countColor { x := Inkproof.Demos.LatencyHeatmap.chart.xScale.map, y := (Inkproof.Demos.LatencyHeatmap.chart.yScale Inkproof.Demos.LatencyHeatmap.chart.left).map } Inkproof.Demos.LatencyHeatmap.bucketCells)
+def Inkproof.Demos.LatencyHeatmap.cell : {α : Type} → Nat → Rat → Rat → α → Inkproof.Scene.Cell Rat Rat α
+theorem Inkproof.Demos.LatencyHeatmap.cell_eq : ∀ {α : Type} (column : Nat) (lo hi : Rat) (value : α), Inkproof.Demos.LatencyHeatmap.cell column lo hi value = { x0 := ↑(Inkproof.Demos.LatencyHeatmap.start + column) - 4 * Inkproof.Demos.LatencyHeatmap.secondsPerPixel, x1 := ↑(Inkproof.Demos.LatencyHeatmap.start + column) + 6 * Inkproof.Demos.LatencyHeatmap.secondsPerPixel, y0 := lo, y1 := hi, value := Option.some value }
+def Inkproof.Demos.LatencyHeatmap.chart : Inkproof.Demos.Lines.Chart
+theorem Inkproof.Demos.LatencyHeatmap.chart_eq : Inkproof.Demos.LatencyHeatmap.chart = { name := "latency-heatmap", width := 1800, height := 600, xs := (↑Inkproof.Demos.LatencyHeatmap.start, ↑(Inkproof.Demos.LatencyHeatmap.start + Inkproof.Demos.LatencyHeatmap.columns.size - 1)), time := Bool.true, left := { range := Inkproof.Scale.autoRange (1 / 10) ↑Inkproof.Demos.LatencyHeatmap.yBounds.fst ↑Inkproof.Demos.LatencyHeatmap.yBounds.snd }, layers := [] }
+def Inkproof.Demos.LatencyHeatmap.columns : Array (Array Nat)
+theorem Inkproof.Demos.LatencyHeatmap.columns_eq : Inkproof.Demos.LatencyHeatmap.columns = Array.map (fun i => have n := (Inkproof.Demos.Data.ints (3000 + i) 1 200 500)[0]?.getD 200; (Array.map (fun v => Max.max 50 (v * 10).floor.toUInt64.toNat) (Inkproof.Demos.Latency.draws (4000 + i) n 30 30 3)).qsort fun x1 x2 => Decidable.decide (x1 < x2)) (List.range 100).toArray
+def Inkproof.Demos.LatencyHeatmap.countColor : Nat × Nat → Inkproof.Scene.Color
+theorem Inkproof.Demos.LatencyHeatmap.countColor_eq : ∀ (c : Nat × Nat), Inkproof.Demos.LatencyHeatmap.countColor c = Inkproof.Scene.Color.ofHsl (180 + 180 * ↑c.fst / ↑c.snd) (4 / 5) (1 / 2)
+def Inkproof.Demos.LatencyHeatmap.millisPerPixel : Rat
+theorem Inkproof.Demos.LatencyHeatmap.millisPerPixel_eq : Inkproof.Demos.LatencyHeatmap.millisPerPixel = (Inkproof.Demos.LatencyHeatmap.chart.left.range.snd - Inkproof.Demos.LatencyHeatmap.chart.left.range.fst) / (Inkproof.Demos.LatencyHeatmap.chart.frame.bottom - Inkproof.Demos.LatencyHeatmap.chart.frame.top)
+def Inkproof.Demos.LatencyHeatmap.sampleCells : Array (Inkproof.Scene.Cell Rat Rat Unit)
+theorem Inkproof.Demos.LatencyHeatmap.sampleCells_eq : Inkproof.Demos.LatencyHeatmap.sampleCells = Array.flatMap (fun x => match x with | (col, i) => Array.map (fun v => Inkproof.Demos.LatencyHeatmap.cell i (↑v / 10) (↑v / 10 + Inkproof.Demos.LatencyHeatmap.millisPerPixel) ()) col) Inkproof.Demos.LatencyHeatmap.columns.zipIdx
+def Inkproof.Demos.LatencyHeatmap.sampleColor : Inkproof.Scene.Color
+def Inkproof.Demos.LatencyHeatmap.samplesDisplay : (String → Float × Float) → Inkproof.Scene.DisplayList
+theorem Inkproof.Demos.LatencyHeatmap.samplesDisplay_eq : ∀ (measure : String → Float × Float), Inkproof.Demos.LatencyHeatmap.samplesDisplay measure = Inkproof.Demos.LatencyHeatmap.chart.display measure ++ Inkproof.Scene.DisplayList.clip (Inkproof.Demos.plot Inkproof.Demos.LatencyHeatmap.chart.frame) (Inkproof.Scene.compileHeatmap 1 (fun x => Inkproof.Demos.LatencyHeatmap.sampleColor) { x := Inkproof.Demos.LatencyHeatmap.chart.xScale.map, y := (Inkproof.Demos.LatencyHeatmap.chart.yScale Inkproof.Demos.LatencyHeatmap.chart.left).map } Inkproof.Demos.LatencyHeatmap.sampleCells)
+def Inkproof.Demos.LatencyHeatmap.secondsPerPixel : Rat
+theorem Inkproof.Demos.LatencyHeatmap.secondsPerPixel_eq : Inkproof.Demos.LatencyHeatmap.secondsPerPixel = (Inkproof.Demos.LatencyHeatmap.chart.xs.snd - Inkproof.Demos.LatencyHeatmap.chart.xs.fst) / (Inkproof.Demos.LatencyHeatmap.chart.frame.right - Inkproof.Demos.LatencyHeatmap.chart.frame.left)
+def Inkproof.Demos.LatencyHeatmap.start : Nat
+def Inkproof.Demos.LatencyHeatmap.yBounds : Nat × Nat
+theorem Inkproof.Demos.LatencyHeatmap.yBounds_eq : Inkproof.Demos.LatencyHeatmap.yBounds = (Array.foldl Min.min (Inkproof.Demos.LatencyHeatmap.columns.flatten.getD 0 0) Inkproof.Demos.LatencyHeatmap.columns.flatten / 10, (Array.foldl Max.max 0 Inkproof.Demos.LatencyHeatmap.columns.flatten + 9) / 10)
 def Inkproof.Demos.LatencyHistogram.binning : Inkproof.Core.Binning Int
 theorem Inkproof.Demos.LatencyHistogram.binning_eq : Inkproof.Demos.LatencyHistogram.binning = Inkproof.Core.Binning.ofInt Inkproof.Demos.LatencyHistogram.span.fst Inkproof.Demos.LatencyHistogram.span.snd Inkproof.Demos.LatencyHistogram.buckets Inkproof.Demos.LatencyHistogram.buckets_pos
 def Inkproof.Demos.LatencyHistogram.bucket : Nat
@@ -493,6 +544,10 @@ constructor Inkproof.Demos.Scatter.Bubble.mk : Rat → Rat → Nat → Inkproof.
 field Inkproof.Demos.Scatter.Bubble.size : Inkproof.Demos.Scatter.Bubble → Nat
 field Inkproof.Demos.Scatter.Bubble.x : Inkproof.Demos.Scatter.Bubble → Rat
 field Inkproof.Demos.Scatter.Bubble.y : Inkproof.Demos.Scatter.Bubble → Rat
+structure Inkproof.Demos.Scatter.Cloud : Type
+field Inkproof.Demos.Scatter.Cloud.color : Inkproof.Demos.Scatter.Cloud → Inkproof.Scene.Color
+constructor Inkproof.Demos.Scatter.Cloud.mk : Inkproof.Scene.Color → Array (Rat × Rat) → Inkproof.Demos.Scatter.Cloud
+field Inkproof.Demos.Scatter.Cloud.points : Inkproof.Demos.Scatter.Cloud → Array (Rat × Rat)
 structure Inkproof.Demos.Scatter.Region : Type
 field Inkproof.Demos.Scatter.Region.bubbles : Inkproof.Demos.Scatter.Region → Array Inkproof.Demos.Scatter.Bubble
 field Inkproof.Demos.Scatter.Region.fill : Inkproof.Demos.Scatter.Region → Inkproof.Scene.Color
@@ -513,6 +568,8 @@ theorem Inkproof.Demos.Scatter.bubbleFrame_eq : Inkproof.Demos.Scatter.bubbleFra
 def Inkproof.Demos.Scatter.bubbles : Nat → Array Inkproof.Demos.Scatter.Bubble
 theorem Inkproof.Demos.Scatter.bubbles_eq : ∀ (seed : Nat), Inkproof.Demos.Scatter.bubbles seed = Array.map (fun x => match x with | (x, y, s) => { x := ↑x, y := ↑y, size := s }) ((Inkproof.Demos.Data.ints (3 * seed) 50 0 500).zip ((Inkproof.Demos.Data.ints (3 * seed + 1) 50 0 500).zip (Inkproof.Demos.Data.ints (3 * seed + 2) 50 1 10000)))
 theorem Inkproof.Demos.Scatter.bubbles_size : ∀ (seed : Nat), (Inkproof.Demos.Scatter.bubbles seed).size = 50
+def Inkproof.Demos.Scatter.clouds : Array Inkproof.Demos.Scatter.Cloud
+theorem Inkproof.Demos.Scatter.clouds_eq : Inkproof.Demos.Scatter.clouds = Array.map (fun x => match x with | (color, seed) => { color := color, points := Array.map (fun x => match x with | (x, y) => (↑x, ↑y)) ((Inkproof.Demos.Data.ints (2 * seed) 10000 0 500).zip (Inkproof.Demos.Data.ints (2 * seed + 1) 10000 0 500)) }) #[(Inkproof.Demos.Scatter.red, 1), (Inkproof.Demos.Scatter.green, 2), (Inkproof.Demos.Scatter.blue, 3), (Inkproof.Demos.Scatter.orange, 4)]
 def Inkproof.Demos.Scatter.green : Inkproof.Scene.Color
 def Inkproof.Demos.Scatter.labelTexts : Inkproof.Demos.Frame → Array String
 theorem Inkproof.Demos.Scatter.labelTexts_eq : ∀ (f : Inkproof.Demos.Frame), Inkproof.Demos.Scatter.labelTexts f = Inkproof.Demos.texts f ++ (Inkproof.Demos.Axes.linearLabels Inkproof.Demos.Scatter.rightRange.fst.toFloat Inkproof.Demos.Scatter.rightRange.snd.toFloat).toArray
@@ -530,6 +587,10 @@ def Inkproof.Demos.Scatter.rightScale : Inkproof.Demos.Frame → Inkproof.Scale.
 theorem Inkproof.Demos.Scatter.rightScale_eq : ∀ (f : Inkproof.Demos.Frame), Inkproof.Demos.Scatter.rightScale f = { domainStart := Inkproof.Demos.Scatter.rightRange.fst.toFloat, domainEnd := Inkproof.Demos.Scatter.rightRange.snd.toFloat, rangeStart := f.bottom.toFloat, rangeEnd := f.top.toFloat }
 def Inkproof.Demos.Scatter.rightStyle : Inkproof.Scene.AxisStyle
 theorem Inkproof.Demos.Scatter.rightStyle_eq : Inkproof.Demos.Scatter.rightStyle = have __src := Inkproof.Demos.Axes.style; { line := __src.line, lineHalfWidth := __src.lineHalfWidth, tick := __src.tick, tickHalfWidth := __src.tickHalfWidth, tickLength := __src.tickLength, grid := Option.none, labelGap := __src.labelGap }
+def Inkproof.Demos.Scatter.scatterChart : Inkproof.Demos.Frame → (String → Float × Float) → Inkproof.Scene.DisplayList
+theorem Inkproof.Demos.Scatter.scatterChart_eq : ∀ (f : Inkproof.Demos.Frame) (measure : String → Float × Float), Inkproof.Demos.Scatter.scatterChart f measure = Inkproof.Demos.axisDisplay f measure ++ Inkproof.Scene.DisplayList.clip (Inkproof.Demos.plot f) (Array.flatMap (fun c => Inkproof.Scene.compileScatter { paint := { layer := 1, color := Inkproof.Scene.Shading.flat c.color }, shape := Inkproof.Scene.MarkerShape.circle, radius := 5 / 2 } (Inkproof.Demos.projection f) (Inkproof.Core.Series.ofUnsorted (Array.map (fun x => match x with | (x, y) => (x, Option.some y)) c.points))) Inkproof.Demos.Scatter.clouds)
+def Inkproof.Demos.Scatter.scatterFrame : Inkproof.Demos.Frame
+theorem Inkproof.Demos.Scatter.scatterFrame_eq : Inkproof.Demos.Scatter.scatterFrame = have all := Array.flatMap (fun x => x.points) Inkproof.Demos.Scatter.clouds; { left := 60, right := 1900, top := 20, bottom := 560, xs := Inkproof.Demos.Data.extent (Array.map (fun x => x.fst) all), ys := Inkproof.Demos.Data.extent (Array.map (fun x => x.snd) all) }
 def Inkproof.Demos.ServerEvents.busy : Nat → Int
 theorem Inkproof.Demos.ServerEvents.busy_eq : ∀ (i : Nat), Inkproof.Demos.ServerEvents.busy i = Int.ofNat (50 + Inkproof.Demos.ServerEvents.hash 1 i % 100 + if (Inkproof.Demos.ServerEvents.hash 5 (i / 300) % 4 == 0) = Bool.true then Inkproof.Demos.ServerEvents.hash 2 i % 9000 else 0)
 def Inkproof.Demos.ServerEvents.chart : List (Array Inkproof.Demos.Reduce.Extent) → (String → Float × Float) → Inkproof.Scene.DisplayList
