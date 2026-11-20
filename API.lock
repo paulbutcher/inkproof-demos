@@ -291,6 +291,26 @@ def Inkproof.Demos.Lines.values : List Inkproof.Demos.Lines.Layer → List Rat
 theorem Inkproof.Demos.Lines.values_eq : ∀ (layers : List Inkproof.Demos.Lines.Layer), Inkproof.Demos.Lines.values layers = List.flatMap (fun l => List.filterMap id l.data.values.toList) layers
 def Inkproof.Demos.Lines.withGaps : List Nat → Array Rat → Array (Option Rat)
 theorem Inkproof.Demos.Lines.withGaps_eq : ∀ (gaps : List Nat) (ys : Array Rat), Inkproof.Demos.Lines.withGaps gaps ys = Array.mapIdx (fun i y => if gaps.contains i = Bool.true then Option.none else Option.some y) ys
+def Inkproof.Demos.Linked.bindChart : Inkproof.Demos.Zoom.Chart
+def Inkproof.Demos.Linked.fetched : Array (Rat × Rat) → Inkproof.Demos.Zoom.Chart
+theorem Inkproof.Demos.Linked.fetched_bounds : ∀ (pts : Array (Rat × Rat)), (Inkproof.Demos.Linked.fetched pts).ranges = ((0, ↑(Inkproof.Demos.Linked.samples - 1)), 0, 256)
+theorem Inkproof.Demos.Linked.fetched_lines : ∀ (pts : Array (Rat × Rat)), (Inkproof.Demos.Linked.fetched pts).lines = [{ xs := Array.map (fun x => x.fst) pts, ys := Array.map (fun x => x.snd) pts, color := { r := 255, g := 0, b := 0, a := 255 } }]
+def Inkproof.Demos.Linked.file : Nat → ByteArray
+theorem Inkproof.Demos.Linked.file_get : ∀ (stride i : Nat) (h : i < (Inkproof.Demos.Linked.file stride).size), (Inkproof.Demos.Linked.file stride).data[i] = UInt8.ofNat (Inkproof.Demos.Linked.sample (i * stride))
+theorem Inkproof.Demos.Linked.file_size : ∀ (stride : Nat), (Inkproof.Demos.Linked.file stride).size = Inkproof.Demos.Linked.samples / stride
+def Inkproof.Demos.Linked.points : Nat → Nat → ByteArray → Array (Rat × Rat)
+theorem Inkproof.Demos.Linked.points_get : ∀ (stride first : Nat) (body : ByteArray) (i : Nat) (h : i < (Inkproof.Demos.Linked.points stride first body).size), (Inkproof.Demos.Linked.points stride first body)[i] = (↑((first + i) * stride), ↑body.data[i].toNat)
+theorem Inkproof.Demos.Linked.points_size : ∀ (stride first : Nat) (body : ByteArray), (Inkproof.Demos.Linked.points stride first body).size = body.size
+def Inkproof.Demos.Linked.sample : Nat → Nat
+theorem Inkproof.Demos.Linked.sample_eq : ∀ (i : Nat), Inkproof.Demos.Linked.sample i = 20 + Inkproof.Demos.ServerEvents.hash 8 (i / 40) % 150 + Inkproof.Demos.ServerEvents.hash 9 i % 60
+theorem Inkproof.Demos.Linked.sample_lt : ∀ (i : Nat), Inkproof.Demos.Linked.sample i < 256
+def Inkproof.Demos.Linked.samples : Nat
+def Inkproof.Demos.Linked.syncCharts : List (String × Inkproof.Demos.Zoom.Chart)
+def Inkproof.Demos.Linked.window : Inkproof.Viewport.Interval Rat → Nat × Nat
+def Inkproof.Demos.Linked.windowOf : Float → Float → Nat × Nat
+theorem Inkproof.Demos.Linked.windowOf_eq : ∀ (x0 x1 : Float), Inkproof.Demos.Linked.windowOf x0 x1 = match Inkproof.Float.Float.toRat x0, Inkproof.Float.Float.toRat x1 with | Option.some a, Option.some b => Inkproof.Demos.Linked.window { start := a, span := b - a } | x, x_1 => (0, Inkproof.Demos.Linked.samples)
+theorem Inkproof.Demos.Linked.window_bounds : ∀ (a : Inkproof.Viewport.Interval Rat), 0 < (Inkproof.Demos.Linked.window a).snd ∧ (Inkproof.Demos.Linked.window a).fst + (Inkproof.Demos.Linked.window a).snd ≤ Inkproof.Demos.Linked.samples
+theorem Inkproof.Demos.Linked.window_eq : ∀ (a : Inkproof.Viewport.Interval Rat), Inkproof.Demos.Linked.window a = (({ start := a.start - a.span / 10, span := a.span + 2 * (a.span / 10) }.indexRange Inkproof.Demos.Linked.samples).fst, ({ start := a.start - a.span / 10, span := a.span + 2 * (a.span / 10) }.indexRange Inkproof.Demos.Linked.samples).snd - ({ start := a.start - a.span / 10, span := a.span + 2 * (a.span / 10) }.indexRange Inkproof.Demos.Linked.samples).fst)
 structure Inkproof.Demos.LogScales.Spec : Type
 def Inkproof.Demos.LogScales.Spec.axes : Inkproof.Demos.LogScales.Spec → (String → Float × Float) → List Inkproof.Scene.AxisDrawing
 theorem Inkproof.Demos.LogScales.Spec.axes_eq : ∀ (s : Inkproof.Demos.LogScales.Spec) (measure : String → Float × Float), s.axes measure = [s.frame.timeAxis Inkproof.Demos.LogScales.timeTarget measure, if s.log = Bool.true then Inkproof.Scene.compileLogAxis Inkproof.Scene.Side.left (Inkproof.Demos.plot s.frame) { domainStart := s.ys.fst.toFloat, domainEnd := s.ys.snd.toFloat, rangeStart := s.frame.bottom.toFloat, rangeEnd := s.frame.top.toFloat } Inkproof.Demos.Axes.spec measure Inkproof.Demos.Axes.style else Inkproof.Scene.compileLinearAxis Inkproof.Scene.Side.left (Inkproof.Demos.plot s.frame) s.frame.yScale Inkproof.Demos.Axes.spec measure Inkproof.Demos.Axes.style]
@@ -669,6 +689,7 @@ field Inkproof.Demos.StocksSource.Stock.symbol : Inkproof.Demos.StocksSource.Sto
 field Inkproof.Demos.StocksSource.Stock.volume : Inkproof.Demos.StocksSource.Stock → Array Nat
 def Inkproof.Demos.StocksSource.stocks : Array Inkproof.Demos.StocksSource.Stock
 structure Inkproof.Demos.Zoom.Chart : Type
+field Inkproof.Demos.Zoom.Chart.bounds : Inkproof.Demos.Zoom.Chart → Option ((Rat × Rat) × Rat × Rat)
 def Inkproof.Demos.Zoom.Chart.commands : Inkproof.Demos.Zoom.Chart → Inkproof.Gpu.Cache → Bool → Inkproof.Viewport.View Float → (String → Float × Float) → Inkproof.Gpu.Cache × List Inkproof.Gpu.Cmd
 theorem Inkproof.Demos.Zoom.Chart.commands_eq : ∀ (c : Inkproof.Demos.Zoom.Chart) (cache : Inkproof.Gpu.Cache) (fresh : Bool) (v : Inkproof.Viewport.View Float) (measure : String → Float × Float), c.commands cache fresh v measure = have f := c.viewFrame v; Inkproof.Gpu.viewOverlayFrame (Inkproof.Gpu.tessellateStroke { x := 0, y := 0 }) cache fresh c.width c.height { x0 := f.xs.fst, x1 := f.xs.snd, y0 := f.ys.fst, y1 := f.ys.snd } (Inkproof.Demos.plot f) c.data (Inkproof.Demos.axisDisplay f measure) Inkproof.Demos.background
 def Inkproof.Demos.Zoom.Chart.config : Inkproof.Demos.Zoom.Chart → Inkproof.Viewport.ViewConfig Float
@@ -679,9 +700,9 @@ def Inkproof.Demos.Zoom.Chart.frame : Inkproof.Demos.Zoom.Chart → Inkproof.Dem
 theorem Inkproof.Demos.Zoom.Chart.frame_eq : ∀ (c : Inkproof.Demos.Zoom.Chart), c.frame = Inkproof.Demos.Frame.sized c.width c.height c.ranges.fst c.ranges.snd
 field Inkproof.Demos.Zoom.Chart.height : Inkproof.Demos.Zoom.Chart → Nat
 field Inkproof.Demos.Zoom.Chart.lines : Inkproof.Demos.Zoom.Chart → List Inkproof.Demos.Zoom.Line
-constructor Inkproof.Demos.Zoom.Chart.mk : Nat → Nat → List Inkproof.Demos.Zoom.Line → Inkproof.Demos.Zoom.Chart
+constructor Inkproof.Demos.Zoom.Chart.mk : Nat → Nat → List Inkproof.Demos.Zoom.Line → Option ((Rat × Rat) × Rat × Rat) → Inkproof.Demos.Zoom.Chart
 def Inkproof.Demos.Zoom.Chart.ranges : Inkproof.Demos.Zoom.Chart → (Rat × Rat) × Rat × Rat
-theorem Inkproof.Demos.Zoom.Chart.ranges_eq : ∀ (c : Inkproof.Demos.Zoom.Chart), c.ranges = match List.flatMap (fun x => x.xs.toList) c.lines, List.flatMap (fun x => x.ys.toList) c.lines with | x :: xs, y :: ys => ((List.foldl Min.min x xs, List.foldl Max.max x xs), Inkproof.Scale.autoRange (1 / 10) (List.foldl Min.min y ys) (List.foldl Max.max y ys)) | x, x_1 => ((0, 1), 0, 1)
+theorem Inkproof.Demos.Zoom.Chart.ranges_eq : ∀ (c : Inkproof.Demos.Zoom.Chart), c.ranges = c.bounds.getD (match List.flatMap (fun x => x.xs.toList) c.lines, List.flatMap (fun x => x.ys.toList) c.lines with | x :: xs, y :: ys => ((List.foldl Min.min x xs, List.foldl Max.max x xs), Inkproof.Scale.autoRange (1 / 10) (List.foldl Min.min y ys) (List.foldl Max.max y ys)) | x, x_1 => ((0, 1), 0, 1))
 def Inkproof.Demos.Zoom.Chart.viewFrame : Inkproof.Demos.Zoom.Chart → Inkproof.Viewport.View Float → Inkproof.Demos.Frame
 theorem Inkproof.Demos.Zoom.Chart.viewFrame_eq : ∀ (c : Inkproof.Demos.Zoom.Chart) (v : Inkproof.Viewport.View Float), c.viewFrame v = have f := c.frame; have range := fun s d => ((Inkproof.Float.Float.toRat s.start).getD d.fst, (Inkproof.Float.Float.toRat (s.start + s.span)).getD d.snd); { left := f.left, right := f.right, top := f.top, bottom := f.bottom, xs := range v.x f.xs, ys := range v.y f.ys }
 field Inkproof.Demos.Zoom.Chart.width : Inkproof.Demos.Zoom.Chart → Nat

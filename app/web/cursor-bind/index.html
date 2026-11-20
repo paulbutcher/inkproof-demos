@@ -1,0 +1,21 @@
+<!--
+Copyright (c) 2026 Paul Butcher. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Cursor bind</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>inkproof-chart { display: block; width: 900px; height: 400px; margin-bottom: 20px; }</style>
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <h1>Cursor bind</h1>
+    <p><a href="../">All demos</a></p>
+    <p>The chart draws a cursor, a vertical and a horizontal line, at the data position under the pointer, and the reading below is that position as the element reports it. Drag to box-zoom; the <code>0</code> key resets. uPlot's demo binds extra mouse handlers (annotating with Ctrl-drag), which has no counterpart here.</p>
+    <inkproof-chart id="chart" src="cursor-bind" cursor="xy" drag="box"></inkproof-chart>
+    <p id="reading">Move the pointer over the chart.</p>
+  </body>
+</html>

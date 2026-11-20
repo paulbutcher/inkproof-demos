@@ -5,6 +5,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 lake build
+lake exe demo-data
 npm ci --no-fund --no-audit
 (cd app && npm ci --no-fund --no-audit && LASM_EDITOR=0 npx vite build)
 rm -rf _site

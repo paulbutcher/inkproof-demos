@@ -12,9 +12,9 @@ package «inkproof-demos» where
     ⟨`warningAsError, true⟩
   ]
 
-require «inkproof-web» from git "https://github.com/paulbutcher/inkproof-web" @ "v0.9.1"
+require «inkproof-web» from git "https://github.com/paulbutcher/inkproof-web" @ "v0.11.0"
 require «inkproof-export» from git "https://github.com/paulbutcher/inkproof-export" @ "v0.5.0"
-require «inkproof-viewport» from git "https://github.com/paulbutcher/inkproof-viewport" @ "v0.7.0"
+require «inkproof-viewport» from git "https://github.com/paulbutcher/inkproof-viewport" @ "v0.9.0"
 require «inkproof-scene» from git "https://github.com/paulbutcher/inkproof-scene" @ "v0.19.0"
 require «inkproof-scale» from git "https://github.com/paulbutcher/inkproof-scale" @ "v0.10.0"
 require «inkproof-axis» from git "https://github.com/paulbutcher/inkproof-axis" @ "v0.7.0"
@@ -26,6 +26,10 @@ require «inkproof-gpu» from git "https://github.com/paulbutcher/inkproof-gpu" 
 lean_lib InkproofDemos where
   roots := #[`Inkproof.Demos, `Inkproof.Demos.Proofs]
 
+/-- Writes the data files that pages fetch, into `app/web/public/data/`. -/
+lean_exe «demo-data» where
+  root := `Inkproof.Demos.DataFiles
+
 @[test_driver]
 script tests do
   let child ← IO.Process.spawn
@@ -34,4 +38,4 @@ script tests do
 
 /-- The code the pages share. It imports Lasm, so only Lasm's build compiles it. -/
 lean_lib InkproofDemosBrowser where
-  roots := #[`Inkproof.Demos.Browser, `Inkproof.Demos.ZoomPage]
+  roots := #[`Inkproof.Demos.Browser, `Inkproof.Demos.ZoomPage, `Inkproof.Demos.FetchPage]

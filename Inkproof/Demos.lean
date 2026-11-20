@@ -26,3 +26,4 @@ import Inkproof.Demos.Reduce
 import Inkproof.Demos.ServerEvents
 import Inkproof.Demos.Million
 import Inkproof.Demos.Zoom
+import Inkproof.Demos.Linked

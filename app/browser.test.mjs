@@ -311,3 +311,106 @@ test('zooming uploads no buffer an earlier frame uploaded', async () => {
   assert.deepEqual(uploads.filter(u => u.frame > 0 && lines.has(u.data)), []);
   await page.close();
 });
+
+const pointerAt = (page, id, type, x, y) => page.evaluate(([id, type, x, y]) => {
+  const el = document.getElementById(id);
+  const rect = el.getBoundingClientRect();
+  el.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: type === 'pointermove' ? 0 : 1, clientX: rect.left + x, clientY: rect.top + y }));
+}, [id, type, x, y]);
+
+// The pixels of the column `x` pixels from the left of the chart's 2D layer, where the cursor is drawn.
+const column = (page, id, x) => page.evaluate(([id, x]) => {
+  const el = document.getElementById(id);
+  const canvas = el.shadowRoot.querySelector('canvas');
+  const scale = canvas.width / el.getBoundingClientRect().width;
+  return [...canvas.getContext('2d').getImageData(Math.round(x * scale), 0, 1, canvas.height).data];
+}, [id, x]);
+
+// How many pixels differ between two columns.
+const changed = (a, b) => { let n = 0; for (let i = 0; i < a.length; i += 4) if (a[i] !== b[i] || a[i + 1] !== b[i + 1] || a[i + 2] !== b[i + 2] || a[i + 3] !== b[i + 3]) n++; return n; };
+
+const watchViews = page => page.evaluate(() => {
+  window.seen = {};
+  addEventListener('inkproof-view', e => (window.seen[e.target.id] ??= []).push(e.detail));
+});
+
+test('sync cursor: the pointer on one chart draws the cursor on the others, and an unlinked chart stops following', async () => {
+  const { page, problems } = await open('sync-cursor/');
+  await page.waitForFunction(() => window.draws.length >= 3);
+  await page.locator('#sync-0').scrollIntoViewIfNeeded();
+  const ids = ['sync-0', 'sync-1', 'sync-2'];
+  const quiet = [];
+  for (const id of ids) quiet.push(await column(page, id, 300));
+  await pointerAt(page, 'sync-0', 'pointermove', 300, 100);
+  await page.waitForTimeout(300);
+  for (const [i, id] of ids.entries()) {
+    const n = changed(quiet[i], await column(page, id, 300));
+    assert.ok(n > 100, `${id} draws a cursor line (${n} pixels changed)`);
+  }
+  await pointerAt(page, 'sync-0', 'pointerleave', 300, 100);
+  await page.waitForTimeout(300);
+  assert.ok(changed(quiet[2], await column(page, 'sync-2', 300)) < 10, 'leaving takes the cursor away');
+
+  await watchViews(page);
+  await page.evaluate(() => { const el = document.getElementById('sync-0'); const r = el.getBoundingClientRect(); el.dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, clientX: r.left + 300, clientY: r.top + 100, deltaY: -300 })); });
+  await page.waitForFunction(() => window.seen['sync-2']?.length);
+  const first = await page.evaluate(() => window.seen);
+  assert.deepEqual([first['sync-1'].at(-1).xStart, first['sync-2'].at(-1).xStart], [first['sync-0'].at(-1).xStart, first['sync-0'].at(-1).xStart], 'the group follows a zoom');
+  await page.click('button[data-unlink]');
+  await page.evaluate(() => { window.seen = {}; });
+  await page.evaluate(() => { const el = document.getElementById('sync-0'); const r = el.getBoundingClientRect(); el.dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, clientX: r.left + 300, clientY: r.top + 100, deltaY: -300 })); });
+  await page.waitForFunction(() => window.seen['sync-2']?.length);
+  await page.waitForTimeout(200);
+  const after = await page.evaluate(() => window.seen);
+  assert.equal(after['sync-1'], undefined, 'the unlinked chart does not follow');
+  assert.ok(after['sync-0'].length > 0 && after['sync-2'].length > 0, 'the others still do');
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});
+
+test('cursor bind: the reading is the data position under the pointer', async () => {
+  const { page, problems } = await open('cursor-bind/');
+  await page.waitForFunction(() => window.draws.length >= 1);
+  await page.evaluate(() => addEventListener('inkproof-pointer', e => (window.pointers ??= []).push(e.detail)));
+  const quiet = await column(page, 'chart', 200);
+  await pointerAt(page, 'chart', 'pointermove', 400, 150);
+  await page.waitForFunction(() => window.pointers?.length);
+  const at = await page.evaluate(() => window.pointers.at(-1));
+  assert.ok(at.x > 1 && at.x < 30, JSON.stringify(at));
+  const text = await page.locator('#reading').textContent();
+  const [x, y] = text.match(/-?\d+(\.\d+)?/g).map(Number);
+  assert.ok(Math.abs(x - at.x) < 1e-6 && Math.abs(y - at.y) < 1e-6, `${text} against ${JSON.stringify(at)}`);
+  await pointerAt(page, 'chart', 'pointermove', 200, 150);
+  await page.waitForFunction(t => document.getElementById('reading').textContent !== t, text);
+  const moved = await page.evaluate(() => window.pointers.at(-1));
+  assert.ok(moved.x < at.x, 'the reading follows the pointer');
+  await page.waitForTimeout(300);
+  assert.ok(changed(quiet, await column(page, 'chart', 200)) > 100, 'the element draws the cursor line');
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});
+
+test('zoom fetch: zooming requests the samples of the new range and redraws', async () => {
+  const { page, problems } = await open('zoom-fetch/');
+  const requests = [];
+  page.on('request', r => { if (r.url().endsWith('.bin')) requests.push({ url: r.url().split('/').pop(), range: r.headers().range }); });
+  await page.reload();
+  await page.waitForFunction(() => window.draws.length >= 2);
+  assert.ok(requests.some(r => r.url === 'zoom-fetch-coarse.bin'), JSON.stringify(requests));
+  const drawn = await page.evaluate(() => window.draws.length);
+  const box = await page.locator('#chart').boundingBox();
+  await page.mouse.move(box.x + 200, box.y + 150);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 400, box.y + 150, { steps: 4 });
+  await page.mouse.up();
+  await page.waitForFunction(() => window.views.length >= 1);
+  await page.waitForTimeout(500);
+  const view = await lastView(page);
+  const fine = requests.filter(r => r.url === 'zoom-fetch-fine.bin');
+  assert.ok(fine.length > 0, JSON.stringify(requests));
+  const [start, end] = fine.at(-1).range.match(/\d+/g).map(Number);
+  assert.ok(start <= view.xStart && end >= view.xEnd - 1 && end - start < 4999, `${fine.at(-1).range} for ${JSON.stringify(view)}`);
+  assert.ok(await page.evaluate(n => window.draws.length > n, drawn), 'the chart is drawn again');
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});

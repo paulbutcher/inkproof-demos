@@ -21,34 +21,36 @@ structure Line where
   ys : Array Rat
   color : Color
 
-/-- A chart of lines that the pointer zooms and pans. -/
+/-- A chart of lines that the pointer zooms and pans. A chart that shows only part of its data, such as one fetched for a range, gives the extent of all of it as `bounds`. -/
 structure Chart where
   width : Nat
   height : Nat
   lines : List Line
+  bounds : Option ((Rat × Rat) × (Rat × Rat)) := none
 
 /-- The two series of uPlot's wheel and touch zoom pages. -/
 def basic : Chart :=
   let xs : Array Rat := #[1, 2, 3, 4, 5, 6, 7]
-  ⟨600, 400, [⟨xs, #[40, 43, 60, 65, 71, 73, 80], ⟨255, 0, 0, 255⟩⟩, ⟨xs, #[18, 24, 37, 55, 55, 60, 63], ⟨0, 0, 255, 255⟩⟩]⟩
+  ⟨600, 400, [⟨xs, #[40, 43, 60, 65, 71, 73, 80], ⟨255, 0, 0, 255⟩⟩, ⟨xs, #[18, 24, 37, 55, 55, 60, 63], ⟨0, 0, 255, 255⟩⟩], none⟩
 
 /-- Thirty points of a fixed hash of the index in `-10..10`, drawn in purple, as the variations page does. -/
 def variation : Chart :=
   let xs : Array Rat := (Array.range 30).map fun i => ((i + 1 : Nat) : Rat)
-  ⟨600, 400, [⟨xs, (Data.ints 7 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), ⟨128, 0, 128, 255⟩⟩]⟩
+  ⟨600, 400, [⟨xs, (Data.ints 7 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), ⟨128, 0, 128, 255⟩⟩], none⟩
 
 /-- The extent of every x value of the chart, and of every y value padded as an automatic axis would. -/
 def Chart.ranges (c : Chart) : (Rat × Rat) × (Rat × Rat) :=
+  c.bounds.getD <|
   let xs := c.lines.flatMap (·.xs.toList)
   let ys := c.lines.flatMap (·.ys.toList)
   match xs, ys with
   | x :: xs, y :: ys => ((xs.foldl min x, xs.foldl max x), autoRange (1 / 10) (ys.foldl min y) (ys.foldl max y))
   | _, _ => ((0, 1), (0, 1))
 
-theorem Chart.ranges_eq (c : Chart) : c.ranges =
-    match c.lines.flatMap (·.xs.toList), c.lines.flatMap (·.ys.toList) with
+theorem Chart.ranges_eq (c : Chart) : c.ranges = c.bounds.getD
+    (match c.lines.flatMap (·.xs.toList), c.lines.flatMap (·.ys.toList) with
     | x :: xs, y :: ys => ((xs.foldl min x, xs.foldl max x), autoRange (1 / 10) (ys.foldl min y) (ys.foldl max y))
-    | _, _ => ((0, 1), (0, 1)) := rfl
+    | _, _ => ((0, 1), (0, 1))) := rfl
 
 def Chart.frame (c : Chart) : Frame := Frame.sized c.width c.height c.ranges.1 c.ranges.2
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.9.0
+
+- The Sync cursor, Cursor bind and Zoom fetch pages, charts that share a cursor and x range through Web's `group` and `cursor` attributes, and one that fetches the samples of its zoomed range.
+- Web v0.11.0 and Viewport v0.9.0.
+
 ## v0.8.0
 
 - The Wheel Zoom & Drag, Pinch Zoom & Pan, Zoom variations and Zoom with reset pages, charts that the pointer zooms and pans from retained GPU buffers.

@@ -176,5 +176,18 @@ private def zoomTest : Except String Unit := do
     check (lines.all (uploads first).contains) "the first frame uploads every line"
     check (lines.all fun l => !(uploads second).contains l) "a frame under another view uploads no line again"
 
+private def linkedTest : Except String Unit := do
+  check (Linked.syncCharts.length == 3) "sync cursor has three charts"
+  check (Linked.syncCharts.all fun (_, c) => c.lines.all fun l => l.xs.size == 1000 && l.ys.size == 1000 && l.xs.back? == some 999) "the synced charts share one x range"
+  let whole := Linked.file 1
+  check (whole.size == Linked.samples) "the served file holds one byte per sample"
+  for (lo, hi) in [(0, 5000), (123, 480), (4990, 6000)] do
+    let (first, count) := Linked.windowOf (Float.ofNat lo) (Float.ofNat hi)
+    check (first + count ≤ Linked.samples) s!"the window for {lo}..{hi} stays inside the file"
+    check (first ≤ lo && first + count ≥ min hi Linked.samples) s!"the window for {lo}..{hi} covers the range"
+    let pts := Linked.points 1 first (whole.extract first (first + count))
+    check (pts.all fun (x, y) => y == (Linked.sample x.floor.toNat : Nat)) "fetched points hold the samples at their index"
+  check ((Linked.windowOf 100 50).2 > 0) "a reversed range still fetches a sample"
+
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, platformTest (args.contains "--expect-wasm")]
