@@ -9,13 +9,14 @@ theorem Inkproof.Demos.AreaFill.frame_eq : ∀ (width : Nat), Inkproof.Demos.Are
 def Inkproof.Demos.AreaFill.height : Nat → Nat
 theorem Inkproof.Demos.AreaFill.height_eq : ∀ (width : Nat), Inkproof.Demos.AreaFill.height width = Min.min 600 (Max.max 240 (width / 3))
 def Inkproof.Demos.AreaFill.level : Nat → Int
-theorem Inkproof.Demos.AreaFill.level_bounds : ∀ (draw : Nat), -10 ≤ Inkproof.Demos.AreaFill.level draw ∧ Inkproof.Demos.AreaFill.level draw ≤ 10
+theorem Inkproof.Demos.AreaFill.level_bounds : ∀ (draw : Nat), draw ≤ 20 → -10 ≤ Inkproof.Demos.AreaFill.level draw ∧ Inkproof.Demos.AreaFill.level draw ≤ 10
+theorem Inkproof.Demos.AreaFill.level_eq : ∀ (draw : Nat), Inkproof.Demos.AreaFill.level draw = ↑draw - 10
 def Inkproof.Demos.AreaFill.pageSeries : Nat → Nat → Inkproof.Core.Series Rat Rat
 theorem Inkproof.Demos.AreaFill.pageSeries_eq : ∀ (seed i : Nat), Inkproof.Demos.AreaFill.pageSeries seed i = Inkproof.Demos.AreaFill.series (seed + i) 30
 def Inkproof.Demos.AreaFill.series : Nat → Nat → Inkproof.Core.Series Rat Rat
-def Inkproof.Demos.AreaFill.step : Array Int × StdGen → Array Int × StdGen
-theorem Inkproof.Demos.AreaFill.step_size : ∀ (acc : Array Int × StdGen), (Inkproof.Demos.AreaFill.step acc).fst.size = acc.fst.size + 1
 def Inkproof.Demos.AreaFill.values : Nat → Nat → Array Int
+theorem Inkproof.Demos.AreaFill.values_bounds : ∀ (seed n : Nat) (v : Int), v ∈ Inkproof.Demos.AreaFill.values seed n → -10 ≤ v ∧ v ≤ 10
+theorem Inkproof.Demos.AreaFill.values_eq : ∀ (seed n : Nat), Inkproof.Demos.AreaFill.values seed n = Array.map Inkproof.Demos.AreaFill.level (RandomSampling.nats (mkStdGen seed) n 0 20).fst
 theorem Inkproof.Demos.AreaFill.values_size : ∀ (seed n : Nat), (Inkproof.Demos.AreaFill.values seed n).size = n
 def Inkproof.Demos.Axes.linearLabels : Float → Float → List String
 theorem Inkproof.Demos.Axes.linearLabels_eq : ∀ (lo hi : Float), Inkproof.Demos.Axes.linearLabels lo hi = Inkproof.Axis.tickLabels Inkproof.Demos.Axes.spec.locale (Inkproof.Axis.linearTicks lo hi Inkproof.Demos.Axes.spec.target)
@@ -35,6 +36,7 @@ def Inkproof.Demos.AxisControl.labels : List String
 theorem Inkproof.Demos.AxisControl.labels_eq : Inkproof.Demos.AxisControl.labels = Inkproof.Axis.tickLabels Inkproof.Axis.Locale.en Inkproof.Demos.AxisControl.yTicks
 def Inkproof.Demos.AxisControl.n : Nat
 def Inkproof.Demos.AxisControl.points : Array (Rat × Option Rat)
+theorem Inkproof.Demos.AxisControl.points_eq : Inkproof.Demos.AxisControl.points = Array.mapIdx (fun x d => (↑x, Option.some (Inkproof.Demos.AxisControl.thousandths (Inkproof.Demos.AxisControl.signal x (d.toFloat / 1000 - 0.5))))) (RandomSampling.nats (mkStdGen 3) Inkproof.Demos.AxisControl.n 0 1000).fst
 theorem Inkproof.Demos.AxisControl.points_size : Inkproof.Demos.AxisControl.points.size = Inkproof.Demos.AxisControl.n
 def Inkproof.Demos.AxisControl.red : Inkproof.Scene.Color
 def Inkproof.Demos.AxisControl.redStyle : Inkproof.Scene.AxisStyle
@@ -170,16 +172,13 @@ def Inkproof.Demos.Candles.volumeBar : Nat → Inkproof.Demos.Candles.Candle →
 theorem Inkproof.Demos.Candles.volumeBar_eq : ∀ (i : Nat) (c : Inkproof.Demos.Candles.Candle), Inkproof.Demos.Candles.volumeBar i c = { x0 := Inkproof.Demos.Candles.pane.centre i - Inkproof.Demos.Candles.bodyWidth / 2, y0 := Inkproof.Demos.Candles.pane.row (Inkproof.Demos.Candles.pane.right.getD (0, 1)) c.volume, x1 := Inkproof.Demos.Candles.pane.centre i + Inkproof.Demos.Candles.bodyWidth / 2, y1 := Inkproof.Demos.Candles.pane.plot.y1 }
 def Inkproof.Demos.Candles.wick : Nat → Inkproof.Demos.Candles.Candle → Inkproof.Scene.Rect
 theorem Inkproof.Demos.Candles.wick_eq : ∀ (i : Nat) (c : Inkproof.Demos.Candles.Candle), Inkproof.Demos.Candles.wick i c = { x0 := Inkproof.Demos.Candles.pane.centre i - 1, y0 := Inkproof.Demos.Candles.pane.row Inkproof.Demos.Candles.pane.left c.high, x1 := Inkproof.Demos.Candles.pane.centre i + 1, y1 := Inkproof.Demos.Candles.pane.row Inkproof.Demos.Candles.pane.left c.low }
-def Inkproof.Demos.Data.draw : StdGen → Nat → Nat × StdGen
-theorem Inkproof.Demos.Data.draw_eq : ∀ (g : StdGen) (n : Nat), Inkproof.Demos.Data.draw g n = ((fun x => Min.min x n) (randNat g 0 n).fst, (randNat g 0 n).snd)
-theorem Inkproof.Demos.Data.draw_le : ∀ (g : StdGen) (n : Nat), (Inkproof.Demos.Data.draw g n).fst ≤ n
 def Inkproof.Demos.Data.extent : Array Rat → Rat × Rat
 theorem Inkproof.Demos.Data.extent_empty : Inkproof.Demos.Data.extent #[] = (0, 1)
 theorem Inkproof.Demos.Data.extent_eq : ∀ (vals : Array Rat), Inkproof.Demos.Data.extent vals = (vals.min?.getD 0, vals.max?.getD 1)
 def Inkproof.Demos.Data.gauss : StdGen → Rat × StdGen
-theorem Inkproof.Demos.Data.gauss_eq : ∀ (g : StdGen), Inkproof.Demos.Data.gauss g = match List.foldl (fun acc x => match Inkproof.Demos.Data.draw acc.snd 1000 with | (d, g) => (acc.fst + d, g)) (0, g) (List.range 12) with | (sum, g) => (↑(↑sum - 6000) / 1000, g)
+theorem Inkproof.Demos.Data.gauss_eq : ∀ (g : StdGen), Inkproof.Demos.Data.gauss g = match List.foldl (fun acc x => match RandomSampling.nat acc.snd 0 1000 with | (d, g) => (acc.fst + d, g)) (0, g) (List.range 12) with | (sum, g) => (↑(↑sum - 6000) / 1000, g)
 def Inkproof.Demos.Data.ints : Nat → Nat → Nat → Nat → Array Nat
-theorem Inkproof.Demos.Data.ints_eq : ∀ (seed n lo hi : Nat), Inkproof.Demos.Data.ints seed n lo hi = (List.foldl (fun acc x => match Inkproof.Demos.Data.draw acc.snd (hi - lo) with | (d, g) => (acc.fst.push (lo + d), g)) (#[], mkStdGen seed) (List.range n)).fst
+theorem Inkproof.Demos.Data.ints_eq : ∀ (seed n lo hi : Nat), Inkproof.Demos.Data.ints seed n lo hi = (RandomSampling.nats (mkStdGen seed) n lo hi).fst
 theorem Inkproof.Demos.Data.ints_size : ∀ (seed n lo hi : Nat), (Inkproof.Demos.Data.ints seed n lo hi).size = n
 def Inkproof.Demos.Data.next : Rat → Rat → Rat × StdGen → Rat × StdGen
 theorem Inkproof.Demos.Data.next_eq : ∀ (lo hi : Rat) (acc : Rat × StdGen), Inkproof.Demos.Data.next lo hi acc = match Inkproof.Demos.Data.gauss acc.snd with | (r, g) => (if lo ≤ acc.fst + r ∧ acc.fst + r ≤ hi then acc.fst + r else acc.fst, g)
@@ -261,13 +260,8 @@ def Inkproof.Demos.HighLowBands.temps : Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.HighLowSource.highs : Array Int
 def Inkproof.Demos.HighLowSource.lows : Array Int
 def Inkproof.Demos.Latency.draws : Nat → Nat → Float → Float → Float → Array Float
-theorem Inkproof.Demos.Latency.draws_eq : ∀ (seed n : Nat) (ξ ω α : Float), Inkproof.Demos.Latency.draws seed n ξ ω α = (List.foldl (fun acc x => match Inkproof.Demos.Latency.skewNormal ξ ω α acc.snd with | (v, g) => (acc.fst.push v, g)) (#[], mkStdGen seed) (List.range n)).fst
+theorem Inkproof.Demos.Latency.draws_eq : ∀ (seed n : Nat) (ξ ω α : Float), Inkproof.Demos.Latency.draws seed n ξ ω α = (RandomSampling.draws n (RandomSampling.skewNormal ξ ω α) (mkStdGen seed)).fst
 theorem Inkproof.Demos.Latency.draws_size : ∀ (seed n : Nat) (ξ ω α : Float), (Inkproof.Demos.Latency.draws seed n ξ ω α).size = n
-def Inkproof.Demos.Latency.skewNormal : Float → Float → Float → StdGen → Float × StdGen
-theorem Inkproof.Demos.Latency.skewNormal_eq : ∀ (ξ ω α : Float) (g : StdGen), Inkproof.Demos.Latency.skewNormal ξ ω α g = match Inkproof.Demos.Latency.uniform g with | (a, g) => match Inkproof.Demos.Latency.uniform g with | (b, g) => have r := (-2 * a.log).sqrt; have θ := 2 * 3.141592653589793 * b; have u0 := r * θ.cos; have v := r * θ.sin; have δ := α / (1 + α * α).sqrt; have u1 := δ * u0 + (1 - δ * δ).sqrt * v; (ξ + ω * if u0 ≥ 0 then u1 else -u1, g)
-theorem Inkproof.Demos.Latency.skewNormal_snd : ∀ (ξ ω α : Float) (g : StdGen), (Inkproof.Demos.Latency.skewNormal ξ ω α g).snd = (Inkproof.Demos.Latency.uniform (Inkproof.Demos.Latency.uniform g).snd).snd
-def Inkproof.Demos.Latency.uniform : StdGen → Float × StdGen
-theorem Inkproof.Demos.Latency.uniform_eq : ∀ (g : StdGen), Inkproof.Demos.Latency.uniform g = (((Inkproof.Demos.Data.draw g 1000000).fst.toFloat + 1) / 1000002, (Inkproof.Demos.Data.draw g 1000000).snd)
 def Inkproof.Demos.LatencyHeatmap.bucket : Nat
 def Inkproof.Demos.LatencyHeatmap.bucketCells : Array (Inkproof.Scene.Cell Rat Rat (Nat × Nat))
 theorem Inkproof.Demos.LatencyHeatmap.bucketCells_eq : Inkproof.Demos.LatencyHeatmap.bucketCells = Array.flatMap (fun x => match x with | (col, i) => have counts := Array.foldl (fun acc v => have b := v / (10 * Inkproof.Demos.LatencyHeatmap.bucket); match acc.back? with | Option.some (b', n) => if (b' == b) = Bool.true then acc.pop.push (b, n + 1) else acc.push (b, 1) | Option.none => #[(b, 1)]) #[] col; have most := Array.foldl (fun m x => match x with | (fst, n) => Max.max m n) 1 counts; Array.map (fun x => match x with | (b, n) => Inkproof.Demos.LatencyHeatmap.cell i ↑(b * Inkproof.Demos.LatencyHeatmap.bucket) ↑((b + 1) * Inkproof.Demos.LatencyHeatmap.bucket) (n, most)) counts) Inkproof.Demos.LatencyHeatmap.columns.zipIdx
@@ -508,7 +502,7 @@ theorem Inkproof.Demos.LogScales2.powerOfTwo_eq : ∀ (e : Int), Inkproof.Demos.
 def Inkproof.Demos.LogScales2.purple : Inkproof.Scene.Color
 def Inkproof.Demos.LogScales2.red : Inkproof.Scene.Color
 def Inkproof.Demos.LogScales2.signed : List Rat
-theorem Inkproof.Demos.LogScales2.signed_eq : Inkproof.Demos.LogScales2.signed = (List.foldl (fun acc x => match randNat acc.snd 0 12 with | (draw, g) => ([-100, -10, -1, -1 / 10, -1 / 100, -1 / 1000, 0, 1 / 1000, 1 / 100, 1 / 10, 1, 10, 100].getD (Min.min draw 12) 0 :: acc.fst, g)) ([], mkStdGen 7) (List.range 130)).fst
+theorem Inkproof.Demos.LogScales2.signed_eq : Inkproof.Demos.LogScales2.signed = List.map (fun draw => [-100, -10, -1, -1 / 10, -1 / 100, -1 / 1000, 0, 1 / 1000, 1 / 100, 1 / 10, 1, 10, 100].getD draw 0) (RandomSampling.nats (mkStdGen 7) 130 0 12).fst.toList.reverse
 def Inkproof.Demos.LogScales2.specs : List Inkproof.Demos.LogScales2.Spec
 def Inkproof.Demos.LogScales2.sups : List Char
 def Inkproof.Demos.LogScalesSource.numbers : String → Array Int

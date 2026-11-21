@@ -2,31 +2,18 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import Inkproof.Core
+import RandomSampling
 
 namespace Inkproof.Demos.Data
 
-open Inkproof.Core
-
-/-- A draw of `randNat` in `0..n`, clamped because core states no bound on its result. -/
-def draw (g : StdGen) (n : Nat) : Nat × StdGen :=
-  let (d, g) := randNat g 0 n
-  (min d n, g)
-
-theorem draw_eq (g : StdGen) (n : Nat) : draw g n = ((randNat g 0 n).1 |> (min · n), (randNat g 0 n).2) := rfl
-
-theorem draw_le (g : StdGen) (n : Nat) : (draw g n).1 ≤ n := by
-  unfold draw
-  exact Nat.min_le_right _ _
-
 /-- A step of the walk: the sum of twelve uniform draws in `0..1`, less six, which is close to a standard normal draw. -/
 def gauss (g : StdGen) : Rat × StdGen :=
-  let (sum, g) := (List.range 12).foldl (fun (acc : Nat × StdGen) _ => let (d, g) := draw acc.2 1000; (acc.1 + d, g)) (0, g)
+  let (sum, g) := (List.range 12).foldl (fun (acc : Nat × StdGen) _ => let (d, g) := RandomSampling.nat acc.2 0 1000; (acc.1 + d, g)) (0, g)
   (((sum : Int) - 6000 : Int) / 1000, g)
 
 theorem gauss_eq (g : StdGen) :
     gauss g =
-      let (sum, g) := (List.range 12).foldl (fun (acc : Nat × StdGen) _ => let (d, g) := draw acc.2 1000; (acc.1 + d, g)) (0, g)
+      let (sum, g) := (List.range 12).foldl (fun (acc : Nat × StdGen) _ => let (d, g) := RandomSampling.nat acc.2 0 1000; (acc.1 + d, g)) (0, g)
       (((sum : Int) - 6000 : Int) / 1000, g) := rfl
 
 /-- One step from `v`: it moves by a normal draw and stays put when that would leave `lo..hi`. -/
@@ -71,26 +58,11 @@ theorem walk_size (seed n : Nat) (start lo hi : Rat) : (walk seed n start lo hi)
 
 /-- `n` integers in `lo..hi` from the fixed seed `seed`; uPlot's demos draw theirs at random. -/
 def ints (seed n lo hi : Nat) : Array Nat :=
-  ((List.range n).foldl (fun (acc : Array Nat × StdGen) _ =>
-    let (d, g) := draw acc.2 (hi - lo)
-    (acc.1.push (lo + d), g)) (#[], mkStdGen seed)).1
+  (RandomSampling.nats (mkStdGen seed) n lo hi).1
 
-theorem ints_eq (seed n lo hi : Nat) :
-    ints seed n lo hi =
-      ((List.range n).foldl (fun (acc : Array Nat × StdGen) _ =>
-        let (d, g) := draw acc.2 (hi - lo)
-        (acc.1.push (lo + d), g)) (#[], mkStdGen seed)).1 := rfl
+theorem ints_eq (seed n lo hi : Nat) : ints seed n lo hi = (RandomSampling.nats (mkStdGen seed) n lo hi).1 := rfl
 
-theorem ints_size (seed n lo hi : Nat) : (ints seed n lo hi).size = n := by
-  have h : ∀ (l : List Nat) (a : Array Nat × StdGen),
-      (l.foldl (fun (acc : Array Nat × StdGen) _ =>
-        let (d, g) := draw acc.2 (hi - lo)
-        (acc.1.push (lo + d), g)) a).1.size = a.1.size + l.length := by
-    intro l
-    induction l with
-    | nil => intro a; simp
-    | cons x l ih => intro a; simp only [List.foldl_cons, List.length_cons]; rw [ih]; simp; omega
-  simp [ints, h]
+theorem ints_size (seed n lo hi : Nat) : (ints seed n lo hi).size = n := RandomSampling.nats_size _ _ _ _
 
 /-- The smallest and the largest of `vals`, or `(0, 1)` when there are none. -/
 def extent (vals : Array Rat) : Rat × Rat := (vals.min?.getD 0, vals.max?.getD 1)

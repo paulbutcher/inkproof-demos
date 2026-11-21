@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.14.0
+
+- Seeded draws come from lean-random-sampling v0.1.0, and the samplers written here are gone; uniform draws now have a resolution of 2^-53, so the Latency pages show different data for a seed.
+
 ## v0.13.1
 
 - The Zoom variations page boxes on a plain drag (`drag="box"`).

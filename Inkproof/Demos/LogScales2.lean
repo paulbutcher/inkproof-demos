@@ -2,6 +2,7 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+import RandomSampling
 import Inkproof.Axis
 import Inkproof.Core
 import Inkproof.Scene
@@ -36,15 +37,11 @@ theorem points_eq (x0 : Nat) (positive : Bool) (ys : List (Option Rat)) :
 /-- Thirteen values from `-100` to `100` through zero, ten times over in an order drawn from a fixed seed. -/
 def signed : List Rat :=
   let values : List Rat := [-100, -10, -1, -1/10, -1/100, -1/1000, 0, 1/1000, 1/100, 1/10, 1, 10, 100]
-  ((List.range 130).foldl (fun (acc : List Rat × StdGen) _ =>
-    let (draw, g) := randNat acc.2 0 12
-    (values.getD (min draw 12) 0 :: acc.1, g)) ([], mkStdGen 7)).1
+  ((RandomSampling.nats (mkStdGen 7) 130 0 12).1.toList.reverse).map fun draw => values.getD draw 0
 
 theorem signed_eq : signed =
-    ((List.range 130).foldl (fun (acc : List Rat × StdGen) _ =>
-      let (draw, g) := randNat acc.2 0 12
-      ((([-100, -10, -1, -1/10, -1/100, -1/1000, 0, 1/1000, 1/100, 1/10, 1, 10, 100] : List Rat).getD (min draw 12) 0) :: acc.1, g))
-      ([], mkStdGen 7)).1 := rfl
+    ((RandomSampling.nats (mkStdGen 7) 130 0 12).1.toList.reverse).map fun draw =>
+      ([-100, -10, -1, -1/10, -1/100, -1/1000, 0, 1/1000, 1/100, 1/10, 1, 10, 100] : List Rat).getD draw 0 := rfl
 
 /-- How a chart's y axis is scaled and labelled. -/
 inductive Kind where

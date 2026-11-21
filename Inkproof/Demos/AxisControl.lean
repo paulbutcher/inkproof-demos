@@ -9,6 +9,7 @@ import Inkproof.Scale
 import Inkproof.Demos.Axes
 import Inkproof.Demos.Data
 import Inkproof.Demos.Frame
+import RandomSampling
 
 namespace Inkproof.Demos.AxisControl
 
@@ -32,22 +33,14 @@ theorem thousandths_eq (v : Float) : thousandths v = (Rat.ofInt (v * 1000).round
 
 /-- The `n` points of the series, the noise drawn from a fixed seed so that every visit shows the same chart. -/
 def points : Array (Rat × Option Rat) :=
-  ((List.range n).foldl (fun (acc : Array (Rat × Option Rat) × StdGen) (x : Nat) =>
-    let (d, g) := Data.draw acc.2 1000
-    (acc.1.push ((x : Rat), some (thousandths (signal x (d.toFloat / 1000 - 0.5)))), g)) (#[], mkStdGen 3)).1
+  (RandomSampling.nats (mkStdGen 3) n 0 1000).1.mapIdx fun x d =>
+    ((x : Rat), some (thousandths (signal x (d.toFloat / 1000 - 0.5))))
+
+theorem points_eq : points = (RandomSampling.nats (mkStdGen 3) n 0 1000).1.mapIdx fun x d =>
+    ((x : Rat), some (thousandths (signal x (d.toFloat / 1000 - 0.5)))) := rfl
 
 theorem points_size : points.size = n := by
-  have h : ∀ (l : List Nat) (acc : Array (Rat × Option Rat) × StdGen),
-      (l.foldl (fun (acc : Array (Rat × Option Rat) × StdGen) (x : Nat) =>
-        let (d, g) := Data.draw acc.2 1000
-        (acc.1.push ((x : Rat), some (thousandths (signal x (d.toFloat / 1000 - 0.5)))), g)) acc).1.size
-        = acc.1.size + l.length := by
-    intro l
-    induction l with
-    | nil => intro acc; simp
-    | cons x l ih => intro acc; simp only [List.foldl_cons, List.length_cons]; rw [ih]; simp; omega
-  unfold points
-  rw [h]; simp
+  simp [points, RandomSampling.nats_size]
 
 def series : Series Rat Rat := Series.ofUnsorted points
 

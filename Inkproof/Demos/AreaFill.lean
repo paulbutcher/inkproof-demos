@@ -2,6 +2,7 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+import RandomSampling
 import Inkproof.Core
 import Inkproof.Scene
 import Inkproof.Scale
@@ -13,32 +14,28 @@ namespace Inkproof.Demos.AreaFill
 
 open Inkproof.Core Inkproof.Scene Inkproof.Scale Inkproof.Viewport Inkproof.Demos
 
-/-- An integer in `-10..10` from a draw of `randNat`, clamped because core states no bound on its result. -/
-def level (draw : Nat) : Int := ((min draw 20 : Nat) : Int) - 10
+/-- The integer in `-10..10` for a draw in `0..20`. -/
+def level (draw : Nat) : Int := (draw : Int) - 10
 
-theorem level_bounds (draw : Nat) : -10 ≤ level draw ∧ level draw ≤ 10 := by
+theorem level_eq (draw : Nat) : level draw = (draw : Int) - 10 := rfl
+
+theorem level_bounds (draw : Nat) (h : draw ≤ 20) : -10 ≤ level draw ∧ level draw ≤ 10 := by
   unfold level
   omega
 
-/-- One draw of the generator: the next value is appended and the generator advances. -/
-def step (acc : Array Int × StdGen) : Array Int × StdGen :=
-  let (draw, g) := randNat acc.2 0 20
-  (acc.1.push (level draw), g)
-
 /-- The `n` values drawn from the generator seeded with `seed`. -/
 def values (seed n : Nat) : Array Int :=
-  (n.fold (fun _ _ acc => step acc) (#[], mkStdGen seed)).1
+  ((RandomSampling.nats (mkStdGen seed) n 0 20).1).map level
 
-theorem step_size (acc : Array Int × StdGen) : (step acc).1.size = acc.1.size + 1 := by simp [step]
+theorem values_eq (seed n : Nat) : values seed n = ((RandomSampling.nats (mkStdGen seed) n 0 20).1).map level := rfl
 
 theorem values_size (seed n : Nat) : (values seed n).size = n := by
-  have h : ∀ (k : Nat) (a : Array Int × StdGen),
-      (k.fold (fun _ _ acc => step acc) a).1.size = a.1.size + k := by
-    intro k
-    induction k with
-    | zero => simp [Nat.fold]
-    | succ k ih => intro a; rw [Nat.fold_succ]; show (step _).1.size = _; rw [step_size, ih a]; omega
-  simp [values, h]
+  simp [values, RandomSampling.nats_size]
+
+theorem values_bounds (seed n : Nat) : ∀ v ∈ values seed n, -10 ≤ v ∧ v ≤ 10 := by
+  intro v hv
+  obtain ⟨d, hd, rfl⟩ := Array.mem_map.mp hv
+  exact level_bounds d (RandomSampling.nats_mem _ _ _ _ (by omega) d hd).2
 
 /-- The `n` points `(1, v₁), …, (n, vₙ)` of series `seed`. -/
 def series (seed n : Nat) : Series Rat Rat :=
