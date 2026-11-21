@@ -2,6 +2,7 @@
 
 ## v0.14.0
 
+- The site builds in a fraction of the time: every page mounts one shared Lasm program, so the Lean compiles once, not once per page.
 - Seeded draws come from lean-random-sampling v0.1.0, and the samplers written here are gone; uniform draws now have a resolution of 2^-53, so the Latency pages show different data for a seed.
 - The Gradients page is on the index, with horizontal, over-under, banded and fill gradients.
 
