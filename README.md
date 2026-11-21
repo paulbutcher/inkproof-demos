@@ -29,6 +29,8 @@ The [uPlot demos](https://leeoniya.github.io/uPlot/demos/index.html), recreated 
 - Show discrete states as labelled bars in rows along a time axis, from `timeline-discrete.html`: `Timeline.Chart`, `Timeline.charts`, at `timeline-discrete/`.
 - Mark a data position or range on a zooming chart with a dashed line or shaded band and a label that stay where the data is, from `annotations.html`: `Zoom.Mark`, `Annotations.chart`, at `annotations/`.
 - Show the Stacked Series demo, five stacked areas and four stacked bars with a gap and negative values, from uPlot's `stacked-series.html`: `Inkproof.Demos.Stacked.areaChart`, `Stacked.barChart`, at `stacked/`.
+- Show the Line Paths demo, one series drawn linear, as a monotone spline and stepped before or after each point, from uPlot's `line-paths.html`: `Inkproof.Demos.LinePaths.charts`, at `line-paths/`.
+- Show gradient strokes and fills on line charts, a colour ramp along x or y: `Lines.Gradient`, `Layer.strokeGradient`, `Layer.fillGradient`, and the uPlot gradients charts in `Inkproof.Demos.Gradients` (not yet on the index).
 - Show the series and values of the data point nearest the pointer and a legend with each series at the cursor that hides or shows it, in the spirit of `tooltips-closest.html` and `legend-series.html`: `ZoomPage.mount` with the `tooltip` and `legend` attributes, at `tooltip-legend/`.
 
 ## Build and run

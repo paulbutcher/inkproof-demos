@@ -33,3 +33,5 @@ import Inkproof.Demos.Boxes
 import Inkproof.Demos.Timeline
 import Inkproof.Demos.Annotations
 import Inkproof.Demos.Stacked
+import Inkproof.Demos.Gradients
+import Inkproof.Demos.LinePaths

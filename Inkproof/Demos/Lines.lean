@@ -37,7 +37,36 @@ structure YAxis where
   suffix : String := ""
   grid : Bool := true
 
-/-- One drawn series. -/
+/-- A colour that varies along an axis between stops placed at data values, ascending. -/
+structure Gradient where
+  axis : GradientAxis
+  first : Rat × Color
+  rest : List (Rat × Color)
+
+/-- The stops in the order the plane meets them: y grows downwards, so a y gradient lists them from the highest value. -/
+def Gradient.ordered (g : Gradient) : List (Rat × Color) :=
+  match g.axis with
+  | .x => g.first :: g.rest
+  | .y => (g.first :: g.rest).reverse
+
+theorem Gradient.ordered_eq (g : Gradient) : g.ordered =
+    match g.axis with
+    | .x => g.first :: g.rest
+    | .y => (g.first :: g.rest).reverse := rfl
+
+def Gradient.shading (g : Gradient) (p : Projection Rat Rat) : Shading :=
+  match g.ordered, g.axis with
+  | s :: r, .x => p.gradientX s r
+  | s :: r, .y => p.gradientY s r
+  | [], _ => .flat ⟨0, 0, 0, 0⟩
+
+theorem Gradient.shading_eq (g : Gradient) (p : Projection Rat Rat) : g.shading p =
+    match g.ordered, g.axis with
+    | s :: r, .x => p.gradientX s r
+    | s :: r, .y => p.gradientY s r
+    | [], _ => .flat ⟨0, 0, 0, 0⟩ := rfl
+
+/-- One drawn series. A gradient replaces the colour of the stroke or fill it names. -/
 structure Layer where
   data : Series Rat Rat
   color : Color
@@ -48,6 +77,8 @@ structure Layer where
   /-- Adjacent points further apart than this are not joined. -/
   maxStep : Option Rat := none
   join : Join := .straight
+  strokeGradient : Option Gradient := none
+  fillGradient : Option Gradient := none
 
 /-- The filled space between two layers, where both have a value. -/
 structure Band where
@@ -176,18 +207,40 @@ theorem Chart.bandDisplay_eq (c : Chart) (b : Band) : c.bandDisplay b =
       compileEnvelope ⟨0, b.color⟩ ⟨fun i => c.xScale.map (lo.data.xs.getD i 0), (c.yScale c.left).map⟩ cols
     | _, _ => #[] := rfl
 
+/-- What the layer's stroke is painted with. -/
+def Layer.strokeShading (l : Layer) (p : Projection Rat Rat) : Shading :=
+  match l.strokeGradient with
+  | some g => g.shading p
+  | none => .flat l.color
+
+theorem Layer.strokeShading_eq (l : Layer) (p : Projection Rat Rat) : l.strokeShading p =
+    match l.strokeGradient with
+    | some g => g.shading p
+    | none => .flat l.color := rfl
+
+/-- What the layer's fill is painted with, if it has one. -/
+def Layer.fillShading (l : Layer) (p : Projection Rat Rat) : Option Shading :=
+  match l.fillGradient with
+  | some g => some (g.shading p)
+  | none => l.fill.map .flat
+
+theorem Layer.fillShading_eq (l : Layer) (p : Projection Rat Rat) : l.fillShading p =
+    match l.fillGradient with
+    | some g => some (g.shading p)
+    | none => l.fill.map .flat := rfl
+
 /-- The layer filled down to the bottom of its axis, then stroked. -/
 def Chart.layerDisplay (c : Chart) (l : Layer) : DisplayList :=
-  (match l.fill with
+  (match l.fillShading (c.projection l) with
     | some f => compileArea ⟨0, f⟩ (if l.onRight then (c.right.getD c.left).range.1 else c.left.range.1) (c.projection l) l.segments l.join
     | none => #[]) ++
-  compileLine ⟨⟨1, l.color⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments
+  compileLine ⟨⟨1, l.strokeShading (c.projection l)⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments
 
 theorem Chart.layerDisplay_eq (c : Chart) (l : Layer) : c.layerDisplay l =
-    (match l.fill with
+    (match l.fillShading (c.projection l) with
       | some f => compileArea ⟨0, f⟩ (if l.onRight then (c.right.getD c.left).range.1 else c.left.range.1) (c.projection l) l.segments l.join
       | none => #[]) ++
-    compileLine ⟨⟨1, l.color⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments := rfl
+    compileLine ⟨⟨1, l.strokeShading (c.projection l)⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments := rfl
 
 /-- The axes, then the bands and each layer in turn. -/
 def Chart.display (c : Chart) (measure : String → Float × Float) : DisplayList :=

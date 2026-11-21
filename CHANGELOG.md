@@ -5,6 +5,7 @@
 - Web v0.15.0, and the Area Fill page takes the window's width, draws 1 pixel lines and an open circle at each point, shows the legend with each series at the cursor and a dotted cursor, and hides a series when its entry is clicked.
 - The Area Fill page takes a `seed` query parameter and otherwise a random seed; the browser tests fix it.
 - Scene v0.21.0.
+- The Line Paths page, one series drawn as linear, spline and stepped lines, and gradient strokes and fills for the line charts' layers.
 
 ## v0.11.0
 

@@ -26,6 +26,51 @@ private def stackedTest : Except String Unit := do
   check (bars.all fun s => s.size == Stacked.base.length) "the bar series share their x values"
   check ((bars.getD 0 default).values.any (·.isNone)) "the first bar series keeps its gap"
 
+private partial def strokes : Shape → List (Rat × List (List Pt))
+  | .strip hw items => [(hw, Item.runs items)]
+  | .clipped _ inner => strokes inner
+  | _ => []
+
+private def strokeOf (c : Lines.Chart) (l : Lines.Layer) : List (List Pt) :=
+  ((c.layerDisplay l).toList.flatMap fun cmd => (strokes cmd.shape).filter (·.1 > 0) |>.flatMap (·.2))
+
+private def linePathsTest : Except String Unit := do
+  for c in LinePaths.charts do
+    let l ← (c.layers.head?).elim (throw s!"{c.name}: no layer") pure
+    let runs := strokeOf c l
+    let pts := runs.flatten
+    let proj := c.projection l
+    let data := (l.data.xs.zip l.data.values).toList.filterMap fun (x, y) => y.map fun y => (proj.x x, proj.y y)
+    check (data.all fun (x, y) => pts.any fun p => p.x == x && p.y == y) s!"{c.name}: the line passes through every point"
+    if c.name.startsWith "step" then
+      check (runs.all fun r => (r.zip r.tail).all fun (a, b) => a.x == b.x || a.y == b.y) s!"{c.name}: every stroke is horizontal or vertical"
+    if c.name == "step-after" then
+      let dataRuns := (l.data.xs.zip l.data.values).toList.foldr (init := [[]]) fun (x, y) acc =>
+        match y, acc with
+        | some y, r :: rs => ((proj.x x, proj.y y) :: r) :: rs
+        | _, rs => [] :: rs
+      check (dataRuns.all fun r => (r.zip r.tail).all fun (a, b) => pts.any fun p => p.x == b.1 && p.y == a.2) s!"{c.name}: a value holds until the next point"
+
+private def gradientsTest : Except String Unit := do
+  for c in Gradients.charts do
+    for l in c.layers do
+      for (g, sh) in [(l.strokeGradient, l.strokeShading (c.projection l)), (l.fillGradient, (l.fillShading (c.projection l)).getD (.flat l.color))] do
+        let some g := g | continue
+        let stops := g.ordered
+        let pos (v : Rat) := match g.axis with | .x => (c.projection l).x v | .y => (c.projection l).y v
+        let px (p : Rat) : Pixel := match g.axis with | .x => ⟨p.floor.toNat, 0⟩ | .y => ⟨0, p.floor.toNat⟩
+        for (a, b) in stops.zip stops.tail do
+          let (pa, pb) := (pos a.1, pos b.1)
+          check (pa < pb) s!"{c.name}: stops ascend on the page"
+          -- the pixel nearest the midpoint, blended in proportion to where its centre lies between the stops
+          let mid := px ((pa + pb) / 2)
+          let centre : Rat := (match g.axis with | .x => mid.col | .y => mid.row : Nat) + 1 / 2
+          let w := (centre - pa) / (pb - pa)
+          if 0 < w && w < 1 && pa ≥ 0 && pb ≥ 0 then
+            let got := sh.at mid
+            let want := a.2.lerp b.2 w
+            check ((((got.r.toNat : Int) - want.r.toNat).natAbs ≤ 1) && (((got.g.toNat : Int) - want.g.toNat).natAbs ≤ 1) && (((got.b.toNat : Int) - want.b.toNat).natAbs ≤ 1)) s!"{c.name}: colour between stops is their blend"
+
 private def axesTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
   let drawings := axes (AreaFill.frame 1200) measure
@@ -269,4 +314,4 @@ private def annotationsTest : Except String Unit := do
   check (c.data.any fun cmd => match cmd.shape with | .rect r => r.x0 == 9.3 && r.x1 == 18.5 | _ => false) "the shaded range is a rectangle over its data interval"
 
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, platformTest (args.contains "--expect-wasm")]

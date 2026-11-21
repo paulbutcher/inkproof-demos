@@ -208,6 +208,12 @@ def Inkproof.Demos.GoldSource.highs : Array Nat
 def Inkproof.Demos.GoldSource.lows : Array Nat
 def Inkproof.Demos.GoldSource.opens : Array Nat
 def Inkproof.Demos.GoldSource.times : Array Nat
+def Inkproof.Demos.Gradients.banded : Inkproof.Demos.Lines.Chart
+def Inkproof.Demos.Gradients.charts : List Inkproof.Demos.Lines.Chart
+def Inkproof.Demos.Gradients.fills : Inkproof.Demos.Lines.Chart
+def Inkproof.Demos.Gradients.horizontal : Inkproof.Demos.Lines.Chart
+def Inkproof.Demos.Gradients.overUnder : Inkproof.Demos.Lines.Chart
+def Inkproof.Demos.Gradients.relative : Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.GroupedBars.charts : List (String × Inkproof.Demos.Bars.Chart)
 def Inkproof.Demos.GroupedBars.crimson : Inkproof.Scene.Color
 def Inkproof.Demos.GroupedBars.four : Array String
@@ -306,6 +312,12 @@ def Inkproof.Demos.LatencyHistogram.samples : Array Int
 theorem Inkproof.Demos.LatencyHistogram.samples_eq : Inkproof.Demos.LatencyHistogram.samples = Inkproof.Demos.LatencyHistogram.columns.flatten
 def Inkproof.Demos.LatencyHistogram.span : Int × Int
 theorem Inkproof.Demos.LatencyHistogram.span_eq : Inkproof.Demos.LatencyHistogram.span = (Array.foldl Min.min (Inkproof.Demos.LatencyHistogram.samples.getD 0 0) Inkproof.Demos.LatencyHistogram.samples / ↑Inkproof.Demos.LatencyHistogram.bucket * ↑Inkproof.Demos.LatencyHistogram.bucket, (Array.foldl Max.max (Inkproof.Demos.LatencyHistogram.samples.getD 0 0) Inkproof.Demos.LatencyHistogram.samples / ↑Inkproof.Demos.LatencyHistogram.bucket + 1) * ↑Inkproof.Demos.LatencyHistogram.bucket)
+def Inkproof.Demos.LinePaths.chart : String → Inkproof.Scene.Join → Inkproof.Scene.Color → Inkproof.Demos.Lines.Chart
+theorem Inkproof.Demos.LinePaths.chart_eq : ∀ (name : String) (join : Inkproof.Scene.Join) (color : Inkproof.Scene.Color), Inkproof.Demos.LinePaths.chart name join color = have layers := [{ data := Inkproof.Demos.Lines.series Inkproof.Demos.LinePaths.xs Inkproof.Demos.LinePaths.values, color := color, join := join }]; { name := name, width := 800, height := 300, xs := (0, 100), time := Bool.false, left := Inkproof.Demos.Lines.autoYAxis layers, layers := layers }
+def Inkproof.Demos.LinePaths.charts : List Inkproof.Demos.Lines.Chart
+def Inkproof.Demos.LinePaths.values : Array (Option Rat)
+theorem Inkproof.Demos.LinePaths.values_eq : Inkproof.Demos.LinePaths.values = Array.mapIdx (fun i v => if (Decidable.decide (22 ≤ i) && Decidable.decide (i < 26)) = Bool.true then Option.none else Option.some v) Inkproof.Demos.Stacked.base.toArray
+def Inkproof.Demos.LinePaths.xs : Array Rat
 structure Inkproof.Demos.Lines.Band : Type
 field Inkproof.Demos.Lines.Band.color : Inkproof.Demos.Lines.Band → Inkproof.Scene.Color
 field Inkproof.Demos.Lines.Band.lower : Inkproof.Demos.Lines.Band → Nat
@@ -325,7 +337,7 @@ field Inkproof.Demos.Lines.Chart.height : Inkproof.Demos.Lines.Chart → Nat
 def Inkproof.Demos.Lines.Chart.labelTexts : Inkproof.Demos.Lines.Chart → List String
 theorem Inkproof.Demos.Lines.Chart.labelTexts_eq : ∀ (c : Inkproof.Demos.Lines.Chart), c.labelTexts = (if c.time = Bool.true then (Inkproof.Demos.Axes.timeTicks c.xs.fst.toFloat c.xs.snd.toFloat c.timeTarget).snd else Inkproof.Demos.Axes.linearLabels c.xs.fst.toFloat c.xs.snd.toFloat) ++ c.left.ticks.snd ++ (Option.map (fun x => x.ticks.snd) c.right).getD []
 def Inkproof.Demos.Lines.Chart.layerDisplay : Inkproof.Demos.Lines.Chart → Inkproof.Demos.Lines.Layer → Inkproof.Scene.DisplayList
-theorem Inkproof.Demos.Lines.Chart.layerDisplay_eq : ∀ (c : Inkproof.Demos.Lines.Chart) (l : Inkproof.Demos.Lines.Layer), c.layerDisplay l = (match l.fill with | Option.some f => Inkproof.Scene.compileArea { layer := 0, color := Inkproof.Scene.Shading.flat f } (if l.onRight = Bool.true then (c.right.getD c.left).range.fst else c.left.range.fst) (c.projection l) l.segments l.join | Option.none => #[]) ++ Inkproof.Scene.compileLine { paint := { layer := 1, color := Inkproof.Scene.Shading.flat l.color }, halfWidth := l.halfWidth, reduce := Bool.false, dash := l.dash, join := l.join } (c.projection l) l.segments
+theorem Inkproof.Demos.Lines.Chart.layerDisplay_eq : ∀ (c : Inkproof.Demos.Lines.Chart) (l : Inkproof.Demos.Lines.Layer), c.layerDisplay l = (match l.fillShading (c.projection l) with | Option.some f => Inkproof.Scene.compileArea { layer := 0, color := f } (if l.onRight = Bool.true then (c.right.getD c.left).range.fst else c.left.range.fst) (c.projection l) l.segments l.join | Option.none => #[]) ++ Inkproof.Scene.compileLine { paint := { layer := 1, color := l.strokeShading (c.projection l) }, halfWidth := l.halfWidth, reduce := Bool.false, dash := l.dash, join := l.join } (c.projection l) l.segments
 field Inkproof.Demos.Lines.Chart.layers : Inkproof.Demos.Lines.Chart → List Inkproof.Demos.Lines.Layer
 field Inkproof.Demos.Lines.Chart.left : Inkproof.Demos.Lines.Chart → Inkproof.Demos.Lines.YAxis
 constructor Inkproof.Demos.Lines.Chart.mk : String → Nat → Nat → Rat × Rat → Bool → Inkproof.Demos.Lines.YAxis → Option Inkproof.Demos.Lines.YAxis → List Inkproof.Demos.Lines.Layer → List Inkproof.Demos.Lines.Band → Inkproof.Demos.Lines.Chart
@@ -342,18 +354,33 @@ theorem Inkproof.Demos.Lines.Chart.xScale_eq : ∀ (c : Inkproof.Demos.Lines.Cha
 field Inkproof.Demos.Lines.Chart.xs : Inkproof.Demos.Lines.Chart → Rat × Rat
 def Inkproof.Demos.Lines.Chart.yScale : Inkproof.Demos.Lines.Chart → Inkproof.Demos.Lines.YAxis → Inkproof.Scale.Linear Rat
 theorem Inkproof.Demos.Lines.Chart.yScale_eq : ∀ (c : Inkproof.Demos.Lines.Chart) (a : Inkproof.Demos.Lines.YAxis), c.yScale a = { domainStart := a.range.fst, domainEnd := a.range.snd, rangeStart := c.frame.bottom, rangeEnd := c.frame.top }
+structure Inkproof.Demos.Lines.Gradient : Type
+field Inkproof.Demos.Lines.Gradient.axis : Inkproof.Demos.Lines.Gradient → Inkproof.Scene.GradientAxis
+field Inkproof.Demos.Lines.Gradient.first : Inkproof.Demos.Lines.Gradient → Rat × Inkproof.Scene.Color
+constructor Inkproof.Demos.Lines.Gradient.mk : Inkproof.Scene.GradientAxis → Rat × Inkproof.Scene.Color → List (Rat × Inkproof.Scene.Color) → Inkproof.Demos.Lines.Gradient
+def Inkproof.Demos.Lines.Gradient.ordered : Inkproof.Demos.Lines.Gradient → List (Rat × Inkproof.Scene.Color)
+theorem Inkproof.Demos.Lines.Gradient.ordered_eq : ∀ (g : Inkproof.Demos.Lines.Gradient), g.ordered = match g.axis with | Inkproof.Scene.GradientAxis.x => g.first :: g.rest | Inkproof.Scene.GradientAxis.y => (g.first :: g.rest).reverse
+field Inkproof.Demos.Lines.Gradient.rest : Inkproof.Demos.Lines.Gradient → List (Rat × Inkproof.Scene.Color)
+def Inkproof.Demos.Lines.Gradient.shading : Inkproof.Demos.Lines.Gradient → Inkproof.Scene.Projection Rat Rat → Inkproof.Scene.Shading
+theorem Inkproof.Demos.Lines.Gradient.shading_eq : ∀ (g : Inkproof.Demos.Lines.Gradient) (p : Inkproof.Scene.Projection Rat Rat), g.shading p = match g.ordered, g.axis with | s :: r, Inkproof.Scene.GradientAxis.x => p.gradientX s r | s :: r, Inkproof.Scene.GradientAxis.y => p.gradientY s r | [], x => Inkproof.Scene.Shading.flat { r := 0, g := 0, b := 0, a := 0 }
 structure Inkproof.Demos.Lines.Layer : Type
 field Inkproof.Demos.Lines.Layer.color : Inkproof.Demos.Lines.Layer → Inkproof.Scene.Color
 field Inkproof.Demos.Lines.Layer.dash : Inkproof.Demos.Lines.Layer → Option Inkproof.Scene.DashPattern
 field Inkproof.Demos.Lines.Layer.data : Inkproof.Demos.Lines.Layer → Inkproof.Core.Series Rat Rat
 field Inkproof.Demos.Lines.Layer.fill : Inkproof.Demos.Lines.Layer → Option Inkproof.Scene.Color
+field Inkproof.Demos.Lines.Layer.fillGradient : Inkproof.Demos.Lines.Layer → Option Inkproof.Demos.Lines.Gradient
+def Inkproof.Demos.Lines.Layer.fillShading : Inkproof.Demos.Lines.Layer → Inkproof.Scene.Projection Rat Rat → Option Inkproof.Scene.Shading
+theorem Inkproof.Demos.Lines.Layer.fillShading_eq : ∀ (l : Inkproof.Demos.Lines.Layer) (p : Inkproof.Scene.Projection Rat Rat), l.fillShading p = match l.fillGradient with | Option.some g => Option.some (g.shading p) | Option.none => Option.map Inkproof.Scene.Shading.flat l.fill
 field Inkproof.Demos.Lines.Layer.halfWidth : Inkproof.Demos.Lines.Layer → Rat
 field Inkproof.Demos.Lines.Layer.join : Inkproof.Demos.Lines.Layer → Inkproof.Scene.Join
 field Inkproof.Demos.Lines.Layer.maxStep : Inkproof.Demos.Lines.Layer → Option Rat
-constructor Inkproof.Demos.Lines.Layer.mk : Inkproof.Core.Series Rat Rat → Inkproof.Scene.Color → Option Inkproof.Scene.Color → Rat → Option Inkproof.Scene.DashPattern → Bool → Option Rat → Inkproof.Scene.Join → Inkproof.Demos.Lines.Layer
+constructor Inkproof.Demos.Lines.Layer.mk : Inkproof.Core.Series Rat Rat → Inkproof.Scene.Color → Option Inkproof.Scene.Color → Rat → Option Inkproof.Scene.DashPattern → Bool → Option Rat → Inkproof.Scene.Join → Option Inkproof.Demos.Lines.Gradient → Option Inkproof.Demos.Lines.Gradient → Inkproof.Demos.Lines.Layer
 field Inkproof.Demos.Lines.Layer.onRight : Inkproof.Demos.Lines.Layer → Bool
 def Inkproof.Demos.Lines.Layer.segments : Inkproof.Demos.Lines.Layer → Inkproof.Core.Segmented Rat Rat
 theorem Inkproof.Demos.Lines.Layer.segments_eq : ∀ (l : Inkproof.Demos.Lines.Layer), l.segments = match l.maxStep with | Option.some d => Inkproof.Core.Segmented.splitWhere l.data fun a b => Decidable.decide (d < b - a) | Option.none => Inkproof.Core.Segmented.single l.data
+field Inkproof.Demos.Lines.Layer.strokeGradient : Inkproof.Demos.Lines.Layer → Option Inkproof.Demos.Lines.Gradient
+def Inkproof.Demos.Lines.Layer.strokeShading : Inkproof.Demos.Lines.Layer → Inkproof.Scene.Projection Rat Rat → Inkproof.Scene.Shading
+theorem Inkproof.Demos.Lines.Layer.strokeShading_eq : ∀ (l : Inkproof.Demos.Lines.Layer) (p : Inkproof.Scene.Projection Rat Rat), l.strokeShading p = match l.strokeGradient with | Option.some g => g.shading p | Option.none => Inkproof.Scene.Shading.flat l.color
 structure Inkproof.Demos.Lines.YAxis : Type
 field Inkproof.Demos.Lines.YAxis.grid : Inkproof.Demos.Lines.YAxis → Bool
 constructor Inkproof.Demos.Lines.YAxis.mk : Rat × Rat → String → Bool → Inkproof.Demos.Lines.YAxis
