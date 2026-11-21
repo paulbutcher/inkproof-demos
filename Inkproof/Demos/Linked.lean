@@ -36,12 +36,18 @@ theorem rangerCharts_eq : rangerCharts =
     let line : Zoom.Line := ⟨xs, (Array.range 2000).map fun j => ((ServerEvents.busy j : Int) : Rat) / 100, ⟨0, 0, 255, 255⟩, none⟩
     [("ranger-main", ⟨800, 300, [line], none, []⟩), ("ranger-overview", ⟨800, 120, [line], none, []⟩)] := rfl
 
-/-- Three series of thirty integers in `-10..10` over `1..30`, the data of uPlot's cursor-bind page. -/
-def bindChart : Zoom.Chart :=
+/-- Three series of thirty integers in `-10..10` over `1..30`, the data of uPlot's cursor-bind page, drawn from `seed`. -/
+def bindChart (seed : Nat) : Zoom.Chart :=
   let xs : Array Rat := (Array.range 30).map fun i => ((i + 1 : Nat) : Rat)
-  let line (seed : Nat) (colour : Color) : Zoom.Line :=
-    ⟨xs, (Data.ints seed 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), colour, none⟩
-  ⟨900, 400, [line 11 ⟨255, 0, 0, 255⟩, line 12 ⟨0, 128, 0, 255⟩, line 13 ⟨0, 0, 255, 255⟩], none, []⟩
+  let line (k : Nat) (colour : Color) : Zoom.Line :=
+    ⟨xs, (Data.ints (3 * seed + k) 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), colour, none⟩
+  ⟨900, 400, [line 0 ⟨255, 0, 0, 255⟩, line 1 ⟨0, 128, 0, 255⟩, line 2 ⟨0, 0, 255, 255⟩], none, []⟩
+
+theorem bindChart_eq (seed : Nat) : bindChart seed =
+    let xs : Array Rat := (Array.range 30).map fun i => ((i + 1 : Nat) : Rat)
+    let line (k : Nat) (colour : Color) : Zoom.Line :=
+      ⟨xs, (Data.ints (3 * seed + k) 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), colour, none⟩
+    ⟨900, 400, [line 0 ⟨255, 0, 0, 255⟩, line 1 ⟨0, 128, 0, 255⟩, line 2 ⟨0, 0, 255, 255⟩], none, []⟩ := rfl
 
 /-- The samples a data server holds, one byte each, so that a byte range of its file is a range of samples. -/
 def samples : Nat := 5000
