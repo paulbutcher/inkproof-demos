@@ -58,8 +58,8 @@ const open = async (path, seed = '1') => {
   return { page, problems };
 };
 
-const colours = page => page.evaluate(() => {
-  const canvas = document.querySelector('inkproof-chart').shadowRoot.querySelector('canvas');
+const colours = (page, index = 0) => page.evaluate(index => {
+  const canvas = document.querySelectorAll('inkproof-chart')[index].shadowRoot.querySelector('canvas');
   const { width, height } = canvas;
   const d = canvas.getContext('2d').getImageData(0, 0, width, height).data;
   const count = { red: 0, green: 0, blue: 0 };
@@ -70,7 +70,7 @@ const colours = page => page.evaluate(() => {
     if ((r < 60 && g < 60 && b > 200) || (b > 200 && r < 200 && Math.abs(r - g) < 20 && r < b - 40)) count.blue++;
   }
   return count;
-});
+}, index);
 
 test('every demo the index lists opens from its relative link without console errors', async () => {
   const { page, problems } = await open('');
@@ -227,6 +227,19 @@ test('the time series pages draw every chart in their series colours', async () 
     for (const colour of wanted) assert.ok(found[colour] > 0, `${path} ${colour}: ${JSON.stringify(found)}`);
     await page.close();
   }
+});
+
+test('the gradient page colours each stroke along its gradient', async () => {
+  const { page, problems } = await open('gradients/');
+  await page.waitForFunction(() => window.draws.length >= 5);
+  assert.deepEqual(problems, []);
+  const horizontal = await colours(page, 0);
+  assert.ok(horizontal.blue > 0, JSON.stringify(horizontal));
+  const overUnder = await colours(page, 1);
+  assert.ok(overUnder.red > 0, JSON.stringify(overUnder));
+  const banded = await colours(page, 2);
+  assert.ok(banded.red > 0 && banded.green > 0, JSON.stringify(banded));
+  await page.close();
 });
 
 const lastView = page => page.evaluate(() => window.views.at(-1));

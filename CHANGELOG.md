@@ -8,6 +8,7 @@
 
 - The Zoom variations page boxes on a plain drag (`drag="box"`).
 - The Area Fill page redraws at the chart's size when it is resized, and puts its legend below the plot.
+- The Gradients page is on the index, with horizontal, over-under, banded and fill gradients.
 
 ## v0.13.0
 
