@@ -576,14 +576,14 @@ field Inkproof.Demos.MultiBars.Lib.name : Inkproof.Demos.MultiBars.Lib → Strin
 field Inkproof.Demos.MultiBars.Lib.render : Inkproof.Demos.MultiBars.Lib → Array Rat
 field Inkproof.Demos.MultiBars.Lib.size : Inkproof.Demos.MultiBars.Lib → Rat
 field Inkproof.Demos.MultiBars.Lib.toggle : Inkproof.Demos.MultiBars.Lib → Option (Array Rat)
-def Inkproof.Demos.MultiBars.benchmark : Bool → Inkproof.Demos.Bars.Chart
+def Inkproof.Demos.MultiBars.benchmark : Nat → Bool → Inkproof.Demos.Bars.Chart
 def Inkproof.Demos.MultiBars.benchmarkSeries : Array Inkproof.Demos.Bars.Series
-theorem Inkproof.Demos.MultiBars.benchmark_eq : ∀ (horizontal : Bool), Inkproof.Demos.MultiBars.benchmark horizontal = { width := if horizontal = Bool.true then 800 else 2300, height := if horizontal = Bool.true then 2300 else 800, groups := Array.map (fun x => x.name) Inkproof.Demos.MultiBars.libs, series := Inkproof.Demos.MultiBars.benchmarkSeries, lines := #[{ color := { r := 128, g := 0, b := 128, a := 255 }, values := Inkproof.Demos.MultiBars.random, range := Inkproof.Demos.MultiBars.renderRange }], horizontal := horizontal, axis := Inkproof.Demos.MultiBars.renderRange }
-theorem Inkproof.Demos.MultiBars.benchmark_groups : ∀ (horizontal : Bool), (Inkproof.Demos.MultiBars.benchmark horizontal).groups = Array.map (fun x => x.name) Inkproof.Demos.MultiBars.libs
-def Inkproof.Demos.MultiBars.builds : Inkproof.Demos.Bars.Chart
-def Inkproof.Demos.MultiBars.durations : Array Int
-theorem Inkproof.Demos.MultiBars.durations_eq : Inkproof.Demos.MultiBars.durations = Array.map (fun n => have v := ↑n; if (v % 3 == 0) = Bool.true then -v else v) (Inkproof.Demos.Data.ints 11 26 0 100)
-theorem Inkproof.Demos.MultiBars.durations_size : Inkproof.Demos.MultiBars.durations.size = 26
+theorem Inkproof.Demos.MultiBars.benchmark_eq : ∀ (seed : Nat) (horizontal : Bool), Inkproof.Demos.MultiBars.benchmark seed horizontal = { width := if horizontal = Bool.true then 800 else 2300, height := if horizontal = Bool.true then 2300 else 800, groups := Array.map (fun x => x.name) Inkproof.Demos.MultiBars.libs, series := Inkproof.Demos.MultiBars.benchmarkSeries, lines := #[{ color := { r := 128, g := 0, b := 128, a := 255 }, values := Inkproof.Demos.MultiBars.random seed, range := Inkproof.Demos.MultiBars.renderRange }], horizontal := horizontal, axis := Inkproof.Demos.MultiBars.renderRange }
+theorem Inkproof.Demos.MultiBars.benchmark_groups : ∀ (seed : Nat) (horizontal : Bool), (Inkproof.Demos.MultiBars.benchmark seed horizontal).groups = Array.map (fun x => x.name) Inkproof.Demos.MultiBars.libs
+def Inkproof.Demos.MultiBars.builds : Nat → Inkproof.Demos.Bars.Chart
+def Inkproof.Demos.MultiBars.durations : Nat → Array Int
+theorem Inkproof.Demos.MultiBars.durations_eq : ∀ (seed : Nat), Inkproof.Demos.MultiBars.durations seed = Array.map (fun n => have v := ↑n; if (v % 3 == 0) = Bool.true then -v else v) (Inkproof.Demos.Data.ints seed 26 0 100)
+theorem Inkproof.Demos.MultiBars.durations_size : ∀ (seed : Nat), (Inkproof.Demos.MultiBars.durations seed).size = 26
 def Inkproof.Demos.MultiBars.failedFill : Inkproof.Scene.Color
 def Inkproof.Demos.MultiBars.failedOutline : Inkproof.Scene.Color
 def Inkproof.Demos.MultiBars.largest : Array Rat → Rat
@@ -594,15 +594,15 @@ theorem Inkproof.Demos.MultiBars.letters_getElem? : ∀ (i : Nat), i < 26 → In
 theorem Inkproof.Demos.MultiBars.letters_size : Inkproof.Demos.MultiBars.letters.size = 26
 def Inkproof.Demos.MultiBars.libs : Array Inkproof.Demos.MultiBars.Lib
 def Inkproof.Demos.MultiBars.numeric : Inkproof.Demos.Frame
-def Inkproof.Demos.MultiBars.numericChart : Inkproof.Demos.Frame → (String → Float × Float) → Inkproof.Scene.DisplayList
-theorem Inkproof.Demos.MultiBars.numericChart_eq : ∀ (f : Inkproof.Demos.Frame) (measure : String → Float × Float), Inkproof.Demos.MultiBars.numericChart f measure = Inkproof.Demos.axisDisplay f measure ++ Inkproof.Scene.DisplayList.clip (Inkproof.Demos.plot f) (Array.flatMap (fun x => match x with | (d, i) => have p := Inkproof.Demos.projection f; match Inkproof.Demos.MultiBars.statusColors i with | (fill, outline) => { rect := { x0 := p.x (↑i - 3 / 10), y0 := p.y 0, x1 := p.x (↑i + 3 / 10), y1 := p.y ↑d }, fill := fill, label := Option.none, positive := Decidable.decide (0 ≤ d), outline := Option.some outline }.commands) Inkproof.Demos.MultiBars.durations.toList.zipIdx.toArray)
+def Inkproof.Demos.MultiBars.numericChart : Nat → Inkproof.Demos.Frame → (String → Float × Float) → Inkproof.Scene.DisplayList
+theorem Inkproof.Demos.MultiBars.numericChart_eq : ∀ (seed : Nat) (f : Inkproof.Demos.Frame) (measure : String → Float × Float), Inkproof.Demos.MultiBars.numericChart seed f measure = Inkproof.Demos.axisDisplay f measure ++ Inkproof.Scene.DisplayList.clip (Inkproof.Demos.plot f) (Array.flatMap (fun x => match x with | (d, i) => have p := Inkproof.Demos.projection f; match Inkproof.Demos.MultiBars.statusColors i with | (fill, outline) => { rect := { x0 := p.x (↑i - 3 / 10), y0 := p.y 0, x1 := p.x (↑i + 3 / 10), y1 := p.y ↑d }, fill := fill, label := Option.none, positive := Decidable.decide (0 ≤ d), outline := Option.some outline }.commands) (Inkproof.Demos.MultiBars.durations seed).toList.zipIdx.toArray)
 def Inkproof.Demos.MultiBars.okFill : Inkproof.Scene.Color
 def Inkproof.Demos.MultiBars.okOutline : Inkproof.Scene.Color
 def Inkproof.Demos.MultiBars.pendingFill : Inkproof.Scene.Color
 def Inkproof.Demos.MultiBars.pendingOutline : Inkproof.Scene.Color
-def Inkproof.Demos.MultiBars.random : Array Rat
-theorem Inkproof.Demos.MultiBars.random_eq : Inkproof.Demos.MultiBars.random = Array.map (fun v => 3000 + ↑v) (Inkproof.Demos.Data.ints 7 Inkproof.Demos.MultiBars.libs.size 0 1000)
-theorem Inkproof.Demos.MultiBars.random_size : Inkproof.Demos.MultiBars.random.size = Inkproof.Demos.MultiBars.libs.size
+def Inkproof.Demos.MultiBars.random : Nat → Array Rat
+theorem Inkproof.Demos.MultiBars.random_eq : ∀ (seed : Nat), Inkproof.Demos.MultiBars.random seed = Array.map (fun v => 3000 + ↑v) (Inkproof.Demos.Data.ints seed Inkproof.Demos.MultiBars.libs.size 0 1000)
+theorem Inkproof.Demos.MultiBars.random_size : ∀ (seed : Nat), (Inkproof.Demos.MultiBars.random seed).size = Inkproof.Demos.MultiBars.libs.size
 def Inkproof.Demos.MultiBars.renderRange : Rat × Rat
 def Inkproof.Demos.MultiBars.series : Inkproof.Scene.Color → Array (Option Rat) → Inkproof.Demos.Bars.Series
 theorem Inkproof.Demos.MultiBars.series_range : ∀ (fill : Inkproof.Scene.Color) (values : Array (Option Rat)), (Inkproof.Demos.MultiBars.series fill values).range = (0, Inkproof.Demos.MultiBars.largest (Array.filterMap id values))

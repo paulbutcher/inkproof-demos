@@ -174,7 +174,7 @@ private def galleryBTest : Except String Unit := do
 
 private def barsTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
-  let charts := GroupedBars.charts.map (·.2) ++ [MultiBars.builds, MultiBars.benchmark false, MultiBars.benchmark true]
+  let charts := GroupedBars.charts.map (·.2) ++ [MultiBars.builds 1, MultiBars.benchmark 1 false, MultiBars.benchmark 1 true]
   for c in charts do
     let p := c.plot
     let inside (r : Scene.Rect) := p.x0 ≤ min r.x0 r.x1 && max r.x0 r.x1 ≤ p.x1 && p.y0 ≤ min r.y0 r.y1 && max r.y0 r.y1 ≤ p.y1
@@ -190,12 +190,12 @@ private def barsTest : Except String Unit := do
     check (blocks.zip blocks.tail |>.all fun ((s, l), (s', _)) => s + l ≤ s') s!"{c.groups}: groups do not overlap"
     let axes := c.axes measure
     check (axes.length == 2 && axes.all (!·.labels.isEmpty)) s!"{c.groups}: both axes keep labels"
-  check (MultiBars.builds.bars.size == 26 && MultiBars.builds.bars.all fun b => b.outline.isSome) "every build has an outlined bar"
-  check (MultiBars.builds.bars.any (!·.positive) && MultiBars.builds.bars.any (·.positive)) "durations of both signs are drawn"
-  let bench := MultiBars.benchmark false
+  check ((MultiBars.builds 1).bars.size == 26 && (MultiBars.builds 1).bars.all fun b => b.outline.isSome) "every build has an outlined bar"
+  check ((MultiBars.builds 1).bars.any (!·.positive) && (MultiBars.builds 1).bars.any (·.positive)) "durations of both signs are drawn"
+  let bench := MultiBars.benchmark 1 false
   let missing := MultiBars.libs.filter (·.interact.isNone) |>.size
   check (bench.bars.size == bench.series.size * MultiBars.libs.size - missing - (MultiBars.libs.filter (·.toggle.isNone)).size) "a library with no measurement has no bar"
-  check (bench.lineDisplay.size > 0 && (MultiBars.benchmark true).lineDisplay.isEmpty) "the random line is drawn across, not down"
+  check (bench.lineDisplay.size > 0 && (MultiBars.benchmark 1 true).lineDisplay.isEmpty) "the random line is drawn across, not down"
 
 private def latencyTest : Except String Unit := do
   check (LatencyHistogram.counts.foldl (· + ·) 0 == LatencyHistogram.samples.size) "every latency is counted in a bucket"

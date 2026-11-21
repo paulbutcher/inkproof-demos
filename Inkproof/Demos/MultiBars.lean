@@ -80,12 +80,12 @@ theorem zero_le_largest (vs : Array Rat) : 0 ≤ largest vs := by
 /-- The scale shared by the render times and the random line, which is the left axis. -/
 def renderRange : Rat × Rat := (0, 4000)
 
-/-- A line of values between 3000 and 4000, one per library, from a fixed seed: uPlot's page draws them at random. -/
-def random : Array Rat := (Data.ints 7 libs.size 0 1000).map fun (v : Nat) => 3000 + (v : Rat)
+/-- A line of values between 3000 and 4000, one per library, drawn from `seed`, as uPlot's page draws them at random. -/
+def random (seed : Nat) : Array Rat := (Data.ints seed libs.size 0 1000).map fun (v : Nat) => 3000 + (v : Rat)
 
-theorem random_eq : random = (Data.ints 7 libs.size 0 1000).map fun (v : Nat) => 3000 + (v : Rat) := rfl
+theorem random_eq (seed : Nat) : random seed = (Data.ints seed libs.size 0 1000).map fun (v : Nat) => 3000 + (v : Rat) := rfl
 
-theorem random_size : random.size = libs.size := by
+theorem random_size (seed : Nat) : (random seed).size = libs.size := by
   simp [random, Data.ints_size]
 
 /-- A series of the libraries' values on a scale that runs from zero to its largest value. -/
@@ -106,17 +106,17 @@ def benchmarkSeries : Array Series :=
     series ⟨250, 213, 92, 255⟩ (libs.map (·.toggle.map total))]
 
 /-- The benchmark chart: grouped bars with a line over them, laid out across or down. -/
-def benchmark (horizontal : Bool) : Chart :=
+def benchmark (seed : Nat) (horizontal : Bool) : Chart :=
   { width := if horizontal then 800 else 2300, height := if horizontal then 2300 else 800, horizontal,
     groups := libs.map (·.name), series := benchmarkSeries, axis := renderRange,
-    lines := #[⟨⟨128, 0, 128, 255⟩, random, renderRange⟩] }
+    lines := #[⟨⟨128, 0, 128, 255⟩, random seed, renderRange⟩] }
 
-theorem benchmark_eq (horizontal : Bool) : benchmark horizontal =
+theorem benchmark_eq (seed : Nat) (horizontal : Bool) : benchmark seed horizontal =
     { width := if horizontal then 800 else 2300, height := if horizontal then 2300 else 800, horizontal,
       groups := libs.map (·.name), series := benchmarkSeries, axis := renderRange,
-      lines := #[⟨⟨128, 0, 128, 255⟩, random, renderRange⟩] } := rfl
+      lines := #[⟨⟨128, 0, 128, 255⟩, random seed, renderRange⟩] } := rfl
 
-theorem benchmark_groups (horizontal : Bool) : (benchmark horizontal).groups = libs.map (·.name) := rfl
+theorem benchmark_groups (seed : Nat) (horizontal : Bool) : (benchmark seed horizontal).groups = libs.map (·.name) := rfl
 
 def okFill : Color := ⟨127, 215, 154, 255⟩
 def okOutline : Color := ⟨51, 187, 85, 255⟩
@@ -145,14 +145,14 @@ theorem statusColors_eq (i : Nat) : statusColors i =
     | 1 => (pendingFill, pendingOutline)
     | _ => (failedFill, failedOutline) := rfl
 
-/-- The 26 build durations, one for each letter, between -100 and 100; every third is negative. uPlot's page draws them at random. -/
-def durations : Array Int :=
-  (Data.ints 11 26 0 100).map fun (n : Nat) => let v : Int := n; if v % 3 == 0 then -v else v
+/-- The 26 build durations, one for each letter, between -100 and 100; every third is negative, drawn from `seed` as uPlot's page draws them at random. -/
+def durations (seed : Nat) : Array Int :=
+  (Data.ints seed 26 0 100).map fun (n : Nat) => let v : Int := n; if v % 3 == 0 then -v else v
 
-theorem durations_eq : durations =
-    (Data.ints 11 26 0 100).map fun (n : Nat) => let v : Int := n; if v % 3 == 0 then -v else v := rfl
+theorem durations_eq (seed : Nat) : durations seed =
+    (Data.ints seed 26 0 100).map fun (n : Nat) => let v : Int := n; if v % 3 == 0 then -v else v := rfl
 
-theorem durations_size : durations.size = 26 := by
+theorem durations_size (seed : Nat) : (durations seed).size = 26 := by
   simp [durations, Data.ints_size]
 
 /-- The lowercase letters, `a` to `z`. -/
@@ -165,23 +165,23 @@ theorem letters_getElem? (i : Nat) (h : i < 26) :
   simp [letters, h]
 
 /-- The builds as bars of varying colour, labelled with their durations. -/
-def builds : Chart :=
+def builds (seed : Nat) : Chart :=
   { width := 800, height := 400, groups := letters, axis := (-100, 100),
-    series := #[{ fill := okFill, values := durations.map fun (d : Int) => some (d : Rat), range := (-100, 100),
+    series := #[{ fill := okFill, values := (durations seed).map fun (d : Int) => some (d : Rat), range := (-100, 100),
                   groupColors := (List.range 26).toArray.map statusColors }] }
 
 /-- The same builds on a numeric x axis, one bar centred on each whole number, so the first and last are cut in half at the plot's edge. -/
 def numeric : Frame := .sized 800 400 (0, 25) (-100, 100)
 
 /-- The axes, then a bar for each build between zero and its duration, 60% of a unit wide. -/
-def numericChart (f : Frame) (measure : String → Float × Float) : DisplayList :=
-  axisDisplay f measure ++ DisplayList.clip (plot f) (durations.toList.zipIdx.toArray.flatMap fun (d, i) =>
+def numericChart (seed : Nat) (f : Frame) (measure : String → Float × Float) : DisplayList :=
+  axisDisplay f measure ++ DisplayList.clip (plot f) ((durations seed).toList.zipIdx.toArray.flatMap fun (d, i) =>
     let p := projection f
     let (fill, outline) := statusColors i
     Bar.commands ⟨⟨p.x ((i : Rat) - 3 / 10), p.y 0, p.x ((i : Rat) + 3 / 10), p.y (d : Rat)⟩, fill, none, 0 ≤ d, some outline, 1⟩)
 
-theorem numericChart_eq (f : Frame) (measure : String → Float × Float) :
-    numericChart f measure = axisDisplay f measure ++ DisplayList.clip (plot f) (durations.toList.zipIdx.toArray.flatMap fun (d, i) =>
+theorem numericChart_eq (seed : Nat) (f : Frame) (measure : String → Float × Float) :
+    numericChart seed f measure = axisDisplay f measure ++ DisplayList.clip (plot f) ((durations seed).toList.zipIdx.toArray.flatMap fun (d, i) =>
       let p := projection f
       let (fill, outline) := statusColors i
       Bar.commands ⟨⟨p.x ((i : Rat) - 3 / 10), p.y 0, p.x ((i : Rat) + 3 / 10), p.y (d : Rat)⟩, fill, none, 0 ≤ d, some outline, 1⟩) := rfl

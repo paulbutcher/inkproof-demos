@@ -7,6 +7,7 @@
 - Scene v0.21.0.
 - The Cursor bind and Tooltip and legend pages take a `seed` query parameter and otherwise a random seed.
 - The Stacked Series bar chart and the Scatter page's point clouds take a `seed` query parameter and otherwise a random seed.
+- The Multi Bars page takes a `seed` query parameter and otherwise a random seed.
 - The Line Paths page, one series drawn as linear, spline and stepped lines, and gradient strokes and fills for the line charts' layers.
 
 ## v0.11.0
