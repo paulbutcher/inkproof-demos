@@ -37,11 +37,12 @@ structure YAxis where
   suffix : String := ""
   grid : Bool := true
 
-/-- A colour that varies along an axis between stops placed at data values, ascending. -/
+/-- A colour that varies along an axis between stops placed at data values, ascending. When `discrete`, each stop's colour holds from its value up to the next stop's, changing at once there, instead of blending. -/
 structure Gradient where
   axis : GradientAxis
   first : Rat × Color
   rest : List (Rat × Color)
+  discrete : Bool := false
 
 /-- The stops in the order the plane meets them: y grows downwards, so a y gradient lists them from the highest value. -/
 def Gradient.ordered (g : Gradient) : List (Rat × Color) :=
@@ -54,17 +55,32 @@ theorem Gradient.ordered_eq (g : Gradient) : g.ordered =
     | .x => g.first :: g.rest
     | .y => (g.first :: g.rest).reverse := rfl
 
+/-- The stops a stepped shading is given. A step changes the colour at its stop to the stop's own, in the order the plane meets them, so along y, where that order descends in value, each colour moves to the stop below it: the highest stop's colour holds above its value. -/
+def Gradient.steps (g : Gradient) : List (Rat × Color) :=
+  match g.axis with
+  | .x => g.ordered
+  | .y => ((g.ordered.head?.map (·.1)).toList ++ g.ordered.map (·.1)).zip (g.ordered.map (·.2))
+
+theorem Gradient.steps_eq (g : Gradient) : g.steps =
+    match g.axis with
+    | .x => g.ordered
+    | .y => ((g.ordered.head?.map (·.1)).toList ++ g.ordered.map (·.1)).zip (g.ordered.map (·.2)) := rfl
+
 def Gradient.shading (g : Gradient) (p : Projection Rat Rat) : Shading :=
-  match g.ordered, g.axis with
-  | s :: r, .x => p.gradientX s r
-  | s :: r, .y => p.gradientY s r
-  | [], _ => .flat ⟨0, 0, 0, 0⟩
+  match g.discrete, g.steps, g.ordered, g.axis with
+  | true, s :: r, _, .x => p.stepsX s r
+  | true, s :: r, _, .y => p.stepsY s r
+  | _, _, s :: r, .x => p.gradientX s r
+  | _, _, s :: r, .y => p.gradientY s r
+  | _, _, [], _ => .flat ⟨0, 0, 0, 0⟩
 
 theorem Gradient.shading_eq (g : Gradient) (p : Projection Rat Rat) : g.shading p =
-    match g.ordered, g.axis with
-    | s :: r, .x => p.gradientX s r
-    | s :: r, .y => p.gradientY s r
-    | [], _ => .flat ⟨0, 0, 0, 0⟩ := rfl
+    match g.discrete, g.steps, g.ordered, g.axis with
+    | true, s :: r, _, .x => p.stepsX s r
+    | true, s :: r, _, .y => p.stepsY s r
+    | _, _, s :: r, .x => p.gradientX s r
+    | _, _, s :: r, .y => p.gradientY s r
+    | _, _, [], _ => .flat ⟨0, 0, 0, 0⟩ := rfl
 
 /-- One drawn series. A gradient replaces the colour of the stroke or fill it names. -/
 structure Layer where

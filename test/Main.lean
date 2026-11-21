@@ -68,8 +68,9 @@ private def gradientsTest : Except String Unit := do
           let w := (centre - pa) / (pb - pa)
           if 0 < w && w < 1 && pa ≥ 0 && pb ≥ 0 then
             let got := sh.at mid
-            let want := a.2.lerp b.2 w
-            check ((((got.r.toNat : Int) - want.r.toNat).natAbs ≤ 1) && (((got.g.toNat : Int) - want.g.toNat).natAbs ≤ 1) && (((got.b.toNat : Int) - want.b.toNat).natAbs ≤ 1)) s!"{c.name}: colour between stops is their blend"
+            -- a stepped stop's colour holds from its value towards higher values, so away from the plane's order on y
+            let want := if !g.discrete then a.2.lerp b.2 w else match g.axis with | .x => a.2 | .y => b.2
+            check ((((got.r.toNat : Int) - want.r.toNat).natAbs ≤ 1) && (((got.g.toNat : Int) - want.g.toNat).natAbs ≤ 1) && (((got.b.toNat : Int) - want.b.toNat).natAbs ≤ 1)) s!"{c.name}: colour between stops is their blend, or the lower stop's for a stepped one"
 
 private def axesTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
@@ -171,6 +172,11 @@ private def galleryBTest : Except String Unit := do
     check (dl.all fun c => match c.shape with
       | .rect r => 0 ≤ r.x0 && r.x1 ≤ SparklinesBars.width && 0 ≤ r.y0 && r.y1 ≤ SparklinesBars.height
       | _ => true) "bars are cut off at the edge of the canvas"
+  let z := (SparklinesBars.frame |> projection).y 0
+  let shade (sh : Shading) (row : Rat) : Color := sh.at ⟨0, (row.floor.toNat)⟩
+  check ((shade SparklinesBars.zeroSteps (z - 10)) == SparklinesBars.green && (shade SparklinesBars.zeroSteps (z + 10)) == SparklinesBars.red) "the line and bars are green above zero and red below it"
+  check ((shade SparklinesBars.fillGradient (z - 1)).r ≥ 250 && (shade SparklinesBars.fillGradient (z - 1)).b ≥ 250 && (shade SparklinesBars.fillGradient (z + 1)).g ≥ 250 && (shade SparklinesBars.fillGradient (z + 1)).b ≥ 250) "the fill is white at zero"
+  check ((shade SparklinesBars.fillGradient ((SparklinesBars.height : Rat) - 1)).r == 255 && (shade SparklinesBars.fillGradient ((SparklinesBars.height : Rat) - 1)).g < 60) "the fill is red at the bottom of the plot"
 
 private def barsTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)

@@ -59,36 +59,37 @@ theorem bar_eq (color : Color) (x : Rat) (lo hi : Int) :
       (projection frame).y (lo : Rat), (projection frame).x x + ((projection frame).x 2 - (projection frame).x 1) * 3 / 10,
       (projection frame).y (hi : Rat)⟩⟩ := rfl
 
-/-- The part of a display list above and below the line at zero, in the colours `up` and `down`. -/
-def split (up down : Color) (dl : DisplayList) : DisplayList :=
-  let z := (projection frame).y 0
-  DisplayList.clip ⟨0, 0, width, z⟩ (dl.map fun c => { c with color := up }) ++
-    DisplayList.clip ⟨0, z, width, height⟩ (dl.map fun c => { c with color := down })
+def white : Color := ⟨255, 255, 255, 255⟩
 
-theorem split_eq (up down : Color) (dl : DisplayList) :
-    split up down dl =
-      DisplayList.clip ⟨0, 0, width, (projection frame).y 0⟩ (dl.map fun c => { c with color := up }) ++
-        DisplayList.clip ⟨0, (projection frame).y 0, width, height⟩ (dl.map fun c => { c with color := down }) := rfl
+/-- Green above zero and red below it, changing at once there. -/
+def zeroSteps : Shading := (projection frame).stepsY (0, green) [(0, red)]
 
-/-- The line and the area under it, green above zero and red below, clipped to the plot. -/
+theorem zeroSteps_eq : zeroSteps = (projection frame).stepsY (0, green) [(0, red)] := rfl
+
+/-- Red at the bottom of the plot, white at zero and green at the top, blended between. -/
+def fillGradient : Shading := (projection frame).gradientY (15, green) [(0, white), (-25, red)]
+
+theorem fillGradient_eq : fillGradient = (projection frame).gradientY (15, green) [(0, white), (-25, red)] := rfl
+
+/-- The area under the line, shaded by value, and the line, green above zero and red below. -/
 def lineLayer : DisplayList :=
   let g := Segmented.single series
   let p := projection frame
-  split ⟨0, 128, 0, 90⟩ ⟨255, 0, 0, 90⟩ (compileArea ⟨1, .flat ⟨0, 0, 0, 0⟩⟩ 0 p g) ++
-    split green red (compileLine ⟨⟨1, .flat ⟨0, 0, 0, 0⟩⟩, 1 / 2, false, none, .straight⟩ p g)
+  compileArea ⟨1, fillGradient⟩ 0 p g ++
+    compileLine ⟨⟨1, zeroSteps⟩, 1 / 2, false, none, .straight⟩ p g
 
 theorem lineLayer_eq : lineLayer =
-    split ⟨0, 128, 0, 90⟩ ⟨255, 0, 0, 90⟩ (compileArea ⟨1, .flat ⟨0, 0, 0, 0⟩⟩ 0 (projection frame) (Segmented.single series)) ++
-      split green red (compileLine ⟨⟨1, .flat ⟨0, 0, 0, 0⟩⟩, 1 / 2, false, none, .straight⟩ (projection frame) (Segmented.single series)) := rfl
+    compileArea ⟨1, fillGradient⟩ 0 (projection frame) (Segmented.single series) ++
+      compileLine ⟨⟨1, zeroSteps⟩, 1 / 2, false, none, .straight⟩ (projection frame) (Segmented.single series) := rfl
 
 /-- The bars, each green above zero and red below it. -/
 def splitBars : DisplayList :=
-  DisplayList.clip (plot frame) <| split green red <| (lows.zip highs).zipIdx.map fun ((lo, hi), i) =>
-    bar green (((i + 1 : Nat) : Rat)) lo hi
+  DisplayList.clip (plot frame) <| (lows.zip highs).zipIdx.map fun ((lo, hi), i) =>
+    { bar green (((i + 1 : Nat) : Rat)) lo hi with color := zeroSteps }
 
 theorem splitBars_eq : splitBars =
-    DisplayList.clip (plot frame) (split green red ((lows.zip highs).zipIdx.map fun ((lo, hi), i) =>
-      bar green (((i + 1 : Nat) : Rat)) lo hi)) := rfl
+    DisplayList.clip (plot frame) ((lows.zip highs).zipIdx.map fun ((lo, hi), i) =>
+      { bar green (((i + 1 : Nat) : Rat)) lo hi with color := zeroSteps }) := rfl
 
 /-- The bars, each red when it reaches below zero and green otherwise. -/
 def coloredBars : DisplayList :=

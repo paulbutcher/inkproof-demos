@@ -8,6 +8,8 @@
 
 ## v0.15.0
 
+- The first three Gradients charts change colour at once at each stop, as uPlot's do, using Scene's stepped shading.
+- Sparklines with floating bars draws the area, line and bars with one paint each: a red to white to green fill, and a line and bars that are green above zero and red below.
 - Every page whose uPlot demo has a live legend has one too, with an entry for each series that reads its value at the cursor and hides the series on a click.
 
 ## v0.14.1
