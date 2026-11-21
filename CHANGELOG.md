@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.15.1
+
+- Inkproof-web v0.17.0: the legend shows a dash for a missing value, the cursor works over half a million points, and clipped data is drawn whole at device pixel ratio 2.
+- The Grouped and stacked bars page and the line charts of Multi-Bars have a static legend that hides a series on a click.
+
 ## v0.15.0
 
 - Every page whose uPlot demo has a live legend has one too, with an entry for each series that reads its value at the cursor and hides the series on a click.

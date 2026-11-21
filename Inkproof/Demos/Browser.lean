@@ -131,10 +131,29 @@ def barLabels (c : Bars.Chart) : Array Label :=
       { text, x := Rat.toFloat ((r.x0 + r.x1) / 2), y := Rat.toFloat (if b.positive then min r.y0 r.y1 - 2 else max r.y0 r.y1 + 2),
         align := .center, baseline := if b.positive then .bottom else .top, font := "10px sans-serif" }
 
+/-- The chart with the series in `off` drawn without bars; the others keep their places. -/
+def hideBars (c : Bars.Chart) (off : Array Bool) : Bars.Chart :=
+  { c with series := c.series.zipIdx.map fun (s, i) =>
+      if off.getD i false then { s with values := s.values.map fun _ => none } else s }
+
+theorem hideBars_series (c : Bars.Chart) (off : Array Bool) : (hideBars c off).series =
+    c.series.zipIdx.map fun (s, i) => if off.getD i false then { s with values := s.values.map fun _ => none } else s := rfl
+
+/-- The legend's entries for the series of a bar chart, named `Series 1`, `Series 2` and so on, those `off` marked hidden; they carry no data, so the legend is a static one. -/
+def barTraces (c : Bars.Chart) (off : Array Bool) : Array Trace :=
+  c.series.zipIdx.map fun (s, i) =>
+    { name := s!"Series {i + 1}", color := cssColor s.fill, hidden := off.getD i false, xs := #[], ys := #[] }
+
+theorem barTraces_eq (c : Bars.Chart) (off : Array Bool) : barTraces c off =
+    c.series.zipIdx.map fun (s, i) =>
+      { name := s!"Series {i + 1}", color := cssColor s.fill, hidden := off.getD i false, xs := #[], ys := #[] } := rfl
+
 /-- The scene of a bar chart: its axes and bars, with each bar's value written at its end. -/
-def barScene (c : Bars.Chart) : IO Scene := do
-  let s ← sidedScene c.width c.height background c.texts c.sides c.axes c.display
-  pure { s with labels := s.labels ++ barLabels c }
+def barScene (c : Bars.Chart) (off : Option (Array Bool) := none) : IO Scene := do
+  let shown := off.elim c (hideBars c)
+  let s ← sidedScene c.width c.height background c.texts c.sides c.axes shown.display
+  pure { s with labels := s.labels ++ barLabels shown,
+                access := off.elim {} fun off => { name := "Bars", traces := barTraces c off } }
 
 /-- The scene of a pane whose shapes are `shapes`. -/
 def paneScene (p : Pane.Pane) (shapes : Scene.DisplayList) : IO Scene :=

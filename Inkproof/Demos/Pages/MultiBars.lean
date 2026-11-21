@@ -10,11 +10,11 @@ open Inkproof.Web.Host Inkproof.Demos Inkproof.Demos.MultiBars
 
 def run : IO Unit := do
   let seed ← Browser.seed
-  register "inkproof-chart" fun
+  Browser.registerLegend fun src off => match src with
     | "builds" => Browser.barScene (builds seed)
     | "numeric" => Browser.frameScene 800 400 numeric (numericChart seed numeric)
-    | "benchmark" => Browser.barScene (benchmark seed false)
-    | "benchmark-horizontal" => Browser.barScene (benchmark seed true)
-    | src => throw (IO.userError s!"no chart {src}")
+    | "benchmark" => Browser.barScene (benchmark seed false) (some off)
+    | "benchmark-horizontal" => Browser.barScene (benchmark seed true) (some off)
+    | _ => throw (IO.userError s!"no chart {src}")
 
 end Page.MultiBars

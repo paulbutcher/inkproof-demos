@@ -636,6 +636,23 @@ test('tooltip and legend: the tooltip names the nearest point, the legend reads 
   await page.close();
 });
 
+// Static legends: the pages whose uPlot demo has a key without values.
+for (const [path, chart] of [['grouped-bars/', 0], ['multi-bars/', 2]]) {
+  test(`${path.slice(0, -1)}: the static legend lists the series without values and hides a series on a click`, async () => {
+    const { page, problems } = await open(path);
+    const rows = () => page.evaluate(i => [...document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelectorAll('.legend button')].map(b => b.textContent), chart);
+    await page.waitForFunction(i => document.querySelectorAll('inkproof-chart')[i]?.shadowRoot.querySelector('.legend button'), chart);
+    const names = await rows();
+    assert.ok(names.length > 0);
+    assert.ok(names.every(n => !n.includes(':') && !n.includes('(last)')), `no values in ${names}`);
+    const before = await page.evaluate(() => window.draws.length);
+    await page.evaluate(i => document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelector('.legend button').click(), chart);
+    await page.waitForFunction(n => window.draws.length > n, before);
+    assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+    await page.close();
+  });
+}
+
 // The pages whose charts carry a legend: the number of entries of each chart, in page order.
 const legends = {
   'annotations/': [2], 'cursor-bind/': [3], 'gradients/': [1, 1, 1, 2, 1], 'high-low-bands/': [3],
@@ -650,6 +667,7 @@ for (const [path, counts] of Object.entries(legends)) {
     const rows = () => page.evaluate(() => [...document.querySelectorAll('inkproof-chart')].map(e => [...e.shadowRoot.querySelectorAll('.legend button')].map(b => b.textContent)));
     await page.waitForFunction(n => [...document.querySelectorAll('inkproof-chart')].every(e => e.shadowRoot.querySelector('.legend button')) && document.querySelectorAll('inkproof-chart').length === n, counts.length);
     assert.deepEqual((await rows()).map(r => r.length), counts);
+    assert.ok((await rows()).flat().every(t => !t.includes('NaN')), 'a missing value reads as a dash');
     const before = await page.evaluate(() => window.draws.length);
     const read = async fraction => {
       await page.evaluate(fraction => {
@@ -669,3 +687,29 @@ for (const [path, counts] of Object.entries(legends)) {
     await page.close();
   });
 }
+
+test('clipped data covers the same part of the plot at device pixel ratio 2 as at 1', async () => {
+  const span = async scale => {
+    const context = await browser.newContext({ deviceScaleFactor: scale });
+    const page = await context.newPage();
+    await page.goto(base + 'scatter/?seed=1');
+    await page.waitForFunction(() => window.getComputedStyle(document.querySelector('inkproof-chart')).width && document.querySelectorAll('inkproof-chart')[1].shadowRoot.querySelector('canvas'));
+    await page.waitForTimeout(3000);
+    const r = await page.evaluate(() => {
+      const c = document.querySelectorAll('inkproof-chart')[1].shadowRoot.querySelector('canvas');
+      const t = document.createElement('canvas'); t.width = c.width; t.height = c.height;
+      const g = t.getContext('2d'); g.drawImage(c, 0, 0);
+      const d = g.getImageData(0, 0, t.width, t.height).data;
+      let x1 = 0, y1 = 0;
+      for (let y = 0; y < t.height; y++) for (let x = 0; x < t.width; x++) {
+        const i = (y * t.width + x) * 4;
+        if (d[i + 3] > 0 && (d[i] < 200 || d[i + 1] < 200 || d[i + 2] < 200)) { if (x > x1) x1 = x; if (y > y1) y1 = y; }
+      }
+      return { x: x1 / t.width, y: y1 / t.height };
+    });
+    await context.close();
+    return r;
+  };
+  const [one, two] = [await span(1), await span(2)];
+  assert.ok(Math.abs(one.x - two.x) < 0.05 && Math.abs(one.y - two.y) < 0.05, `${JSON.stringify(one)} ${JSON.stringify(two)}`);
+});
