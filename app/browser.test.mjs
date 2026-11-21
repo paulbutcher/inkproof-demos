@@ -250,6 +250,24 @@ test('the wheel zooms about the pointer, and the key resets to the full range ex
   await page.close();
 });
 
+test('the pointer is relative to the plot: its corner reports the view start, the axis labels report nothing', async () => {
+  const { page, problems, at } = await openZoom('zoom-wheel/');
+  await page.evaluate(() => addEventListener('inkproof-pointer', e => (window.pointers ??= []).push(e.detail)));
+  const [cx, cy] = at(1, 1);
+  await page.mouse.move(cx, cy);
+  await page.waitForFunction(() => window.pointers?.length);
+  const corner = await page.evaluate(() => window.pointers.at(-1));
+  assert.ok(Math.abs(corner.x - 1) < 0.05 * 6, `the plot's left edge is the start of the range: ${JSON.stringify(corner)}`);
+  const [lx, ly] = at(-30, 100);
+  await page.mouse.move(lx, ly);
+  await page.waitForTimeout(200);
+  await page.mouse.wheel(0, -300);
+  await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(() => window.views.length), 0, 'a wheel over the axis labels starts no zoom');
+  assert.deepEqual(problems, []);
+  await page.close();
+});
+
 test('a drag pans and a shift-drag zooms to the box', async () => {
   const { page, problems, at } = await openZoom('zoom-wheel/');
   const [x, y] = at(200, 150);
