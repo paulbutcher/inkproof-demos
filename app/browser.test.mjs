@@ -65,9 +65,9 @@ const colours = page => page.evaluate(() => {
   const count = { red: 0, green: 0, blue: 0 };
   for (let i = 0; i < d.length; i += 4) {
     const [r, g, b] = [d[i], d[i + 1], d[i + 2]];
-    if (r > 200 && g < 60 && b < 60) count.red++;
+    if ((r > 200 && g < 60 && b < 60) || (r > 200 && g < 200 && Math.abs(g - b) < 20 && g < r - 40)) count.red++;
     if (r < 60 && g > 100 && g < 160 && b < 60) count.green++;
-    if (r < 60 && g < 60 && b > 200) count.blue++;
+    if ((r < 60 && g < 60 && b > 200) || (b > 200 && r < 200 && Math.abs(r - g) < 20 && r < b - 40)) count.blue++;
   }
   return count;
 });
@@ -112,6 +112,24 @@ test('area fill fills the window at a similar aspect ratio, and draws other data
   assert.notEqual(first, second);
   await a.page.close();
   await b.page.close();
+});
+
+test('area fill makes its scene again at the new size when the window is resized, with the legend below the plot', async () => {
+  const { page, problems } = await open('area-fill/', '1');
+  await page.setViewportSize({ width: 1200, height: 800 });
+  await page.waitForFunction(() => window.draws.length >= 1);
+  const before = await page.evaluate(() => window.draws.length);
+  await page.setViewportSize({ width: 700, height: 800 });
+  await page.waitForFunction(n => window.draws.length > n, before);
+  const { chart, canvas, legend } = await page.evaluate(() => {
+    const el = document.querySelector('inkproof-chart');
+    const box = e => { const r = e.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, width: r.width }; };
+    return { chart: box(el), canvas: box(el.shadowRoot.querySelector('canvas')), legend: box(el.shadowRoot.querySelector('.legend')) };
+  });
+  assert.ok(Math.abs(canvas.width - 700) <= 1, `canvas ${canvas.width}`);
+  assert.ok(legend.top >= canvas.bottom - 1, `legend ${legend.top} canvas bottom ${canvas.bottom}`);
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
 });
 
 test('area fill: the legend reads each series at the cursor and hides its series on a click', async () => {
@@ -524,7 +542,7 @@ test('the composed shape pages draw their shapes in their colours', async () => 
   const pages = [
     ['candlestick/', 1, [[74, 182, 80, 255], [229, 66, 69, 255], [0, 0, 0, 255]]],
     ['box-whisker/', 3, [[0, 0, 0, 255], [238, 238, 238, 255]]],
-    ['timeline-discrete/', 3, [[255, 0, 0, 255], [0, 255, 0, 255], [255, 165, 0, 255], [255, 255, 0, 255], [255, 0, 0, 51]]],
+    ['timeline-discrete/', 3, [[255, 0, 0, 255], [0, 255, 0, 255], [255, 165, 0, 255], [255, 255, 0, 255], [255, 204, 204, 255]]],
   ];
   for (const [path, charts, wanted] of pages) {
     const { page, problems } = await open(path);

@@ -3,6 +3,7 @@
 ## v0.13.1
 
 - The Zoom variations page boxes on a plain drag (`drag="box"`).
+- The Area Fill page redraws at the chart's size when it is resized, and puts its legend below the plot.
 
 ## v0.13.0
 
