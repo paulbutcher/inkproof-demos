@@ -212,7 +212,7 @@ private def latencyTest : Except String Unit := do
 private def heatmapTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
   check ((Scatter.clouds 1).size == 4 && (Scatter.clouds 1).all (·.points.size == 10000)) "four clouds of ten thousand points"
-  check ((Scatter.scatterChart 1 (Scatter.scatterFrame 1) measure).size > 40000) "every scatter point is drawn"
+  check ((Scatter.scatterChart 1 (Scatter.scatterFrame 1) #[] measure).size > 40000) "every scatter point is drawn"
   check (LatencyHeatmap.columns.all fun c => 200 ≤ c.size && c.size ≤ 500 && c.all (50 ≤ ·)) "each column holds 200 to 500 latencies of at least 5 ms"
   let total := LatencyHeatmap.bucketCells.foldl (fun n c => n + (c.value.map (·.1)).getD 0) 0
   check (total == LatencyHeatmap.columns.foldl (· + ·.size) 0) "every latency is counted in a bucket"

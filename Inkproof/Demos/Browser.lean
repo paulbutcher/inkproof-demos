@@ -148,6 +148,15 @@ theorem barTraces_eq (c : Bars.Chart) (off : Array Bool) : barTraces c off =
     c.series.zipIdx.map fun (s, i) =>
       { name := s!"Series {i + 1}", color := cssColor s.fill, hidden := off.getD i false, xs := #[], ys := #[] } := rfl
 
+/-- The legend's entries for the clouds of a scatter plot, named `Series 1`, `Series 2` and so on, those `off` marked hidden; they carry no data, so the legend is a static one. -/
+def cloudTraces (cs : Array Scatter.Cloud) (off : Array Bool) : Array Trace :=
+  cs.zipIdx.map fun (c, i) =>
+    { name := s!"Series {i + 1}", color := cssColor c.color, hidden := off.getD i false, xs := #[], ys := #[] }
+
+theorem cloudTraces_eq (cs : Array Scatter.Cloud) (off : Array Bool) : cloudTraces cs off =
+    cs.zipIdx.map fun (c, i) =>
+      { name := s!"Series {i + 1}", color := cssColor c.color, hidden := off.getD i false, xs := #[], ys := #[] } := rfl
+
 /-- The scene of a bar chart: its axes and bars, with each bar's value written at its end. -/
 def barScene (c : Bars.Chart) (off : Option (Array Bool) := none) : IO Scene := do
   let shown := off.elim c (hideBars c)

@@ -648,7 +648,7 @@ test('tooltip and legend: the tooltip names the nearest point, the legend reads 
 });
 
 // Static legends: the pages whose uPlot demo has a key without values.
-for (const [path, chart] of [['grouped-bars/', 0], ['multi-bars/', 2]]) {
+for (const [path, chart] of [['grouped-bars/', 0], ['multi-bars/', 2], ['scatter/', 1]]) {
   test(`${path.slice(0, -1)}: the static legend lists the series without values and hides a series on a click`, async () => {
     const { page, problems } = await open(path);
     const rows = () => page.evaluate(i => [...document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelectorAll('.legend button')].map(b => b.textContent), chart);
