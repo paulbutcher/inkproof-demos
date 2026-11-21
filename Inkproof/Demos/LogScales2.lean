@@ -160,18 +160,20 @@ theorem Spec.projection_x (s : Spec) (x : Rat) :
 
 theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = (Inkproof.Float.Float.toRat (s.yPixel (Rat.toFloat v))).getD 0 := rfl
 
-/-- The axes, then the series filled down to the bottom of the plot if it has a fill, and stroked. -/
-def Spec.chart (s : Spec) (measure : String → Float × Float) : DisplayList :=
+/-- The axes, then the series unless the legend has hidden it, filled down to the bottom of the plot if it has a fill, and stroked. -/
+def Spec.chart (off : Array Bool) (s : Spec) (measure : String → Float × Float) : DisplayList :=
   let g := Segmented.single s.data
   (s.axes measure).foldl (· ++ ·.display) #[] ++
+  if off.getD 0 false then #[] else
   (match s.fill with
     | some c => compileArea ⟨0, c⟩ s.ys.1 s.projection g
     | none => #[]) ++
   compileLine ⟨⟨1, s.stroke⟩, 1, false, none, .straight⟩ s.projection g
 
-theorem Spec.chart_eq (s : Spec) (measure : String → Float × Float) :
-    s.chart measure =
+theorem Spec.chart_eq (off : Array Bool) (s : Spec) (measure : String → Float × Float) :
+    s.chart off measure =
       (s.axes measure).foldl (· ++ ·.display) #[] ++
+      if off.getD 0 false then #[] else
       (match s.fill with
         | some c => compileArea ⟨0, c⟩ s.ys.1 s.projection (Segmented.single s.data)
         | none => #[]) ++

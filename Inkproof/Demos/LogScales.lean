@@ -105,14 +105,20 @@ def Spec.projection (s : Spec) : Projection Rat Rat :=
 
 theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = (Inkproof.Float.Float.toRat (s.yPixel (Rat.toFloat v))).getD 0 := rfl
 
-/-- The axes, then every server's line. -/
-def Spec.chart (s : Spec) (measure : String → Float × Float) : DisplayList :=
-  (s.axes measure).foldl (· ++ ·.display) #[] ++
-    layers.foldl (fun out l => out ++ compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ s.projection (Segmented.single l.data)) #[]
+/-- The servers' layers that the legend has not hidden. -/
+def shownLayers (off : Array Bool) : List Layer :=
+  (layers.zipIdx.filter fun (_, i) => !off.getD i false).map (·.1)
 
-theorem Spec.chart_eq (s : Spec) (measure : String → Float × Float) : s.chart measure =
+theorem shownLayers_eq (off : Array Bool) : shownLayers off = (layers.zipIdx.filter fun (_, i) => !off.getD i false).map (·.1) := rfl
+
+/-- The axes, then every server's line that the legend has not hidden. -/
+def Spec.chart (off : Array Bool) (s : Spec) (measure : String → Float × Float) : DisplayList :=
+  (s.axes measure).foldl (· ++ ·.display) #[] ++
+    (shownLayers off).foldl (fun out l => out ++ compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ s.projection (Segmented.single l.data)) #[]
+
+theorem Spec.chart_eq (off : Array Bool) (s : Spec) (measure : String → Float × Float) : s.chart off measure =
     (s.axes measure).foldl (· ++ ·.display) #[] ++
-      layers.foldl (fun out l => out ++ compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ s.projection (Segmented.single l.data)) #[] := rfl
+      (shownLayers off).foldl (fun out l => out ++ compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ s.projection (Segmented.single l.data)) #[] := rfl
 
 def specs : List Spec := [⟨"log", true⟩, ⟨"linear", false⟩]
 

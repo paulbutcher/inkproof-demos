@@ -14,7 +14,7 @@ import Lasm.JS
 
 namespace Inkproof.Demos.Browser
 
-open Inkproof.Web.Host Inkproof.Scene Inkproof.Axis Lasm.JS
+open Inkproof.Web Inkproof.Web.Host Inkproof.Scene Inkproof.Axis Lasm.JS
 
 private def randomSeed : IO Nat := do
   let r ← (← (← global).get "Math").callMethod "random" #[] Float
@@ -45,18 +45,72 @@ def tickLabels (axes : List AxisDrawing) : Array Label :=
 theorem tickLabels_eq (axes : List AxisDrawing) :
     tickLabels axes = (axes.zip [Side.bottom, Side.left]).toArray.flatMap fun (a, side) => Label.ofDrawing side a := rfl
 
-/-- The scene of a `width` by `height` chart in `f`: `chart` draws the data, given the width and height of text, and the axes' labels go over it. -/
-def frameScene (width height : Nat) (f : Frame) (chart : (String → Float × Float) → Scene.DisplayList) : IO Scene := do
+/-- A colour as CSS writes it. -/
+def cssColor (c : Color) : String := s!"rgb({c.r},{c.g},{c.b})"
+
+theorem cssColor_eq (c : Color) : cssColor c = s!"rgb({c.r},{c.g},{c.b})" := rfl
+
+/-- A series as the legend reads it, a missing value being not a number. -/
+def traceOf (name : String) (color : Color) (hidden : Bool) (s : Core.Series Rat Rat) : Trace :=
+  { name, color := cssColor color, hidden, xs := s.xs.map Rat.toFloat, ys := s.values.map fun y => (y.map Rat.toFloat).getD (0 / 0) }
+
+theorem traceOf_eq (name : String) (color : Color) (hidden : Bool) (s : Core.Series Rat Rat) : traceOf name color hidden s =
+    { name, color := cssColor color, hidden, xs := s.xs.map Rat.toFloat, ys := s.values.map fun y => (y.map Rat.toFloat).getD (0 / 0) } := rfl
+
+/-- What a chart drawn in `f` tells the page: the legend's traces, and a plot of fixed ranges for the cursor to move over. -/
+def accessOf (name : String) (f : Frame) (traces : Array Trace) : Access :=
+  { name, series := traces.map fun _ => "line", points := (traces.map (·.xs.size)).foldl max 0, view := some f.viewConfig,
+    plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), traces }
+
+theorem accessOf_traces (name : String) (f : Frame) (traces : Array Trace) : (accessOf name f traces).traces = traces := rfl
+
+theorem accessOf_eq (name : String) (f : Frame) (traces : Array Trace) : accessOf name f traces =
+    { name, series := traces.map fun _ => "line", points := (traces.map (·.xs.size)).foldl max 0, view := some f.viewConfig,
+      plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), traces } := rfl
+
+/-- The coloured series as the legend's, named `Series 1`, `Series 2` and so on, those `off` marks hidden. -/
+def seriesTraces (off : Array Bool) (ss : List (Color × Core.Series Rat Rat)) : Array Trace :=
+  (ss.zipIdx.map fun ((c, s), i) => traceOf s!"Series {i + 1}" c (off.getD i false) s).toArray
+
+theorem seriesTraces_eq (off : Array Bool) (ss : List (Color × Core.Series Rat Rat)) : seriesTraces off ss =
+    (ss.zipIdx.map fun ((c, s), i) => traceOf s!"Series {i + 1}" c (off.getD i false) s).toArray := rfl
+
+theorem seriesTraces_size (off : Array Bool) (ss : List (Color × Core.Series Rat Rat)) : (seriesTraces off ss).size = ss.length := by
+  simp [seriesTraces]
+
+/-- The scene of a `width` by `height` chart in `f`: `chart` draws the data, given the width and height of text, and the axes' labels go over it. With `traces` it has a legend, and a cursor over the plot. -/
+def frameScene (width height : Nat) (f : Frame) (chart : (String → Float × Float) → Scene.DisplayList)
+    (name : String := "Chart") (traces : Array Trace := #[]) : IO Scene := do
   let measure ← measurer "12px sans-serif" (texts f)
   let labels := tickLabels (axes f measure)
-  pure { commands := Gpu.frameBytes width height (chart measure) background, labels }
+  pure { commands := Gpu.frameBytes width height (chart measure) background, labels,
+         access := if traces.isEmpty then {} else accessOf name f traces }
 
-/-- The scene of a chart of lines: its axes' labels over the data. -/
-def lineScene (c : Lines.Chart) : IO Scene := do
+/-- Draw each chart `build` makes from the series its legend has hidden, and again when a click on a legend entry hides or shows one. -/
+def registerLegend (build : String → Array Bool → IO Scene) : IO Unit := do
+  let hidden ← IO.mkRef (({} : Std.HashMap String (Array Bool)))
+  register "inkproof-chart" fun src => do build src ((← hidden.get).getD src #[])
+  let toggled ← Function.ofSyncFn fun args => do
+    if let some (Data.ref event _) := args[0]? then
+      let el ← event.get "target" Value
+      let src ← el.callMethod "getAttribute" #[toJS "src"] String
+      let detail ← event.get "detail" Value
+      let series ← detail.get "series" Nat
+      let hide ← detail.get "hidden" Bool
+      let old := (← hidden.get).getD src #[]
+      let off := (old ++ Array.replicate (series + 1 - old.size) false).setIfInBounds series hide
+      hidden.modify (·.insert src off)
+      setScene el (← build src off)
+    return .undefined
+  (← (← global).get "document").callMethod "addEventListener" #[toJS "inkproof-series", toJS toggled] Unit
+
+/-- The scene of a chart of lines: its axes' labels over the data, and its layers as the legend's series unless they are in `off`. -/
+def lineScene (c : Lines.Chart) (off : Array Bool := #[]) : IO Scene := do
   let measure ← measurer "12px sans-serif" c.labelTexts.toArray
   let sides := [Side.bottom, .left] ++ (c.right.map fun _ => Side.right).toList
   let labels := ((c.axes measure).zip sides).toArray.flatMap fun (a, side) => Label.ofDrawing side a
-  pure { commands := Gpu.frameBytes c.width c.height (c.display measure) background, labels }
+  pure { commands := Gpu.frameBytes c.width c.height ((c.hide off).display measure) background, labels,
+         access := accessOf c.name c.frame (seriesTraces off (c.layers.map fun l => (l.color, l.data))) }
 
 /-- The scene of a `width` by `height` chart on `bg`: `axes` lie on `sides` in order, their labels go over `chart`'s data, and `texts` are every label they may show. -/
 def sidedScene (width height : Nat) (bg : Color) (texts : Array String) (sides : List Side)

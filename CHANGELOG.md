@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.15.0
+
+- Every page whose uPlot demo has a live legend has one too, with an entry for each series that reads its value at the cursor and hides the series on a click.
+
 ## v0.14.1
 
 - The site builds in a fraction of the time: every page mounts one shared Lasm program, so the Lean compiles once, not once per page.

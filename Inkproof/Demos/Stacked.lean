@@ -59,16 +59,28 @@ private def fills : List Color :=
 
 private def paint (k : Nat) : Paint := ⟨k, fills.getD k ⟨0, 0, 0, 255⟩⟩
 
-def areaChart (f : Frame) (measure : String → Float × Float) : DisplayList :=
-  axisDisplay f measure ++ compileStackedAreas paint (projection f) areaSeries
+/-- The series with those `off` marks at zero, so the others stack as if they were absent. -/
+def hide (off : Array Bool) (ss : Array (Series Rat Rat)) : Array (Series Rat Rat) :=
+  ss.mapIdx fun i s => if off.getD i false then Series.ofUnsorted (s.points.map fun (x, _) => (x, some 0)) else s
 
-theorem areaChart_eq (f : Frame) (measure : String → Float × Float) :
-    areaChart f measure = axisDisplay f measure ++ compileStackedAreas paint (projection f) areaSeries := rfl
+theorem hide_eq (off : Array Bool) (ss : Array (Series Rat Rat)) : hide off ss =
+    ss.mapIdx fun i s => if off.getD i false then Series.ofUnsorted (s.points.map fun (x, _) => (x, some 0)) else s := rfl
 
-def barChart (seed : Nat) (f : Frame) (measure : String → Float × Float) : DisplayList :=
-  axisDisplay f measure ++ compileStackedBars paint (3 / 5) (projection f) (barSeries seed)
+def areaChart (off : Array Bool) (f : Frame) (measure : String → Float × Float) : DisplayList :=
+  axisDisplay f measure ++ compileStackedAreas paint (projection f) (hide off areaSeries)
 
-theorem barChart_eq (seed : Nat) (f : Frame) (measure : String → Float × Float) :
-    barChart seed f measure = axisDisplay f measure ++ compileStackedBars paint (3 / 5) (projection f) (barSeries seed) := rfl
+theorem areaChart_eq (off : Array Bool) (f : Frame) (measure : String → Float × Float) :
+    areaChart off f measure = axisDisplay f measure ++ compileStackedAreas paint (projection f) (hide off areaSeries) := rfl
+
+def barChart (off : Array Bool) (seed : Nat) (f : Frame) (measure : String → Float × Float) : DisplayList :=
+  axisDisplay f measure ++ compileStackedBars paint (3 / 5) (projection f) (hide off (barSeries seed))
+
+theorem barChart_eq (off : Array Bool) (seed : Nat) (f : Frame) (measure : String → Float × Float) :
+    barChart off seed f measure = axisDisplay f measure ++ compileStackedBars paint (3 / 5) (projection f) (hide off (barSeries seed)) := rfl
+
+/-- The colour of series `k` without its transparency, as the legend shows it. -/
+def colour (k : Nat) : Color := { fills.getD k ⟨0, 0, 0, 255⟩ with a := 255 }
+
+theorem colour_eq (k : Nat) : colour k = { fills.getD k ⟨0, 0, 0, 255⟩ with a := 255 } := rfl
 
 end Inkproof.Demos.Stacked

@@ -6,11 +6,12 @@ import Inkproof.Gpu.Frame
 import Inkproof.Scene
 import Inkproof.Float
 import Inkproof.Scale
+import Inkproof.Viewport
 import Inkproof.Demos.Axes
 
 namespace Inkproof.Demos
 
-open Inkproof.Scene Inkproof.Scale
+open Inkproof.Scene Inkproof.Scale Inkproof.Viewport
 
 /-- The page's colour, which every chart is drawn on. -/
 def background : Color := ⟨255, 255, 255, 255⟩
@@ -44,6 +45,19 @@ def Frame.sized (width height : Nat) (xs ys : Rat × Rat) : Frame :=
 
 theorem Frame.sized_eq (width height : Nat) (xs ys : Rat × Rat) :
     Frame.sized width height xs ys = ⟨60, width - 20, 20, height - 40, xs, ys⟩ := rfl
+
+/-- The view of a chart that cannot be zoomed: its home view is the whole of the frame's ranges. -/
+def Frame.viewConfig (f : Frame) : ViewConfig Float :=
+  let axis (length : Rat) (r : Rat × Rat) : Interval.Config Float :=
+    let span := Rat.toFloat (r.2 - r.1)
+    ⟨Rat.toFloat length, span, span, ⟨Rat.toFloat r.1, span⟩, 5 / 4, 1 / 10⟩
+  ⟨axis (f.right - f.left) f.xs, axis (f.bottom - f.top) f.ys⟩
+
+theorem Frame.viewConfig_eq (f : Frame) : f.viewConfig =
+    let axis (length : Rat) (r : Rat × Rat) : Interval.Config Float :=
+      let span := Rat.toFloat (r.2 - r.1)
+      ⟨Rat.toFloat length, span, span, ⟨Rat.toFloat r.1, span⟩, 5 / 4, 1 / 10⟩
+    ⟨axis (f.right - f.left) f.xs, axis (f.bottom - f.top) f.ys⟩ := rfl
 
 /-- The float scale of the frame's x axis, from data to pixels along the plot. -/
 def Frame.xScale (f : Frame) : Linear Float :=

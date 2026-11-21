@@ -51,17 +51,9 @@ def frame (width : Nat) : Frame := Frame.sized width (height width) (1, 30) (-12
 theorem frame_eq (width : Nat) : frame width = Frame.sized width (height width) (1, 30) (-12, 12) := rfl
 
 /-- No zoom, the home view being the whole chart. -/
-def config (f : Frame) : ViewConfig Float :=
-  let axis (length : Rat) (r : Rat × Rat) : Interval.Config Float :=
-    let span := Rat.toFloat (r.2 - r.1)
-    ⟨Rat.toFloat length, span, span, ⟨Rat.toFloat r.1, span⟩, 5 / 4, 1 / 10⟩
-  ⟨axis (f.right - f.left) f.xs, axis (f.bottom - f.top) f.ys⟩
+def config (f : Frame) : ViewConfig Float := f.viewConfig
 
-theorem config_eq (f : Frame) : config f =
-    let axis (length : Rat) (r : Rat × Rat) : Interval.Config Float :=
-      let span := Rat.toFloat (r.2 - r.1)
-      ⟨Rat.toFloat length, span, span, ⟨Rat.toFloat r.1, span⟩, 5 / 4, 1 / 10⟩
-    ⟨axis (f.right - f.left) f.xs, axis (f.bottom - f.top) f.ys⟩ := rfl
+theorem config_eq (f : Frame) : config f = f.viewConfig := rfl
 
 def colors : List (Color × Color) :=
   [(⟨255, 0, 0, 255⟩, ⟨255, 0, 0, 26⟩), (⟨0, 128, 0, 255⟩, ⟨0, 255, 0, 26⟩), (⟨0, 0, 255, 255⟩, ⟨0, 0, 255, 26⟩)]

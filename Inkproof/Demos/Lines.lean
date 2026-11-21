@@ -242,6 +242,13 @@ theorem Chart.layerDisplay_eq (c : Chart) (l : Layer) : c.layerDisplay l =
       | none => #[]) ++
     compileLine ⟨⟨1, l.strokeShading (c.projection l)⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments := rfl
 
+/-- The chart without the data of the layers `off` marks, so that they draw nothing and leave the others where they were. -/
+def Chart.hide (c : Chart) (off : Array Bool) : Chart :=
+  { c with layers := c.layers.zipIdx.map fun (l, i) => if off.getD i false then { l with data := {} } else l }
+
+theorem Chart.hide_layers (c : Chart) (off : Array Bool) : (c.hide off).layers =
+    c.layers.zipIdx.map fun (l, i) => if off.getD i false then { l with data := {} } else l := rfl
+
 /-- The axes, then the bands and each layer in turn. -/
 def Chart.display (c : Chart) (measure : String → Float × Float) : DisplayList :=
   (c.axes measure).foldl (· ++ ·.display) #[] ++ c.bands.foldl (· ++ c.bandDisplay ·) #[] ++

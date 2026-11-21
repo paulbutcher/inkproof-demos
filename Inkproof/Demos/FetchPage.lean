@@ -29,11 +29,14 @@ def mount : IO Unit := do
   let cache ← SceneCache.new
   let current ← IO.mkRef (Linked.fetched #[])
   let latest ← IO.mkRef 0
+  let off ← IO.mkRef #[false]
+  let shown ← IO.mkRef (View.home (Linked.fetched #[]).config)
   let name := "zoom-fetch"
   register "inkproof-chart" (buttons := true) fun _ => do
-    ZoomPage.sceneOf (← current.get) name cache #[] (View.home (← current.get).config)
+    ZoomPage.sceneOf (← current.get) name cache (← off.get) (View.home (← current.get).config)
   let doc ← (← global).get "document"
   let update (view : View Float) : IO Unit := do
+    shown.set view
     let ticket := (← latest.get) + 1
     latest.set ticket
     discard <| Std.Async.Async.toIO (do
@@ -42,12 +45,19 @@ def mount : IO Unit := do
         current.set chart
         cache.invalidate
         if let .ref el _ := ← doc.callMethod "getElementById" #[toJS "chart"] Data then
-          setScene el (← ZoomPage.sceneOf chart name cache #[] view))
+          setScene el (← ZoomPage.sceneOf chart name cache (← off.get) view))
   let onView ← Function.ofSyncFn fun args => do
     if let some (Data.ref event _) := args[0]? then
       update (← viewOf (← event.get "detail" Value))
     return .undefined
   doc.callMethod "addEventListener" #[toJS "inkproof-view", toJS onView] Unit
+  let toggled ← Function.ofSyncFn fun args => do
+    if let some (Data.ref event _) := args[0]? then
+      let detail ← event.get "detail" Value
+      off.set #[← detail.get "hidden" Bool]
+      setScene (← event.get "target" Value) (← ZoomPage.sceneOf (← current.get) name cache (← off.get) (← shown.get))
+    return .undefined
+  doc.callMethod "addEventListener" #[toJS "inkproof-series", toJS toggled] Unit
   update (View.home (Linked.fetched #[]).config)
 
 end Inkproof.Demos.FetchPage
