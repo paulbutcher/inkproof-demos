@@ -1,10 +1,14 @@
 # Changelog
 
-## v0.14.0
+## v0.14.1
 
 - The site builds in a fraction of the time: every page mounts one shared Lasm program, so the Lean compiles once, not once per page.
-- Seeded draws come from lean-random-sampling v0.1.0, and the samplers written here are gone; uniform draws now have a resolution of 2^-53, so the Latency pages show different data for a seed.
+- Gpu v0.15.0: thin vertical and horizontal strokes, such as axis ticks, end without a foot.
 - The Gradients page is on the index, with horizontal, over-under, banded and fill gradients.
+
+## v0.14.0
+
+- Seeded draws come from lean-random-sampling v0.1.0, and the samplers written here are gone; uniform draws now have a resolution of 2^-53, so the Latency pages show different data for a seed.
 
 ## v0.13.1
 
