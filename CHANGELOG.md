@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.13.1
+
+- The Zoom variations page boxes on a plain drag (`drag="box"`).
+
 ## v0.13.0
 
 - The Cursor bind and Tooltip and legend pages take a `seed` query parameter and otherwise a random seed.

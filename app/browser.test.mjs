@@ -317,17 +317,15 @@ test('a two-finger pinch zooms and one finger pans', async () => {
   await page.close();
 });
 
-test('each zoom variation boxes the axes its attributes name, and not a drag under its minimum', async () => {
+test('each zoom variation boxes on a plain drag the axes its attributes name, and not a drag under its minimum', async () => {
   const wanted = [['x', true, false], ['y', false, true], ['auto', true, false], ['xy', true, true]];
   for (const [index, [axes, changesX, changesY]] of wanted.entries()) {
     const { page, at } = await openZoom('zoom-variations/', index);
     const [x0, y0] = at(100, 100);
     await page.mouse.move(x0, y0);
-    await page.keyboard.down('Shift');
     await page.mouse.down();
     await page.mouse.move(x0 + 150, y0 + 120, { steps: 4 });
     await page.mouse.up();
-    await page.keyboard.up('Shift');
     await settled(page, 1);
     const v = await lastView(page);
     // The data spans 29 in x and at least 20 in y; the box covers about a third of the plot.
@@ -338,11 +336,9 @@ test('each zoom variation boxes the axes its attributes name, and not a drag und
   const { page, at } = await openZoom('zoom-variations/', 8);
   const [x0, y0] = at(100, 100);
   await page.mouse.move(x0, y0);
-  await page.keyboard.down('Shift');
   await page.mouse.down();
   await page.mouse.move(x0 + 6, y0 + 6, { steps: 2 });
   await page.mouse.up();
-  await page.keyboard.up('Shift');
   await page.waitForTimeout(300);
   assert.equal(await page.evaluate(() => window.views.length), 0);
   await page.close();

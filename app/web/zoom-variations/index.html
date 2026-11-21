@@ -14,18 +14,18 @@ Released under Apache 2.0 license as described in the file LICENSE.
   <body>
     <h1>Zoom variations</h1>
     <p><a href="../">All demos</a></p>
-    <p>Shift-drag a box on a chart to zoom to it; the chart's <code>box-zoom</code> attribute chooses which axes the box covers, and <code>box-min</code> the least drag in pixels that counts. A plain drag pans, and the wheel zooms.</p>
+    <p>Drag a box on a chart to zoom to it; the chart's <code>box-zoom</code> attribute chooses which axes the box covers, and <code>box-min</code> the least drag in pixels that counts. Shift-drag pans, and the wheel zooms.</p>
     <h2>Basic</h2>
-    <inkproof-chart src="variation-0" box-zoom="x" aria-label="X only"></inkproof-chart>
-    <inkproof-chart src="variation-1" box-zoom="y" aria-label="Y only"></inkproof-chart>
-    <inkproof-chart src="variation-2" box-zoom="auto" aria-label="X or Y (adaptive)"></inkproof-chart>
-    <inkproof-chart src="variation-3" box-zoom="xy" aria-label="X or Y (omni)"></inkproof-chart>
-    <inkproof-chart src="variation-4" box-zoom="auto" aria-label="X or Y (adaptive + omni)"></inkproof-chart>
+    <inkproof-chart src="variation-0" drag="box" box-zoom="x" aria-label="X only"></inkproof-chart>
+    <inkproof-chart src="variation-1" drag="box" box-zoom="y" aria-label="Y only"></inkproof-chart>
+    <inkproof-chart src="variation-2" drag="box" box-zoom="auto" aria-label="X or Y (adaptive)"></inkproof-chart>
+    <inkproof-chart src="variation-3" drag="box" box-zoom="xy" aria-label="X or Y (omni)"></inkproof-chart>
+    <inkproof-chart src="variation-4" drag="box" box-zoom="auto" aria-label="X or Y (adaptive + omni)"></inkproof-chart>
     <h2>With a minimum drag distance of 10 px</h2>
-    <inkproof-chart src="variation-5" box-zoom="x" box-min="10"></inkproof-chart>
-    <inkproof-chart src="variation-6" box-zoom="y" box-min="10"></inkproof-chart>
-    <inkproof-chart src="variation-7" box-zoom="auto" box-min="10"></inkproof-chart>
-    <inkproof-chart src="variation-8" box-zoom="xy" box-min="10"></inkproof-chart>
-    <inkproof-chart src="variation-9" box-zoom="auto" box-min="10"></inkproof-chart>
+    <inkproof-chart src="variation-5" drag="box" box-zoom="x" box-min="10"></inkproof-chart>
+    <inkproof-chart src="variation-6" drag="box" box-zoom="y" box-min="10"></inkproof-chart>
+    <inkproof-chart src="variation-7" drag="box" box-zoom="auto" box-min="10"></inkproof-chart>
+    <inkproof-chart src="variation-8" drag="box" box-zoom="xy" box-min="10"></inkproof-chart>
+    <inkproof-chart src="variation-9" drag="box" box-zoom="auto" box-min="10"></inkproof-chart>
   </body>
 </html>
