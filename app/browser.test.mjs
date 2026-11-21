@@ -114,6 +114,22 @@ test('area fill fills the window at a similar aspect ratio, and draws other data
   await b.page.close();
 });
 
+test('area fill: the legend reads each series at the cursor and hides its series on a click', async () => {
+  const { page, problems } = await open('area-fill/', '1');
+  await page.waitForFunction(() => window.draws.length >= 1);
+  const shadow = sel => page.evaluate(sel => [...document.querySelector('inkproof-chart').shadowRoot.querySelectorAll(sel)].map(e => e.textContent), sel);
+  assert.equal((await shadow('.legend button')).length, 3);
+  const last = await shadow('.legend button');
+  assert.ok(last.every(r => r.includes('(last)')), last.join('|'));
+  await pointerAt(page, 'chart', 'pointermove', 400, 150);
+  await page.waitForFunction(() => !document.querySelector('inkproof-chart').shadowRoot.querySelector('.legend button').textContent.includes('(last)'));
+  const before = await page.evaluate(() => window.draws.length);
+  await page.locator('inkproof-chart button[data-series="1"]').click();
+  await page.waitForFunction(n => window.draws.length > n, before);
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});
+
 test('area fill takes a malformed seed with a warning and draws', async () => {
   const { page, problems } = await open('area-fill/?seed=abc');
   await page.waitForFunction(() => window.draws.length >= 1);

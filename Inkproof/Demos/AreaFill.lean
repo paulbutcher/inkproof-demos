@@ -5,12 +5,13 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Inkproof.Core
 import Inkproof.Scene
 import Inkproof.Scale
+import Inkproof.Viewport
 import Inkproof.Demos.Axes
 import Inkproof.Demos.Frame
 
 namespace Inkproof.Demos.AreaFill
 
-open Inkproof.Core Inkproof.Scene Inkproof.Scale Inkproof.Demos
+open Inkproof.Core Inkproof.Scene Inkproof.Scale Inkproof.Viewport Inkproof.Demos
 
 /-- An integer in `-10..10` from a draw of `randNat`, clamped because core states no bound on its result. -/
 def level (draw : Nat) : Int := ((min draw 20 : Nat) : Int) - 10
@@ -52,6 +53,19 @@ def frame (width : Nat) : Frame := Frame.sized width (height width) (1, 30) (-12
 
 theorem frame_eq (width : Nat) : frame width = Frame.sized width (height width) (1, 30) (-12, 12) := rfl
 
+/-- No zoom, the home view being the whole chart. -/
+def config (f : Frame) : ViewConfig Float :=
+  let axis (length : Rat) (r : Rat × Rat) : Interval.Config Float :=
+    let span := Rat.toFloat (r.2 - r.1)
+    ⟨Rat.toFloat length, span, span, ⟨Rat.toFloat r.1, span⟩, 5 / 4, 1 / 10⟩
+  ⟨axis (f.right - f.left) f.xs, axis (f.bottom - f.top) f.ys⟩
+
+theorem config_eq (f : Frame) : config f =
+    let axis (length : Rat) (r : Rat × Rat) : Interval.Config Float :=
+      let span := Rat.toFloat (r.2 - r.1)
+      ⟨Rat.toFloat length, span, span, ⟨Rat.toFloat r.1, span⟩, 5 / 4, 1 / 10⟩
+    ⟨axis (f.right - f.left) f.xs, axis (f.bottom - f.top) f.ys⟩ := rfl
+
 def colors : List (Color × Color) :=
   [(⟨255, 0, 0, 255⟩, ⟨255, 0, 0, 26⟩), (⟨0, 128, 0, 255⟩, ⟨0, 255, 0, 26⟩), (⟨0, 0, 255, 255⟩, ⟨0, 0, 255, 26⟩)]
 
@@ -60,18 +74,18 @@ def pageSeries (seed i : Nat) : Series Rat Rat := series (seed + i) 30
 
 theorem pageSeries_eq (seed i : Nat) : pageSeries seed i = series (seed + i) 30 := rfl
 
-/-- Each series filled down to zero, stroked on top with a one pixel line and marked with an open circle at each point, over the axes. -/
-def chart (seed : Nat) (f : Frame) (measure : String → Float × Float) : DisplayList :=
+/-- Each series not in `hidden` filled down to zero, stroked on top with a one pixel line and marked with an open circle at each point, over the axes. -/
+def chart (seed : Nat) (hidden : Array Bool) (f : Frame) (measure : String → Float × Float) : DisplayList :=
   axisDisplay f measure ++
-  colors.zipIdx.toArray.flatMap fun ((stroke, fill), i) =>
+  (colors.zipIdx.filter fun (_, i) => !hidden.getD i false).toArray.flatMap fun ((stroke, fill), i) =>
     let s := pageSeries seed i
     let g := Segmented.single s
     compileArea ⟨0, fill⟩ 0 (projection f) g ++ compileLine ⟨⟨1, stroke⟩, 1/2, false, none, .straight⟩ (projection f) g ++
       (s.xs.zip s.values).flatMap fun (x, y) => y.elim #[] fun y => compileRing ⟨2, stroke, background, 3, 1⟩ ⟨(projection f).x x, (projection f).y y⟩
 
-theorem chart_eq (seed : Nat) (f : Frame) (measure : String → Float × Float) :
-    chart seed f measure = axisDisplay f measure ++
-      colors.zipIdx.toArray.flatMap fun ((stroke, fill), i) =>
+theorem chart_eq (seed : Nat) (hidden : Array Bool) (f : Frame) (measure : String → Float × Float) :
+    chart seed hidden f measure = axisDisplay f measure ++
+      (colors.zipIdx.filter fun (_, i) => !hidden.getD i false).toArray.flatMap fun ((stroke, fill), i) =>
         let s := pageSeries seed i
         let g := Segmented.single s
         compileArea ⟨0, fill⟩ 0 (projection f) g ++ compileLine ⟨⟨1, stroke⟩, 1/2, false, none, .straight⟩ (projection f) g ++
