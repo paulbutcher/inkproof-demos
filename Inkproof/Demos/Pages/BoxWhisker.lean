@@ -11,6 +11,8 @@ open Inkproof.Web.Host Inkproof.Demos
 def run : IO Unit :=
   register "inkproof-chart" fun src => do
     let some c := Boxes.charts.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
-    Browser.paneScene c.pane c.shapes
+    Browser.paneScene c.pane c.shapes c.name
+      #[Browser.paneGroup c.pane "Box" Boxes.black #["Max", "Q3", "Median", "Q1", "Min"]
+        (c.boxes.map fun b => #[b.max, b.q3, b.median, b.q1, b.min])]
 
 end Page.BoxWhisker

@@ -664,6 +664,30 @@ for (const [path, chart] of [['grouped-bars/', 0], ['multi-bars/', 2], ['scatter
   });
 }
 
+// Pages whose legend reads a group of values at each x: the number of entries of each chart, in page order.
+for (const [path, counts] of Object.entries({ 'candlestick/': [5], 'box-whisker/': [5, 5, 5] })) {
+  test(`${path.slice(0, -1)}: each chart's legend reads its group of values at the cursor`, async () => {
+    const { page, problems } = await open(path);
+    const rows = () => page.evaluate(() => [...document.querySelectorAll('inkproof-chart')].map(e => [...e.shadowRoot.querySelectorAll('.legend .entry')].map(b => b.textContent)));
+    await page.waitForFunction(n => [...document.querySelectorAll('inkproof-chart')].every(e => e.shadowRoot.querySelector('.legend .entry')) && document.querySelectorAll('inkproof-chart').length === n, counts.length);
+    assert.deepEqual((await rows()).map(r => r.length), counts);
+    assert.ok((await rows()).flat().every(t => !t.includes('NaN')), 'no entry reads NaN');
+    const read = async fraction => {
+      await page.evaluate(fraction => {
+        const el = document.querySelector('inkproof-chart');
+        const r = el.getBoundingClientRect();
+        el.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: 0, clientX: r.left + 60 + (r.width - 80) * fraction, clientY: r.top + r.height / 2 }));
+      }, fraction);
+      await page.waitForFunction(() => !document.querySelector('inkproof-chart').shadowRoot.querySelector('.legend .entry')?.textContent.includes('(last)'));
+      return (await rows())[0].join('|');
+    };
+    const [a, b] = [await read(0.2), await read(0.7)];
+    assert.notEqual(a, b, 'the legend reads the group at the cursor');
+    assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+    await page.close();
+  });
+}
+
 // The pages whose charts carry a legend: the number of entries of each chart, in page order.
 const legends = {
   'annotations/': [2], 'cursor-bind/': [3], 'gradients/': [1, 1, 1, 2, 1], 'high-low-bands/': [3],

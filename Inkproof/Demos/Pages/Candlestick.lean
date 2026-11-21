@@ -10,7 +10,9 @@ open Inkproof.Web.Host Inkproof.Demos
 
 def run : IO Unit :=
   register "inkproof-chart" fun
-    | "gold" => Browser.paneScene Candles.pane Candles.shapes
+    | "gold" => Browser.paneScene Candles.pane Candles.shapes "Gold"
+      #[Browser.paneGroup Candles.pane "Candle" Candles.black #["Open", "High", "Low", "Close", "Volume"]
+        (Candles.candles.map fun c => #[c.open_, c.high, c.low, c.close, c.volume])]
     | src => throw (IO.userError s!"no chart {src}")
 
 end Page.Candlestick

@@ -32,6 +32,7 @@ The [uPlot demos](https://leeoniya.github.io/uPlot/demos/index.html), recreated 
 - Show the Line Paths demo, one series drawn linear, as a monotone spline and stepped before or after each point, from uPlot's `line-paths.html`: `Inkproof.Demos.LinePaths.charts`, at `line-paths/`.
 - Show gradient strokes and fills on line charts, a colour ramp along x or y, blended or changing at once at each stop: `Lines.Gradient`, `Layer.strokeGradient`, `Layer.fillGradient`, and the uPlot gradients charts in `Inkproof.Demos.Gradients`, at `gradients/`.
 - Give a page's charts a legend that reads each series at the cursor and hides it on a click, as uPlot's default legend does: `Browser.registerLegend`, `Browser.seriesTraces`, `Browser.accessOf`, `Frame.viewConfig`, on the Annotations, Cursor Bind, Gradients, High Low Bands, Line Paths, Log Scales, Log Scales 2, Missing Data, Path Gap Clip, Points, Stacked, Sync Cursor and Zoom pages.
+- Give the Candlestick and Box Whisker charts a legend that reads a group of values at the cursor, as uPlot's does: `Browser.paneGroup`, `Browser.paneFrame`, `Browser.paneScene`.
 - Show the series and values of the data point nearest the pointer and a legend with each series at the cursor that hides or shows it, in the spirit of `tooltips-closest.html` and `legend-series.html`: `ZoomPage.mount` with the `tooltip` and `legend` attributes, at `tooltip-legend/`.
 
 ## Build and run

@@ -164,9 +164,25 @@ def barScene (c : Bars.Chart) (off : Option (Array Bool) := none) : IO Scene := 
   pure { s with labels := s.labels ++ barLabels shown,
                 access := off.elim {} fun off => { name := "Bars", traces := barTraces c off } }
 
-/-- The scene of a pane whose shapes are `shapes`. -/
-def paneScene (p : Pane.Pane) (shapes : Scene.DisplayList) : IO Scene :=
-  sidedScene p.width p.height background p.texts p.sides p.axes (p.display shapes)
+/-- The frame of a pane for the cursor: x counts categories from 0, so category `i` is at `i + 1/2`, and y is the left axis. -/
+def paneFrame (p : Pane.Pane) : Frame := ⟨p.plot.x0, p.plot.x1, p.plot.y0, p.plot.y1, (0, p.groups.size), p.left⟩
+
+theorem paneFrame_eq (p : Pane.Pane) : paneFrame p = ⟨p.plot.x0, p.plot.x1, p.plot.y0, p.plot.y1, (0, p.groups.size), p.left⟩ := rfl
+
+/-- The legend's group of values named `labels`, one row of `values` for each category of `p`, drawn in `color`; the group is the chart's marks, so it cannot be hidden. -/
+def paneGroup (p : Pane.Pane) (name : String) (color : Color) (labels : Array String) (values : Array (Array Rat)) : ValueGroup :=
+  { name, color := cssColor color, labels, xs := (Array.range p.groups.size).map fun i => (i.toFloat + 0.5),
+    values := values.map fun row => row.map Rat.toFloat }
+
+theorem paneGroup_values (p : Pane.Pane) (name : String) (color : Color) (labels : Array String) (values : Array (Array Rat)) :
+    (paneGroup p name color labels values).values = values.map fun row => row.map Rat.toFloat := rfl
+
+/-- The scene of a pane whose shapes are `shapes`; with `groups` it has a legend, and a cursor over the plot. -/
+def paneScene (p : Pane.Pane) (shapes : Scene.DisplayList) (name : String := "Chart") (groups : Array ValueGroup := #[]) : IO Scene := do
+  let s ← sidedScene p.width p.height background p.texts p.sides p.axes (p.display shapes)
+  let f := paneFrame p
+  pure { s with access := if groups.isEmpty then {} else
+    { name, points := p.groups.size, view := some f.viewConfig, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), groups } }
 
 /-- The scene of a timeline: its axes and bars, with each bar's state written on it. -/
 def timelineScene (c : Timeline.Chart) : IO Scene := do
