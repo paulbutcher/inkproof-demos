@@ -3,12 +3,12 @@
 ## v0.14.0
 
 - Seeded draws come from lean-random-sampling v0.1.0, and the samplers written here are gone; uniform draws now have a resolution of 2^-53, so the Latency pages show different data for a seed.
+- The Gradients page is on the index, with horizontal, over-under, banded and fill gradients.
 
 ## v0.13.1
 
 - The Zoom variations page boxes on a plain drag (`drag="box"`).
 - The Area Fill page redraws at the chart's size when it is resized, and puts its legend below the plot.
-- The Gradients page is on the index, with horizontal, over-under, banded and fill gradients.
 
 ## v0.13.0
 
