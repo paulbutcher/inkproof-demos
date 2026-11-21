@@ -36,17 +36,19 @@ def base : List Rat :=
 
 private def barXs : List Nat := List.range base.length
 
-/-- Each bar series is the one before it, raised by 100 and a random amount, as in uPlot's page but from fixed seeds; the first has a gap of four bars. -/
-private def barLevels : List (List (Option Rat)) :=
+/-- Each bar series is the one before it, raised by 100 and a random amount, as in uPlot's page, the random amounts drawn from `seed`; the first has a gap of four bars. -/
+private def barLevels (seed : Nat) : List (List (Option Rat)) :=
   let first := base.map some
   let next (prev : List (Option Rat)) (seed : Nat) : List (Option Rat) :=
     (prev.zip (Data.ints seed prev.length 0 100).toList).map fun (v, r) => v.map fun v => 100 + v + (r : Rat)
-  let second := next (base.map some) 1
-  let third := next second 2
-  let fourth := next third 3
+  let second := next (base.map some) (3 * seed)
+  let third := next second (3 * seed + 1)
+  let fourth := next third (3 * seed + 2)
   [first.zipIdx.map (fun (v, i) => if 22 ≤ i && i < 26 then none else v), second, third, fourth]
 
-def barSeries : Array (Series Rat Rat) := barLevels.toArray.map (mkSeries · barXs)
+def barSeries (seed : Nat) : Array (Series Rat Rat) := (barLevels seed).toArray.map (mkSeries · barXs)
+
+theorem barSeries_eq (seed : Nat) : barSeries seed = (barLevels seed).toArray.map (mkSeries · barXs) := rfl
 
 def areaFrame : Frame := Frame.sized 800 400 (1, 30) (0, 70)
 
@@ -63,10 +65,10 @@ def areaChart (f : Frame) (measure : String → Float × Float) : DisplayList :=
 theorem areaChart_eq (f : Frame) (measure : String → Float × Float) :
     areaChart f measure = axisDisplay f measure ++ compileStackedAreas paint (projection f) areaSeries := rfl
 
-def barChart (f : Frame) (measure : String → Float × Float) : DisplayList :=
-  axisDisplay f measure ++ compileStackedBars paint (3 / 5) (projection f) barSeries
+def barChart (seed : Nat) (f : Frame) (measure : String → Float × Float) : DisplayList :=
+  axisDisplay f measure ++ compileStackedBars paint (3 / 5) (projection f) (barSeries seed)
 
-theorem barChart_eq (f : Frame) (measure : String → Float × Float) :
-    barChart f measure = axisDisplay f measure ++ compileStackedBars paint (3 / 5) (projection f) barSeries := rfl
+theorem barChart_eq (seed : Nat) (f : Frame) (measure : String → Float × Float) :
+    barChart seed f measure = axisDisplay f measure ++ compileStackedBars paint (3 / 5) (projection f) (barSeries seed) := rfl
 
 end Inkproof.Demos.Stacked

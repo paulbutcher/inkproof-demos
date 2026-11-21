@@ -22,7 +22,7 @@ private def stackedTest : Except String Unit := do
     for i in [0:(ss.getD k default).size] do
       let sum := (Stacked.levels.take (k + 1)).foldl (fun a l => a + l.getD i 0) 0
       check (Core.Series.stackAt ss k i == some sum) s!"series {k} at point {i} stacks to the sum of the series up to it"
-  let bars := Stacked.barSeries
+  let bars := Stacked.barSeries 1
   check (bars.all fun s => s.size == Stacked.base.length) "the bar series share their x values"
   check ((bars.getD 0 default).values.any (·.isNone)) "the first bar series keeps its gap"
 
@@ -205,8 +205,8 @@ private def latencyTest : Except String Unit := do
 
 private def heatmapTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
-  check (Scatter.clouds.size == 4 && Scatter.clouds.all (·.points.size == 10000)) "four clouds of ten thousand points"
-  check ((Scatter.scatterChart Scatter.scatterFrame measure).size > 40000) "every scatter point is drawn"
+  check ((Scatter.clouds 1).size == 4 && (Scatter.clouds 1).all (·.points.size == 10000)) "four clouds of ten thousand points"
+  check ((Scatter.scatterChart 1 (Scatter.scatterFrame 1) measure).size > 40000) "every scatter point is drawn"
   check (LatencyHeatmap.columns.all fun c => 200 ≤ c.size && c.size ≤ 500 && c.all (50 ≤ ·)) "each column holds 200 to 500 latencies of at least 5 ms"
   let total := LatencyHeatmap.bucketCells.foldl (fun n c => n + (c.value.map (·.1)).getD 0) 0
   check (total == LatencyHeatmap.columns.foldl (· + ·.size) 0) "every latency is counted in a bucket"

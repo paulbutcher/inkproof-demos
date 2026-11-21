@@ -6,8 +6,9 @@ import Inkproof.Demos.Browser
 
 open Inkproof.Web.Host Inkproof.Demos Inkproof.Demos.Stacked
 
-def main : IO Unit :=
+def main : IO Unit := do
+  let seed ← Browser.seed
   register "inkproof-chart" fun
     | "areas" => Browser.frameScene 800 400 areaFrame (areaChart areaFrame)
-    | "bars" => Browser.frameScene 800 400 barFrame (barChart barFrame)
+    | "bars" => Browser.frameScene 800 400 barFrame (barChart seed barFrame)
     | src => throw (IO.userError s!"no chart {src}")

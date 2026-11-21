@@ -141,30 +141,30 @@ structure Cloud where
   points : Array (Rat × Rat)
 
 /-- Four clouds of ten thousand points each. -/
-def clouds : Array Cloud :=
-  #[(red, 1), (green, 2), (blue, 3), (orange, 4)].map fun (color, seed) =>
-    ⟨color, ((Data.ints (2 * seed) 10000 0 500).zip (Data.ints (2 * seed + 1) 10000 0 500)).map fun (x, y) => ((x : Rat), (y : Rat))⟩
+def clouds (seed : Nat) : Array Cloud :=
+  #[(red, 0), (green, 1), (blue, 2), (orange, 3)].map fun (color, i) =>
+    ⟨color, ((Data.ints (2 * (seed + i)) 10000 0 500).zip (Data.ints (2 * (seed + i) + 1) 10000 0 500)).map fun (x, y) => ((x : Rat), (y : Rat))⟩
 
-theorem clouds_eq : clouds =
-    #[(red, 1), (green, 2), (blue, 3), (orange, 4)].map fun (color, seed) =>
-      ⟨color, ((Data.ints (2 * seed) 10000 0 500).zip (Data.ints (2 * seed + 1) 10000 0 500)).map fun (x, y) => ((x : Rat), (y : Rat))⟩ := rfl
+theorem clouds_eq (seed : Nat) : clouds seed =
+    #[(red, 0), (green, 1), (blue, 2), (orange, 3)].map fun (color, i) =>
+      ⟨color, ((Data.ints (2 * (seed + i)) 10000 0 500).zip (Data.ints (2 * (seed + i) + 1) 10000 0 500)).map fun (x, y) => ((x : Rat), (y : Rat))⟩ := rfl
 
 /-- The scatter chart's frame, 1920 by 600: the ranges of all the points. -/
-def scatterFrame : Frame :=
-  let all := clouds.flatMap (·.points)
+def scatterFrame (seed : Nat) : Frame :=
+  let all := (clouds seed).flatMap (·.points)
   ⟨60, 1900, 20, 560, Data.extent (all.map (·.1)), Data.extent (all.map (·.2))⟩
 
-theorem scatterFrame_eq : scatterFrame =
-    let all := clouds.flatMap (·.points)
+theorem scatterFrame_eq (seed : Nat) : scatterFrame seed =
+    let all := (clouds seed).flatMap (·.points)
     ⟨60, 1900, 20, 560, Data.extent (all.map (·.1)), Data.extent (all.map (·.2))⟩ := rfl
 
 /-- The axes, then a disc of diameter 5 at each point of each cloud. -/
-def scatterChart (f : Frame) (measure : String → Float × Float) : DisplayList :=
-  axisDisplay f measure ++ DisplayList.clip (plot f) (clouds.flatMap fun c =>
+def scatterChart (seed : Nat) (f : Frame) (measure : String → Float × Float) : DisplayList :=
+  axisDisplay f measure ++ DisplayList.clip (plot f) ((clouds seed).flatMap fun c =>
     compileScatter ⟨⟨1, c.color⟩, .circle, 5 / 2⟩ (projection f) (Series.ofUnsorted (c.points.map fun (x, y) => (x, some y))))
 
-theorem scatterChart_eq (f : Frame) (measure : String → Float × Float) : scatterChart f measure =
-    axisDisplay f measure ++ DisplayList.clip (plot f) (clouds.flatMap fun c =>
+theorem scatterChart_eq (seed : Nat) (f : Frame) (measure : String → Float × Float) : scatterChart seed f measure =
+    axisDisplay f measure ++ DisplayList.clip (plot f) ((clouds seed).flatMap fun c =>
       compileScatter ⟨⟨1, c.color⟩, .circle, 5 / 2⟩ (projection f) (Series.ofUnsorted (c.points.map fun (x, y) => (x, some y)))) := rfl
 
 end Inkproof.Demos.Scatter

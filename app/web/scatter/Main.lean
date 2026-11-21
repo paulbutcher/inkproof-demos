@@ -6,9 +6,10 @@ import Inkproof.Demos.Browser
 
 open Inkproof.Web.Host Inkproof.Demos Inkproof.Demos.Scatter Inkproof.Scene
 
-def main : IO Unit :=
+def main : IO Unit := do
+  let seed ← Browser.seed
   register "inkproof-chart" fun
     | "bubble" => Browser.sidedScene 1920 600 background (labelTexts bubbleFrame) [.bottom, .left, .right]
         (bubbleAxes bubbleFrame) (bubbleChart bubbleFrame)
-    | "scatter" => Browser.frameScene 1920 600 scatterFrame (scatterChart scatterFrame)
+    | "scatter" => Browser.frameScene 1920 600 (scatterFrame seed) (scatterChart seed (scatterFrame seed))
     | src => throw (IO.userError s!"no chart {src}")

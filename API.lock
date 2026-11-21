@@ -728,8 +728,8 @@ theorem Inkproof.Demos.Scatter.bubbleFrame_eq : Inkproof.Demos.Scatter.bubbleFra
 def Inkproof.Demos.Scatter.bubbles : Nat → Array Inkproof.Demos.Scatter.Bubble
 theorem Inkproof.Demos.Scatter.bubbles_eq : ∀ (seed : Nat), Inkproof.Demos.Scatter.bubbles seed = Array.map (fun x => match x with | (x, y, s) => { x := ↑x, y := ↑y, size := s }) ((Inkproof.Demos.Data.ints (3 * seed) 50 0 500).zip ((Inkproof.Demos.Data.ints (3 * seed + 1) 50 0 500).zip (Inkproof.Demos.Data.ints (3 * seed + 2) 50 1 10000)))
 theorem Inkproof.Demos.Scatter.bubbles_size : ∀ (seed : Nat), (Inkproof.Demos.Scatter.bubbles seed).size = 50
-def Inkproof.Demos.Scatter.clouds : Array Inkproof.Demos.Scatter.Cloud
-theorem Inkproof.Demos.Scatter.clouds_eq : Inkproof.Demos.Scatter.clouds = Array.map (fun x => match x with | (color, seed) => { color := color, points := Array.map (fun x => match x with | (x, y) => (↑x, ↑y)) ((Inkproof.Demos.Data.ints (2 * seed) 10000 0 500).zip (Inkproof.Demos.Data.ints (2 * seed + 1) 10000 0 500)) }) #[(Inkproof.Demos.Scatter.red, 1), (Inkproof.Demos.Scatter.green, 2), (Inkproof.Demos.Scatter.blue, 3), (Inkproof.Demos.Scatter.orange, 4)]
+def Inkproof.Demos.Scatter.clouds : Nat → Array Inkproof.Demos.Scatter.Cloud
+theorem Inkproof.Demos.Scatter.clouds_eq : ∀ (seed : Nat), Inkproof.Demos.Scatter.clouds seed = Array.map (fun x => match x with | (color, i) => { color := color, points := Array.map (fun x => match x with | (x, y) => (↑x, ↑y)) ((Inkproof.Demos.Data.ints (2 * (seed + i)) 10000 0 500).zip (Inkproof.Demos.Data.ints (2 * (seed + i) + 1) 10000 0 500)) }) #[(Inkproof.Demos.Scatter.red, 0), (Inkproof.Demos.Scatter.green, 1), (Inkproof.Demos.Scatter.blue, 2), (Inkproof.Demos.Scatter.orange, 3)]
 def Inkproof.Demos.Scatter.green : Inkproof.Scene.Color
 def Inkproof.Demos.Scatter.labelTexts : Inkproof.Demos.Frame → Array String
 theorem Inkproof.Demos.Scatter.labelTexts_eq : ∀ (f : Inkproof.Demos.Frame), Inkproof.Demos.Scatter.labelTexts f = Inkproof.Demos.texts f ++ (Inkproof.Demos.Axes.linearLabels Inkproof.Demos.Scatter.rightRange.fst.toFloat Inkproof.Demos.Scatter.rightRange.snd.toFloat).toArray
@@ -747,10 +747,10 @@ def Inkproof.Demos.Scatter.rightScale : Inkproof.Demos.Frame → Inkproof.Scale.
 theorem Inkproof.Demos.Scatter.rightScale_eq : ∀ (f : Inkproof.Demos.Frame), Inkproof.Demos.Scatter.rightScale f = { domainStart := Inkproof.Demos.Scatter.rightRange.fst.toFloat, domainEnd := Inkproof.Demos.Scatter.rightRange.snd.toFloat, rangeStart := f.bottom.toFloat, rangeEnd := f.top.toFloat }
 def Inkproof.Demos.Scatter.rightStyle : Inkproof.Scene.AxisStyle
 theorem Inkproof.Demos.Scatter.rightStyle_eq : Inkproof.Demos.Scatter.rightStyle = have __src := Inkproof.Demos.Axes.style; { line := __src.line, lineHalfWidth := __src.lineHalfWidth, tick := __src.tick, tickHalfWidth := __src.tickHalfWidth, tickLength := __src.tickLength, grid := Option.none, labelGap := __src.labelGap }
-def Inkproof.Demos.Scatter.scatterChart : Inkproof.Demos.Frame → (String → Float × Float) → Inkproof.Scene.DisplayList
-theorem Inkproof.Demos.Scatter.scatterChart_eq : ∀ (f : Inkproof.Demos.Frame) (measure : String → Float × Float), Inkproof.Demos.Scatter.scatterChart f measure = Inkproof.Demos.axisDisplay f measure ++ Inkproof.Scene.DisplayList.clip (Inkproof.Demos.plot f) (Array.flatMap (fun c => Inkproof.Scene.compileScatter { paint := { layer := 1, color := Inkproof.Scene.Shading.flat c.color }, shape := Inkproof.Scene.MarkerShape.circle, radius := 5 / 2 } (Inkproof.Demos.projection f) (Inkproof.Core.Series.ofUnsorted (Array.map (fun x => match x with | (x, y) => (x, Option.some y)) c.points))) Inkproof.Demos.Scatter.clouds)
-def Inkproof.Demos.Scatter.scatterFrame : Inkproof.Demos.Frame
-theorem Inkproof.Demos.Scatter.scatterFrame_eq : Inkproof.Demos.Scatter.scatterFrame = have all := Array.flatMap (fun x => x.points) Inkproof.Demos.Scatter.clouds; { left := 60, right := 1900, top := 20, bottom := 560, xs := Inkproof.Demos.Data.extent (Array.map (fun x => x.fst) all), ys := Inkproof.Demos.Data.extent (Array.map (fun x => x.snd) all) }
+def Inkproof.Demos.Scatter.scatterChart : Nat → Inkproof.Demos.Frame → (String → Float × Float) → Inkproof.Scene.DisplayList
+theorem Inkproof.Demos.Scatter.scatterChart_eq : ∀ (seed : Nat) (f : Inkproof.Demos.Frame) (measure : String → Float × Float), Inkproof.Demos.Scatter.scatterChart seed f measure = Inkproof.Demos.axisDisplay f measure ++ Inkproof.Scene.DisplayList.clip (Inkproof.Demos.plot f) (Array.flatMap (fun c => Inkproof.Scene.compileScatter { paint := { layer := 1, color := Inkproof.Scene.Shading.flat c.color }, shape := Inkproof.Scene.MarkerShape.circle, radius := 5 / 2 } (Inkproof.Demos.projection f) (Inkproof.Core.Series.ofUnsorted (Array.map (fun x => match x with | (x, y) => (x, Option.some y)) c.points))) (Inkproof.Demos.Scatter.clouds seed))
+def Inkproof.Demos.Scatter.scatterFrame : Nat → Inkproof.Demos.Frame
+theorem Inkproof.Demos.Scatter.scatterFrame_eq : ∀ (seed : Nat), Inkproof.Demos.Scatter.scatterFrame seed = have all := Array.flatMap (fun x => x.points) (Inkproof.Demos.Scatter.clouds seed); { left := 60, right := 1900, top := 20, bottom := 560, xs := Inkproof.Demos.Data.extent (Array.map (fun x => x.fst) all), ys := Inkproof.Demos.Data.extent (Array.map (fun x => x.snd) all) }
 def Inkproof.Demos.ServerEvents.busy : Nat → Int
 theorem Inkproof.Demos.ServerEvents.busy_eq : ∀ (i : Nat), Inkproof.Demos.ServerEvents.busy i = Int.ofNat (50 + Inkproof.Demos.ServerEvents.hash 1 i % 100 + if (Inkproof.Demos.ServerEvents.hash 5 (i / 300) % 4 == 0) = Bool.true then Inkproof.Demos.ServerEvents.hash 2 i % 9000 else 0)
 def Inkproof.Demos.ServerEvents.chart : List (Array Inkproof.Demos.Reduce.Extent) → (String → Float × Float) → Inkproof.Scene.DisplayList
@@ -826,10 +826,11 @@ def Inkproof.Demos.Stacked.areaChart : Inkproof.Demos.Frame → (String → Floa
 theorem Inkproof.Demos.Stacked.areaChart_eq : ∀ (f : Inkproof.Demos.Frame) (measure : String → Float × Float), Inkproof.Demos.Stacked.areaChart f measure = Inkproof.Demos.axisDisplay f measure ++ Inkproof.Scene.compileStackedAreas Inkproof.Demos.Stacked.paint✝ (Inkproof.Demos.projection f) Inkproof.Demos.Stacked.areaSeries
 def Inkproof.Demos.Stacked.areaFrame : Inkproof.Demos.Frame
 def Inkproof.Demos.Stacked.areaSeries : Array (Inkproof.Core.Series Rat Rat)
-def Inkproof.Demos.Stacked.barChart : Inkproof.Demos.Frame → (String → Float × Float) → Inkproof.Scene.DisplayList
-theorem Inkproof.Demos.Stacked.barChart_eq : ∀ (f : Inkproof.Demos.Frame) (measure : String → Float × Float), Inkproof.Demos.Stacked.barChart f measure = Inkproof.Demos.axisDisplay f measure ++ Inkproof.Scene.compileStackedBars Inkproof.Demos.Stacked.paint✝ (3 / 5) (Inkproof.Demos.projection f) Inkproof.Demos.Stacked.barSeries
+def Inkproof.Demos.Stacked.barChart : Nat → Inkproof.Demos.Frame → (String → Float × Float) → Inkproof.Scene.DisplayList
+theorem Inkproof.Demos.Stacked.barChart_eq : ∀ (seed : Nat) (f : Inkproof.Demos.Frame) (measure : String → Float × Float), Inkproof.Demos.Stacked.barChart seed f measure = Inkproof.Demos.axisDisplay f measure ++ Inkproof.Scene.compileStackedBars Inkproof.Demos.Stacked.paint✝ (3 / 5) (Inkproof.Demos.projection f) (Inkproof.Demos.Stacked.barSeries seed)
 def Inkproof.Demos.Stacked.barFrame : Inkproof.Demos.Frame
-def Inkproof.Demos.Stacked.barSeries : Array (Inkproof.Core.Series Rat Rat)
+def Inkproof.Demos.Stacked.barSeries : Nat → Array (Inkproof.Core.Series Rat Rat)
+theorem Inkproof.Demos.Stacked.barSeries_eq : ∀ (seed : Nat), Inkproof.Demos.Stacked.barSeries seed = Array.map (fun x => Inkproof.Demos.Stacked.mkSeries✝ x Inkproof.Demos.Stacked.barXs✝) (Inkproof.Demos.Stacked.barLevels✝ seed).toArray
 def Inkproof.Demos.Stacked.base : List Rat
 def Inkproof.Demos.Stacked.levels : List (List Rat)
 def Inkproof.Demos.Stacked.xs : List Nat
