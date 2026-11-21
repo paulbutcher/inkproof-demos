@@ -26,7 +26,7 @@ The [uPlot demos](https://leeoniya.github.io/uPlot/demos/index.html), recreated 
 - Select a range by dragging a small overview chart, and show it on a large chart that follows, from `zoom-ranger.html`: `Linked.rangerCharts`, at `zoom-ranger/`.
 - Show open, high, low and close as candles with wicks and a volume bar on a second scale, from `candlestick-ohlc.html`: `Candles.candles`, `Candles.shapes`, at `candlestick/`.
 - Show box and whisker plots of grouped runs, with quartiles, a median, whiskers and outliers, from `box-whisker.html`: `Boxes.Box.ofRuns`, `Boxes.charts`, at `box-whisker/`.
-- Show discrete states as labelled bars in rows along a time axis, from `timeline-discrete.html`: `Timeline.Chart`, `Timeline.charts`, at `timeline-discrete/`.
+- Show discrete states as labelled bars in rows along a time axis, from `timeline-discrete.html`: `Timeline.Chart`, `Timeline.charts`, at `timeline-discrete/`, with a legend reading each row's state at the cursor (`Browser.rowGroup`, `Browser.rowStates`).
 - Mark a data position or range on a zooming chart with a dashed line or shaded band and a label that stay where the data is, from `annotations.html`: `Zoom.Mark`, `Annotations.chart`, at `annotations/`.
 - Show the Stacked Series demo, five stacked areas and four stacked bars with a gap and negative values, from uPlot's `stacked-series.html`: `Inkproof.Demos.Stacked.areaChart`, `Stacked.barChart`, at `stacked/`; `?seed=<n>` fixes the random bars.
 - Show the Line Paths demo, one series drawn linear, as a monotone spline and stepped before or after each point, from uPlot's `line-paths.html`: `Inkproof.Demos.LinePaths.charts`, at `line-paths/`.

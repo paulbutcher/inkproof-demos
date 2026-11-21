@@ -3,7 +3,8 @@
 ## v0.15.1
 
 - Candlestick and Box Whisker have a legend that reads each chart's group of values (open, high, low, close and volume; the box's five numbers) at the cursor.
-- Inkproof-web v0.18.0.
+- Timeline Discrete has a legend with a row for each device that reads its state at the cursor.
+- Inkproof-web v0.19.0.
 - Axis Control has a legend that follows the cursor over its half million points.
 - Inkproof-web v0.17.0: the legend shows a dash for a missing value, the cursor works over half a million points, and clipped data is drawn whole at device pixel ratio 2.
 - The Grouped and stacked bars page and the line charts of Multi-Bars have a static legend that hides a series on a click.

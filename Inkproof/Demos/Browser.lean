@@ -59,8 +59,7 @@ theorem traceOf_eq (name : String) (color : Color) (hidden : Bool) (s : Core.Ser
 
 /-- What a chart drawn in `f` tells the page: the legend's traces, and a plot of fixed ranges for the cursor to move over. -/
 def accessOf (name : String) (f : Frame) (traces : Array Trace) : Access :=
-  { name, series := traces.map fun _ => "line", points := (traces.map (·.xs.size)).foldl max 0, view := some f.viewConfig,
-    plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), traces }
+  { name, series := traces.map fun _ => "line", points := (traces.map (·.xs.size)).foldl max 0, view := some f.viewConfig, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), traces }
 
 theorem accessOf_traces (name : String) (f : Frame) (traces : Array Trace) : (accessOf name f traces).traces = traces := rfl
 
@@ -184,10 +183,36 @@ def paneScene (p : Pane.Pane) (shapes : Scene.DisplayList) (name : String := "Ch
   pure { s with access := if groups.isEmpty then {} else
     { name, points := p.groups.size, view := some f.viewConfig, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), groups } }
 
-/-- The scene of a timeline: its axes and bars, with each bar's state written on it. -/
+/-- The places along x where row `r` has a state to read, with the state: each bar's two ends, and the middle of each gap between bars, which has none. -/
+def rowStates (r : Timeline.Row) : Array (Rat × Option String) :=
+  r.spans.zipIdx.flatMap fun (s, i) =>
+    let gap : Array (Rat × Option String) := match r.spans[i + 1]? with
+      | some n => if s.stop < n.start then #[((s.stop + n.start) / 2, none)] else #[]
+      | none => #[]
+    #[(s.start, some s.text), (s.stop, some s.text)] ++ gap
+
+theorem rowStates_eq (r : Timeline.Row) : rowStates r =
+    r.spans.zipIdx.flatMap fun (s, i) =>
+      let gap : Array (Rat × Option String) := match r.spans[i + 1]? with
+        | some n => if s.stop < n.start then #[((s.stop + n.start) / 2, none)] else #[]
+        | none => #[]
+      #[(s.start, some s.text), (s.stop, some s.text)] ++ gap := rfl
+
+/-- The legend's group for row `r`: the row's state at the x nearest the cursor. -/
+def rowGroup (r : Timeline.Row) : ValueGroup :=
+  let states := rowStates r
+  { name := r.name, color := cssColor (r.spans[0]?.elim ⟨0, 0, 0, 255⟩ (·.stroke)), labels := #["State"],
+    xs := states.map fun (x, _) => x.toFloat, words := states.map fun (_, t) => #[t] }
+
+theorem rowGroup_words (r : Timeline.Row) : (rowGroup r).words = (rowStates r).map fun (_, t) => #[t] := rfl
+
+/-- The scene of a timeline: its axes and bars, with each bar's state written on it, and a legend that reads each row's state at the cursor. -/
 def timelineScene (c : Timeline.Chart) : IO Scene := do
   let s ← sidedScene c.width c.height background c.labelTexts [.bottom, .left] c.axes c.display
-  pure { s with labels := s.labels ++ c.texts.map fun (text, x, y) =>
-    { text, x := Rat.toFloat x, y := Rat.toFloat y, align := if c.centred then .center else .start, baseline := .middle, font := "14px Arial" } }
+  let f := c.frame
+  let labels := c.texts.map fun (text, x, y) =>
+    { text, x := Rat.toFloat x, y := Rat.toFloat y, align := if c.centred then .center else .start, baseline := .middle, font := "14px Arial" }
+  let access : Access := { name := c.name, points := c.rows.size, view := some f.viewConfig, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), groups := c.rows.map rowGroup }
+  pure { s with labels := s.labels ++ labels, access }
 
 end Inkproof.Demos.Browser

@@ -665,7 +665,7 @@ for (const [path, chart] of [['grouped-bars/', 0], ['multi-bars/', 2], ['scatter
 }
 
 // Pages whose legend reads a group of values at each x: the number of entries of each chart, in page order.
-for (const [path, counts] of Object.entries({ 'candlestick/': [5], 'box-whisker/': [5, 5, 5] })) {
+for (const [path, counts] of Object.entries({ 'candlestick/': [5], 'box-whisker/': [5, 5, 5], 'timeline-discrete/': [3, 3, 3] })) {
   test(`${path.slice(0, -1)}: each chart's legend reads its group of values at the cursor`, async () => {
     const { page, problems } = await open(path);
     const rows = () => page.evaluate(() => [...document.querySelectorAll('inkproof-chart')].map(e => [...e.shadowRoot.querySelectorAll('.legend .entry')].map(b => b.textContent)));
