@@ -18,6 +18,7 @@ def run : IO Unit :=
     let (h, _) := measure "Y Axis Label"
     let xTitle : Label := { text := "X Axis Label", x := Rat.toFloat ((f.left + f.right) / 2) - w / 2, y := Rat.toFloat f.bottom + 45 }
     let yTitle : Label := { text := "Y Axis Label", x := Rat.toFloat f.right + 50, y := Rat.toFloat ((f.top + f.bottom) / 2) - h / 2, rotation := 1.5707963267948966 }
-    pure { commands := Gpu.frameBytes 1048 600 (AxisControl.chart measure) background, labels := ticks ++ #[xTitle, yTitle] }
+    pure { commands := Gpu.frameBytes 1048 600 (AxisControl.chart measure) background, labels := ticks ++ #[xTitle, yTitle],
+           access := Browser.accessOf "Axis Control" f (Browser.seriesTraces #[] [(AxisControl.red, AxisControl.series)]) }
 
 end Page.AxisControl

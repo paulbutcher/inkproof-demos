@@ -218,6 +218,17 @@ test('axis control draws its red series and axis', async () => {
   await page.close();
 });
 
+test('axis control: the legend follows the cursor over half a million points', async () => {
+  const { page, problems } = await open('axis-control/');
+  await page.waitForFunction(() => window.draws.length >= 1);
+  const text = () => page.evaluate(() => document.querySelector('inkproof-chart').shadowRoot.querySelector('.legend button').textContent);
+  assert.ok((await text()).includes('(last)'), await text());
+  await pointerAt(page, 'chart', 'pointermove', 400, 150);
+  await page.waitForFunction(() => !document.querySelector('inkproof-chart').shadowRoot.querySelector('.legend button').textContent.includes('(last)'));
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});
+
 test('the time series pages draw every chart in their series colours', async () => {
   for (const [path, charts, wanted] of [['missing-data/', 2, ['red', 'blue']], ['log-scales/', 2, []], ['high-low-bands/', 1, ['red', 'blue', 'green']], ['path-gap-clip/', 2, ['green']], ['line-paths/', 4, []]]) {
     const { page, problems } = await open(path);
