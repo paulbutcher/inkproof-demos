@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.18.0
+
+- Log Scales, Log Scales 2, ArcSinh Scales and Custom Scales use Float v0.8.0's `Float.onRat` in place of their own lifts; `CustomScales.asRat` and its theorem are removed.
+
 ## v0.17.0
 
 - Every page draws at the device pixel ratio, Zoom and Fetch data strokes included.
@@ -10,7 +14,6 @@
 - Custom Scales page: a Weibull plot on linear, log and log(-log(1 - y)) scales, with confidence bands, a dashed fit and the observed points.
 - Timezones & DST ticks sit at each zone's local clock intervals.
 - Scene v0.24.0, Gpu v0.17.0, Axis v0.9.0, Scale v0.11.0.
-- Log Scales, Log Scales 2, ArcSinh Scales and Custom Scales use Float v0.8.0's `Float.onRat` in place of their own lifts; `CustomScales.asRat` and its theorem are removed.
 
 ## v0.16.0
 
