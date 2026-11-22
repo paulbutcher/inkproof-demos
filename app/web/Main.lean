@@ -6,6 +6,7 @@ import Lasm.UI.Mount
 import Inkproof.Demos.Pages.Annotations
 import Inkproof.Demos.Pages.AreaFill
 import Inkproof.Demos.Pages.ArcsinhScales
+import Inkproof.Demos.Pages.CustomScales
 import Inkproof.Demos.Pages.AxisControl
 import Inkproof.Demos.Pages.BoxWhisker
 import Inkproof.Demos.Pages.CalendarTime
@@ -50,6 +51,7 @@ def main : IO Unit := do
   | "box-whisker" => Page.BoxWhisker.run
   | "candlestick" => Page.Candlestick.run
   | "cursor-bind" => Page.CursorBind.run
+  | "custom-scales" => Page.CustomScales.run
   | "gradients" => Page.Gradients.run
   | "grouped-bars" => Page.GroupedBars.run
   | "heatmap-cells" => Page.HeatmapCells.run

@@ -5,6 +5,7 @@
 - Timezones & DST page: six-day charts of hourly data in UTC, Europe/London and America/Chicago across each zone's 2019 daylight-saving changes, with offsets from Lean's POSIX zone rules.
 - Months page: three years of monthly levels on an axis ticked on the first of each month.
 - ArcSinh Scales page: data from a thousandth to a thousand of either sign on an arcsinh y axis, with a slider for the linear threshold.
+- Custom Scales page: a Weibull plot on linear, log and log(-log(1 - y)) scales, with confidence bands, a dashed fit and the observed points.
 - Timezones & DST ticks sit at each zone's local clock intervals.
 - Axis v0.9.0, Scale v0.11.0.
 - Multi-Bars, Lines and Log Scales 2 use Lean's `Array.sum`, `max?`, `min?`, `Nat.toSuperscriptString` and `Rat.ofScientific` in place of their own; `MultiBars.total`, `largest`, `LogScales2.ofDecimal` and `sups` and their theorems are removed.

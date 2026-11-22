@@ -37,3 +37,4 @@ import Inkproof.Demos.Gradients
 import Inkproof.Demos.LinePaths
 import Inkproof.Demos.CalendarTime
 import Inkproof.Demos.ArcsinhScales
+import Inkproof.Demos.CustomScales

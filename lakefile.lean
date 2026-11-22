@@ -43,6 +43,7 @@ lean_lib InkproofDemosBrowser where
     `Inkproof.Demos.Pages.Annotations,
     `Inkproof.Demos.Pages.AreaFill,
     `Inkproof.Demos.Pages.ArcsinhScales,
+    `Inkproof.Demos.Pages.CustomScales,
     `Inkproof.Demos.Pages.AxisControl,
     `Inkproof.Demos.Pages.BoxWhisker,
     `Inkproof.Demos.Pages.CalendarTime,

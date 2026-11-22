@@ -352,5 +352,24 @@ private def arcsinhTest : Except String Unit := do
       check (ArcsinhScales.frame.top.toFloat ≤ y && y ≤ ArcsinhScales.frame.bottom.toFloat) s!"position {k}: {Rat.toFloat v} lies within the plot"
     check ((vs.toList.zip vs.toList.tail).all fun (a, b) => ArcsinhScales.yPixel k (Rat.toFloat a) > ArcsinhScales.yPixel k (Rat.toFloat b)) s!"position {k}: larger values are higher on the page"
 
+private def customScalesTest : Except String Unit := do
+  let xs := CustomScales.times
+  check (xs.size == 199 && (xs.toList.zip xs.toList.tail).all fun (a, b) => a < b) "the x values increase"
+  for ((a, b), c) in (CustomScales.lower.values.zip CustomScales.fitted.values).zip CustomScales.upper.values do
+    let (a, b, c) := (a.getD 0, b.getD 0, c.getD 0)
+    check (0 ≤ a && a ≤ b && b ≤ c && c ≤ 1) "the lower bound, the fit and the upper bound are ordered probabilities"
+  for (x, y) in xs.toList.zip (CustomScales.fitted.values.toList.map (·.getD 0)) do
+    let want := 1 - Float.exp (-((Rat.toFloat x / 30) ^ 2))
+    check ((Rat.toFloat y - want).abs ≤ 1e-9) s!"the fit at {Rat.toFloat x} is a Weibull distribution of scale 30 and shape 2"
+  let w := CustomScales.specs.getD 2 ⟨"", false, .linear⟩
+  for v in [0.00001, 0.01, 0.5, 0.9, 0.999999] do
+    let back := w.yValue (w.yPixel v)
+    check ((back - v).abs ≤ 1e-9 * v) s!"the Weibull scale maps {v} and its pixel back to {back}"
+  let px := xs.toList.map fun x => w.xPixel (Rat.toFloat x)
+  let py := (CustomScales.fitted.values.toList.map fun y => w.yPixel (Rat.toFloat (y.getD 0)))
+  let slopes := (px.zip py).zip ((px.zip py).tail) |>.map fun ((x0, y0), (x1, y1)) => (y1 - y0) / (x1 - x0)
+  check (slopes.all fun m => (m - slopes.headD 0).abs ≤ 1e-3 * (slopes.headD 0).abs) "the fitted curve is a straight line on log x against the Weibull scale"
+  check (CustomScales.weibullTicks.length == CustomScales.weibullLabels.length) "each Weibull tick has a label"
+
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, ⟨"calendar time", calendarTimeTest⟩, ⟨"arcsinh scales", arcsinhTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, ⟨"calendar time", calendarTimeTest⟩, ⟨"arcsinh scales", arcsinhTest⟩, ⟨"custom scales", customScalesTest⟩, platformTest (args.contains "--expect-wasm")]
