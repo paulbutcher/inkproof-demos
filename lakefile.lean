@@ -16,8 +16,8 @@ require «inkproof-web» from git "https://github.com/paulbutcher/inkproof-web" 
 require «inkproof-export» from git "https://github.com/paulbutcher/inkproof-export" @ "v0.5.0"
 require «inkproof-viewport» from git "https://github.com/paulbutcher/inkproof-viewport" @ "v0.10.0"
 require «inkproof-scene» from git "https://github.com/paulbutcher/inkproof-scene" @ "v0.22.0"
-require «inkproof-scale» from git "https://github.com/paulbutcher/inkproof-scale" @ "v0.10.0"
-require «inkproof-axis» from git "https://github.com/paulbutcher/inkproof-axis" @ "v0.7.0"
+require «inkproof-scale» from git "https://github.com/paulbutcher/inkproof-scale" @ "v0.11.0"
+require «inkproof-axis» from git "https://github.com/paulbutcher/inkproof-axis" @ "v0.9.0"
 require «inkproof-core» from git "https://github.com/paulbutcher/inkproof-core" @ "v0.15.0"
 require «inkproof-float» from git "https://github.com/paulbutcher/inkproof-float" @ "v0.7.0"
 require «inkproof-gpu» from git "https://github.com/paulbutcher/inkproof-gpu" @ "v0.15.0"
@@ -42,8 +42,10 @@ lean_lib InkproofDemosBrowser where
   roots := #[`Inkproof.Demos.Browser, `Inkproof.Demos.ZoomPage, `Inkproof.Demos.FetchPage,
     `Inkproof.Demos.Pages.Annotations,
     `Inkproof.Demos.Pages.AreaFill,
+    `Inkproof.Demos.Pages.ArcsinhScales,
     `Inkproof.Demos.Pages.AxisControl,
     `Inkproof.Demos.Pages.BoxWhisker,
+    `Inkproof.Demos.Pages.CalendarTime,
     `Inkproof.Demos.Pages.Candlestick,
     `Inkproof.Demos.Pages.CursorBind,
     `Inkproof.Demos.Pages.Gradients,

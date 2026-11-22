@@ -5,8 +5,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Lasm.UI.Mount
 import Inkproof.Demos.Pages.Annotations
 import Inkproof.Demos.Pages.AreaFill
+import Inkproof.Demos.Pages.ArcsinhScales
 import Inkproof.Demos.Pages.AxisControl
 import Inkproof.Demos.Pages.BoxWhisker
+import Inkproof.Demos.Pages.CalendarTime
 import Inkproof.Demos.Pages.Candlestick
 import Inkproof.Demos.Pages.CursorBind
 import Inkproof.Demos.Pages.Gradients
@@ -42,6 +44,8 @@ def main : IO Unit := do
   match (← Lasm.UI.Mount.flags String) with
   | "annotations" => Page.Annotations.run
   | "area-fill" => Page.AreaFill.run
+  | "arcsinh-scales" => Page.ArcsinhScales.run
+  | "calendar-time" => Page.CalendarTime.run
   | "axis-control" => Page.AxisControl.run
   | "box-whisker" => Page.BoxWhisker.run
   | "candlestick" => Page.Candlestick.run

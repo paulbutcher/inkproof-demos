@@ -319,5 +319,38 @@ private def annotationsTest : Except String Unit := do
   check (c.marks.all fun m => (Zoom.Mark.commands { f with xs := (20, 25) } measure m).isEmpty || m.stop ≥ 20) "a note outside the range draws nothing"
   check (c.data.any fun cmd => match cmd.shape with | .rect r => r.x0 == 9.3 && r.x1 == 18.5 | _ => false) "the shaded range is a rectangle over its data interval"
 
+private def calendarTimeTest : Except String Unit := do
+  let (london, chicago) := (← CalendarTime.london, ← CalendarTime.chicago)
+  for (z, change, before, after) in [(london, 1553994000, 0, 3600), (london, 1572138000, 3600, 0),
+      (chicago, 1552204800, -21600, -18000), (chicago, 1572764400, -18000, -21600)] do
+    check (z.offset (change - 1) == before && z.offset change == after) s!"{z.name}: the offset changes at the instant {change}"
+  check (match CalendarTime.Zone.ofRule "bad" "not a rule" with | .error _ => true | .ok _ => false) "an unparsable rule is an error"
+  for s in ← CalendarTime.dstSpecs do
+    let ts := s.tickTimes
+    check (!ts.isEmpty && ts.length == s.tickLabels.length) s!"{s.name}: every tick has a label"
+    check ((ts.zip ts.tail).all fun (a, b) => a < b) s!"{s.name}: ticks and labels run in increasing order of instant"
+    check (ts.all fun t => Rat.toFloat s.xs.1 ≤ t && t ≤ Rat.toFloat s.xs.2) s!"{s.name}: ticks lie within the range"
+    if s.step ≥ 3600 then
+      check (ts.all fun t => (t.toInt64.toInt + s.zone.offset t.toInt64.toInt) % 3600 == 0) s!"{s.name}: hourly ticks sit on the zone's local hours"
+    if s.step ≥ 86400 then
+      check (ts.all fun t => (t.toInt64.toInt + s.zone.offset t.toInt64.toInt) % 86400 == 0) s!"{s.name}: day ticks sit at the zone's local midnight"
+  let m ← CalendarTime.monthSpec 1
+  let days := m.tickTimes.map fun t => (Core.Calendar.civilFromDays ((t.toInt64.toInt + m.zone.offset t.toInt64.toInt) / 86400)).2.2
+  check (days.length == 36 && days.all (· == 1)) "month ticks fall on the first of each month"
+  check (m.values.size == 36 && m.values.getD 0 0 == 5 && m.values.all fun v => 0 ≤ v && v ≤ 10) "the levels are 0 to 10 with a first of 5"
+
+private def arcsinhTest : Except String Unit := do
+  let vs := ArcsinhScales.values
+  check (vs.size == 111 && vs.getD 55 1 == 0 && (List.range 55).all fun i => vs.getD i 0 == -(vs.getD (110 - i) 0)) "the values mirror about a zero in the middle"
+  check ((vs.toList.zip vs.toList.tail).all fun (a, b) => a < b) "the values increase"
+  for k in [-3, -1, 0, 2, 3] do
+    check (ArcsinhScales.threshold k * (10 : Rat) ^ 3 == (10 : Rat) ^ (k + 3).toNat) s!"the threshold for position {k} is ten to the {k}"
+    for v in vs do
+      let y := ArcsinhScales.yPixel k (Rat.toFloat v)
+      let back := ArcsinhScales.yValue k y
+      check ((back - Rat.toFloat v).abs ≤ 1e-6 * (1 + (Rat.toFloat v).abs)) s!"position {k}: the pixel of {Rat.toFloat v} maps back to {back}"
+      check (ArcsinhScales.frame.top.toFloat ≤ y && y ≤ ArcsinhScales.frame.bottom.toFloat) s!"position {k}: {Rat.toFloat v} lies within the plot"
+    check ((vs.toList.zip vs.toList.tail).all fun (a, b) => ArcsinhScales.yPixel k (Rat.toFloat a) > ArcsinhScales.yPixel k (Rat.toFloat b)) s!"position {k}: larger values are higher on the page"
+
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, ⟨"calendar time", calendarTimeTest⟩, ⟨"arcsinh scales", arcsinhTest⟩, platformTest (args.contains "--expect-wasm")]

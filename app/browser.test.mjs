@@ -253,6 +253,21 @@ test('the gradient page colours each stroke along its gradient', async () => {
   await page.close();
 });
 
+test('the arcsinh scale page draws again when the threshold slider moves, and says what the threshold is', async () => {
+  const { page, problems } = await open('arcsinh-scales/');
+  await page.waitForFunction(() => window.draws.length >= 1);
+  const before = await page.evaluate(() => window.draws.length);
+  await page.evaluate(() => {
+    const input = document.querySelector('#linthresh');
+    input.value = '2';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await page.waitForFunction(n => window.draws.length > n, before);
+  assert.equal(await page.evaluate(() => document.querySelector('#thresh-label').textContent), 'Linear threshold: 100');
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});
+
 const lastView = page => page.evaluate(() => window.views.at(-1));
 const settled = async (page, count) => {
   await page.waitForFunction(n => window.views.length >= n, count);
@@ -690,11 +705,14 @@ for (const [path, counts] of Object.entries({ 'candlestick/': [5], 'box-whisker/
 
 // The pages whose charts carry a legend: the number of entries of each chart, in page order.
 const legends = {
-  'annotations/': [2], 'cursor-bind/': [3], 'gradients/': [1, 1, 1, 2, 1], 'high-low-bands/': [3],
+  'annotations/': [2], 'arcsinh-scales/': [1], 'months/': [1], 'timezones-dst/': Array(12).fill(1), 'cursor-bind/': [3], 'gradients/': [1, 1, 1, 2, 1], 'high-low-bands/': [3],
   'line-paths/': [1, 1, 1, 1], 'log-scales/': [12, 12], 'log-scales2/': [1, 1, 1, 1, 1, 1, 1, 1], 'missing-data/': [3, 1],
   'path-gap-clip/': [2, 3, 1, 1, 1], 'points/': [4, 1, 1, 1], 'stacked/': [5, 4], 'sync-cursor/': [3, 3, 3],
   'zoom-fetch/': [1], 'zoom-touch/': [2], 'zoom-variations/': Array(10).fill(1), 'zoom-wheel/': [2],
 };
+
+// Where the cursor reads two different values, as fractions of the plot, for the pages whose data is flat at 0.2 and 0.7.
+const cursorAt = { 'timezones-dst/': [0.0833, 0.3], 'months/': [0, 0.5] };
 
 for (const [path, counts] of Object.entries(legends)) {
   test(`${path.slice(0, -1)}: each chart has a legend entry for each series, and the values follow the cursor and hide the series`, async () => {
@@ -713,7 +731,8 @@ for (const [path, counts] of Object.entries(legends)) {
       await page.waitForFunction(() => !document.querySelector('inkproof-chart').shadowRoot.querySelector('.legend button')?.textContent.includes('(last)'));
       return (await rows())[0].join('|');
     };
-    const [a, b] = [await read(0.2), await read(0.7)];
+    const [first, second] = cursorAt[path] ?? [0.2, 0.7];
+    const [a, b] = [await read(first), await read(second)];
     assert.notEqual(a, b, 'the legend reads the series at the cursor');
     await page.evaluate(() => document.querySelector('inkproof-chart').shadowRoot.querySelector('.legend button').click());
     await page.waitForFunction(n => window.draws.length > n, before);

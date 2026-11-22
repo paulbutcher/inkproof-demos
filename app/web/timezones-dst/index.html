@@ -1,0 +1,34 @@
+<!--
+Copyright (c) 2026 Paul Butcher. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Timezones &amp; DST</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>inkproof-chart { display: block; } figure { display: inline-block; margin: 8px; } figcaption { font-weight: bold; }</style>
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <h1>Timezones &amp; DST</h1>
+    <p><a href="../">All demos</a></p>
+    <h2>London's 2019 "spring forward" time range</h2>
+    <figure><figcaption>UTC (no DST)</figcaption><inkproof-chart src="london-spring-UTC" cursor="xy" legend style="width: 600px; height: 300px"></inkproof-chart></figure>
+    <figure><figcaption>Europe/London (Mar 31, 2019: 1am -> 2am)</figcaption><inkproof-chart src="london-spring-Europe/London" cursor="xy" legend style="width: 600px; height: 300px"></inkproof-chart></figure>
+    <figure><figcaption>America/Chicago (no DST switch in this range)</figcaption><inkproof-chart src="london-spring-America/Chicago" cursor="xy" legend style="width: 600px; height: 300px"></inkproof-chart></figure>
+    <h2>London's 2019 "fall back" time range</h2>
+    <figure><figcaption>UTC (no DST)</figcaption><inkproof-chart src="london-fall-UTC" cursor="xy" legend style="width: 600px; height: 300px"></inkproof-chart></figure>
+    <figure><figcaption>Europe/London (Oct 27, 2019: 2am -> 1am)</figcaption><inkproof-chart src="london-fall-Europe/London" cursor="xy" legend style="width: 600px; height: 300px"></inkproof-chart></figure>
+    <figure><figcaption>America/Chicago (no DST switch in this range)</figcaption><inkproof-chart src="london-fall-America/Chicago" cursor="xy" legend style="width: 600px; height: 300px"></inkproof-chart></figure>
+    <h2>Chicago's 2019 "spring forward" time range</h2>
+    <figure><figcaption>UTC (no DST)</figcaption><inkproof-chart src="chicago-spring-UTC" cursor="xy" legend style="width: 600px; height: 300px"></inkproof-chart></figure>
+    <figure><figcaption>America/Chicago (Mar 10, 2019: 2am -> 3am)</figcaption><inkproof-chart src="chicago-spring-America/Chicago" cursor="xy" legend style="width: 600px; height: 300px"></inkproof-chart></figure>
+    <figure><figcaption>Europe/London (no DST switch in this range)</figcaption><inkproof-chart src="chicago-spring-Europe/London" cursor="xy" legend style="width: 600px; height: 300px"></inkproof-chart></figure>
+    <h2>Chicago's 2019 "fall back" time range</h2>
+    <figure><figcaption>UTC (no DST)</figcaption><inkproof-chart src="chicago-fall-UTC" cursor="xy" legend style="width: 600px; height: 300px"></inkproof-chart></figure>
+    <figure><figcaption>America/Chicago (Nov 3, 2019: 2am -> 1am)</figcaption><inkproof-chart src="chicago-fall-America/Chicago" cursor="xy" legend style="width: 600px; height: 300px"></inkproof-chart></figure>
+    <figure><figcaption>Europe/London (no DST switch in this range)</figcaption><inkproof-chart src="chicago-fall-Europe/London" cursor="xy" legend style="width: 600px; height: 300px"></inkproof-chart></figure>
+  </body>
+</html>

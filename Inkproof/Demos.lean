@@ -35,3 +35,5 @@ import Inkproof.Demos.Annotations
 import Inkproof.Demos.Stacked
 import Inkproof.Demos.Gradients
 import Inkproof.Demos.LinePaths
+import Inkproof.Demos.CalendarTime
+import Inkproof.Demos.ArcsinhScales

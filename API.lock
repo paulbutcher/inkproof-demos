@@ -1,4 +1,37 @@
 def Inkproof.Demos.Annotations.chart : Inkproof.Demos.Zoom.Chart
+def Inkproof.Demos.ArcsinhScales.axes : Int → (String → Float × Float) → List Inkproof.Scene.AxisDrawing
+theorem Inkproof.Demos.ArcsinhScales.axes_eq : ∀ (k : Int) (measure : String → Float × Float), Inkproof.Demos.ArcsinhScales.axes k measure = [Inkproof.Scene.compileLinearAxis Inkproof.Scene.Side.bottom (Inkproof.Demos.plot Inkproof.Demos.ArcsinhScales.frame) Inkproof.Demos.ArcsinhScales.frame.xScale Inkproof.Demos.Axes.spec measure Inkproof.Demos.Axes.style, Inkproof.Scene.compilePixelAxis Inkproof.Scene.Side.left (Inkproof.Demos.plot Inkproof.Demos.ArcsinhScales.frame) Inkproof.Demos.Axes.style measure Inkproof.Demos.Axes.spec.labelGap (List.map (Inkproof.Demos.ArcsinhScales.yPixel k) Inkproof.Demos.ArcsinhScales.yTicks) Inkproof.Demos.ArcsinhScales.yLabels]
+def Inkproof.Demos.ArcsinhScales.blue : Inkproof.Scene.Color
+def Inkproof.Demos.ArcsinhScales.chart : Int → Array Bool → (String → Float × Float) → Inkproof.Scene.DisplayList
+theorem Inkproof.Demos.ArcsinhScales.chart_eq : ∀ (k : Int) (off : Array Bool) (measure : String → Float × Float), Inkproof.Demos.ArcsinhScales.chart k off measure = List.foldl (fun x1 x2 => x1 ++ x2.display) #[] (Inkproof.Demos.ArcsinhScales.axes k measure) ++ if off.getD 0 Bool.false = Bool.true then #[] else Inkproof.Scene.compileArea { layer := 0, color := Inkproof.Scene.Shading.flat { r := 0, g := 0, b := 255, a := 26 } } Inkproof.Demos.ArcsinhScales.frame.ys.fst (Inkproof.Demos.ArcsinhScales.projection k) (Inkproof.Core.Segmented.single Inkproof.Demos.ArcsinhScales.data) ++ Inkproof.Scene.compileLine { paint := { layer := 1, color := Inkproof.Scene.Shading.flat Inkproof.Demos.ArcsinhScales.blue }, halfWidth := 1 / 2, reduce := Bool.false } (Inkproof.Demos.ArcsinhScales.projection k) (Inkproof.Core.Segmented.single Inkproof.Demos.ArcsinhScales.data)
+def Inkproof.Demos.ArcsinhScales.data : Inkproof.Core.Series Rat Rat
+theorem Inkproof.Demos.ArcsinhScales.data_eq : Inkproof.Demos.ArcsinhScales.data = Inkproof.Demos.Lines.series Inkproof.Demos.ArcsinhScales.times (Array.map Option.some Inkproof.Demos.ArcsinhScales.values)
+def Inkproof.Demos.ArcsinhScales.frame : Inkproof.Demos.Frame
+theorem Inkproof.Demos.ArcsinhScales.frame_eq : Inkproof.Demos.ArcsinhScales.frame = Inkproof.Demos.Frame.sized Inkproof.Demos.ArcsinhScales.width Inkproof.Demos.ArcsinhScales.height (1, ↑Inkproof.Demos.ArcsinhScales.values.size) (-1000, 1000)
+def Inkproof.Demos.ArcsinhScales.height : Nat
+def Inkproof.Demos.ArcsinhScales.labelTexts : List String
+theorem Inkproof.Demos.ArcsinhScales.labelTexts_eq : Inkproof.Demos.ArcsinhScales.labelTexts = Inkproof.Demos.Axes.linearLabels 1 Inkproof.Demos.ArcsinhScales.values.size.toFloat ++ Inkproof.Demos.ArcsinhScales.yLabels
+def Inkproof.Demos.ArcsinhScales.magnitudes : List Rat
+theorem Inkproof.Demos.ArcsinhScales.magnitudes_eq : Inkproof.Demos.ArcsinhScales.magnitudes = List.flatMap (fun e => List.map (fun i => ↑(i + 1) * 10 ^ e / 1000) (List.range 9)) (List.range 6) ++ [1000]
+def Inkproof.Demos.ArcsinhScales.projection : Int → Inkproof.Scene.Projection Rat Rat
+theorem Inkproof.Demos.ArcsinhScales.projection_y : ∀ (k : Int) (v : Rat), (Inkproof.Demos.ArcsinhScales.projection k).y v = (Inkproof.Float.Float.toRat (Inkproof.Demos.ArcsinhScales.yPixel k v.toFloat)).getD 0
+def Inkproof.Demos.ArcsinhScales.threshold : Int → Rat
+theorem Inkproof.Demos.ArcsinhScales.threshold_eq : ∀ (k : Int), Inkproof.Demos.ArcsinhScales.threshold k = if 0 ≤ k then 10 ^ k.toNat else 1 / 10 ^ (-k).toNat
+def Inkproof.Demos.ArcsinhScales.times : Array Rat
+theorem Inkproof.Demos.ArcsinhScales.times_eq : Inkproof.Demos.ArcsinhScales.times = Array.map (fun i => ↑(i + 1)) (Array.range Inkproof.Demos.ArcsinhScales.values.size)
+def Inkproof.Demos.ArcsinhScales.values : Array Rat
+theorem Inkproof.Demos.ArcsinhScales.values_eq : Inkproof.Demos.ArcsinhScales.values = (List.map (fun x => -x) Inkproof.Demos.ArcsinhScales.magnitudes.reverse ++ [0] ++ Inkproof.Demos.ArcsinhScales.magnitudes).toArray
+def Inkproof.Demos.ArcsinhScales.width : Nat
+def Inkproof.Demos.ArcsinhScales.yLabels : List String
+theorem Inkproof.Demos.ArcsinhScales.yLabels_eq : Inkproof.Demos.ArcsinhScales.yLabels = List.map (fun t => (Inkproof.Axis.tickLabels Inkproof.Demos.Axes.spec.locale [t]).headD "") Inkproof.Demos.ArcsinhScales.yTicks
+def Inkproof.Demos.ArcsinhScales.yPixel : Int → Float → Float
+theorem Inkproof.Demos.ArcsinhScales.yPixel_eq : ∀ (k : Int), Inkproof.Demos.ArcsinhScales.yPixel k = Inkproof.Scale.Asinh.map Float.asinh (Inkproof.Demos.ArcsinhScales.yScale k)
+def Inkproof.Demos.ArcsinhScales.yScale : Int → Inkproof.Scale.Asinh Float
+theorem Inkproof.Demos.ArcsinhScales.yScale_eq : ∀ (k : Int), Inkproof.Demos.ArcsinhScales.yScale k = { domainStart := Inkproof.Demos.ArcsinhScales.frame.ys.fst.toFloat, domainEnd := Inkproof.Demos.ArcsinhScales.frame.ys.snd.toFloat, rangeStart := Inkproof.Demos.ArcsinhScales.frame.bottom.toFloat, rangeEnd := Inkproof.Demos.ArcsinhScales.frame.top.toFloat, threshold := (Inkproof.Demos.ArcsinhScales.threshold k).toFloat }
+def Inkproof.Demos.ArcsinhScales.yTicks : List Float
+theorem Inkproof.Demos.ArcsinhScales.yTicks_eq : Inkproof.Demos.ArcsinhScales.yTicks = List.map (fun x => -x) (Inkproof.Axis.logTicks 1e-3 1e3 Inkproof.Demos.Axes.spec.target).reverse ++ [0] ++ Inkproof.Axis.logTicks 1e-3 1e3 Inkproof.Demos.Axes.spec.target
+def Inkproof.Demos.ArcsinhScales.yValue : Int → Float → Float
+theorem Inkproof.Demos.ArcsinhScales.yValue_eq : ∀ (k : Int), Inkproof.Demos.ArcsinhScales.yValue k = Inkproof.Scale.Asinh.unmap Float.asinh Float.sinh (Inkproof.Demos.ArcsinhScales.yScale k)
 def Inkproof.Demos.AreaFill.chart : Nat → Array Bool → Inkproof.Demos.Frame → (String → Float × Float) → Inkproof.Scene.DisplayList
 theorem Inkproof.Demos.AreaFill.chart_eq : ∀ (seed : Nat) (hidden : Array Bool) (f : Inkproof.Demos.Frame) (measure : String → Float × Float), Inkproof.Demos.AreaFill.chart seed hidden f measure = Inkproof.Demos.axisDisplay f measure ++ Array.flatMap (fun x => match x with | ((stroke, fill), i) => have s := Inkproof.Demos.AreaFill.pageSeries seed i; have g := Inkproof.Core.Segmented.single s; Inkproof.Scene.compileArea { layer := 0, color := Inkproof.Scene.Shading.flat fill } 0 (Inkproof.Demos.projection f) g ++ Inkproof.Scene.compileLine { paint := { layer := 1, color := Inkproof.Scene.Shading.flat stroke }, halfWidth := 1 / 2, reduce := Bool.false } (Inkproof.Demos.projection f) g ++ Array.flatMap (fun x => match x with | (x, y) => y.elim #[] fun y => Inkproof.Scene.compileRing { layer := 2, outline := stroke, fill := Inkproof.Demos.background, radius := 3, stroke := 1 } { x := (Inkproof.Demos.projection f).x x, y := (Inkproof.Demos.projection f).y y }) (s.xs.zip s.values)) (List.filter (fun x => match x with | (fst, i) => !hidden.getD i Bool.false) Inkproof.Demos.AreaFill.colors.zipIdx).toArray
 def Inkproof.Demos.AreaFill.colors : List (Inkproof.Scene.Color × Inkproof.Scene.Color)
@@ -145,6 +178,65 @@ def Inkproof.Demos.Boxes.quantile : Array Rat → Rat → Rat
 theorem Inkproof.Demos.Boxes.quantile_eq : ∀ (xs : Array Rat) (p : Rat), Inkproof.Demos.Boxes.quantile xs p = have pos := p * (↑xs.size - 1); have i := pos.floor.toNat; xs.getD i 0 + (pos - ↑i) * (xs.getD (i + 1) (xs.getD i 0) - xs.getD i 0)
 def Inkproof.Demos.Boxes.runsOf : Nat → Nat → Nat → Array (String × Array Rat)
 theorem Inkproof.Demos.Boxes.runsOf_eq : ∀ (bench lo hi : Nat), Inkproof.Demos.Boxes.runsOf bench lo hi = have base := Inkproof.Demos.Data.ints (500 + bench) Inkproof.Demos.Boxes.frameworks.size lo hi; Array.map (fun x => match x with | (name, i) => have noise := Inkproof.Demos.Data.ints (100 * bench + i) 12 0 100; have b := ↑(base.getD i lo); (name, Array.map (fun n => b * (1 + ↑n / 400 + if n ≥ 98 then 1 / 2 else 0)) noise)) Inkproof.Demos.Boxes.frameworks.zipIdx
+structure Inkproof.Demos.CalendarTime.Spec : Type
+def Inkproof.Demos.CalendarTime.Spec.axes : Inkproof.Demos.CalendarTime.Spec → (String → Float × Float) → List Inkproof.Scene.AxisDrawing
+theorem Inkproof.Demos.CalendarTime.Spec.axes_eq : ∀ (s : Inkproof.Demos.CalendarTime.Spec) (measure : String → Float × Float), s.axes measure = [Inkproof.Scene.compilePixelAxis Inkproof.Scene.Side.bottom (Inkproof.Demos.plot s.frame) Inkproof.Demos.Axes.style measure Inkproof.Demos.Axes.spec.labelGap (List.map s.frame.xScale.map s.tickTimes) s.tickLabels, Inkproof.Scene.compileLinearAxis Inkproof.Scene.Side.left (Inkproof.Demos.plot s.frame) s.frame.yScale Inkproof.Demos.Axes.spec measure Inkproof.Demos.Axes.style]
+def Inkproof.Demos.CalendarTime.Spec.chart : Array Bool → Inkproof.Demos.CalendarTime.Spec → (String → Float × Float) → Inkproof.Scene.DisplayList
+theorem Inkproof.Demos.CalendarTime.Spec.chart_eq : ∀ (off : Array Bool) (s : Inkproof.Demos.CalendarTime.Spec) (measure : String → Float × Float), Inkproof.Demos.CalendarTime.Spec.chart off s measure = List.foldl (fun x1 x2 => x1 ++ x2.display) #[] (s.axes measure) ++ if off.getD 0 Bool.false = Bool.true then #[] else Inkproof.Scene.compileLine { paint := { layer := 1, color := Inkproof.Scene.Shading.flat Inkproof.Demos.CalendarTime.red }, halfWidth := 1 / 2, reduce := Bool.false } (Inkproof.Demos.projection s.frame) (Inkproof.Core.Segmented.single s.data)
+def Inkproof.Demos.CalendarTime.Spec.data : Inkproof.Demos.CalendarTime.Spec → Inkproof.Core.Series Rat Rat
+theorem Inkproof.Demos.CalendarTime.Spec.data_eq : ∀ (s : Inkproof.Demos.CalendarTime.Spec), s.data = Inkproof.Demos.Lines.series s.times (Array.map Option.some s.values)
+def Inkproof.Demos.CalendarTime.Spec.frame : Inkproof.Demos.CalendarTime.Spec → Inkproof.Demos.Frame
+theorem Inkproof.Demos.CalendarTime.Spec.frame_eq : ∀ (s : Inkproof.Demos.CalendarTime.Spec), s.frame = Inkproof.Demos.Frame.sized s.width s.height s.xs s.ys
+field Inkproof.Demos.CalendarTime.Spec.height : Inkproof.Demos.CalendarTime.Spec → Nat
+def Inkproof.Demos.CalendarTime.Spec.labelTexts : Inkproof.Demos.CalendarTime.Spec → List String
+theorem Inkproof.Demos.CalendarTime.Spec.labelTexts_eq : ∀ (s : Inkproof.Demos.CalendarTime.Spec), s.labelTexts = s.tickLabels ++ Inkproof.Demos.Axes.linearLabels s.ys.fst.toFloat s.ys.snd.toFloat
+constructor Inkproof.Demos.CalendarTime.Spec.mk : String → Nat → Nat → Inkproof.Demos.CalendarTime.Zone → Inkproof.Demos.CalendarTime.Ticks → Array Rat → Array Rat → Inkproof.Demos.CalendarTime.Spec
+field Inkproof.Demos.CalendarTime.Spec.name : Inkproof.Demos.CalendarTime.Spec → String
+def Inkproof.Demos.CalendarTime.Spec.step : Inkproof.Demos.CalendarTime.Spec → Float
+theorem Inkproof.Demos.CalendarTime.Spec.step_eq : ∀ (s : Inkproof.Demos.CalendarTime.Spec), s.step = match s.ticks with | Inkproof.Demos.CalendarTime.Ticks.clock => (Inkproof.Axis.durationTicksAt s.zone.offset s.xs.fst.toFloat s.xs.snd.toFloat s.target).fst | Inkproof.Demos.CalendarTime.Ticks.months n => 31 * 86400
+def Inkproof.Demos.CalendarTime.Spec.target : Inkproof.Demos.CalendarTime.Spec → Nat
+theorem Inkproof.Demos.CalendarTime.Spec.target_eq : ∀ (s : Inkproof.Demos.CalendarTime.Spec), s.target = s.width / 120
+def Inkproof.Demos.CalendarTime.Spec.tickLabels : Inkproof.Demos.CalendarTime.Spec → List String
+theorem Inkproof.Demos.CalendarTime.Spec.tickLabels_eq : ∀ (s : Inkproof.Demos.CalendarTime.Spec), s.tickLabels = Inkproof.Axis.timeTickLabelsAt s.zone.offset Inkproof.Demos.Axes.months s.step s.tickTimes
+def Inkproof.Demos.CalendarTime.Spec.tickTimes : Inkproof.Demos.CalendarTime.Spec → List Float
+theorem Inkproof.Demos.CalendarTime.Spec.tickTimes_eq : ∀ (s : Inkproof.Demos.CalendarTime.Spec), s.tickTimes = match s.ticks with | Inkproof.Demos.CalendarTime.Ticks.clock => (Inkproof.Axis.durationTicksAt s.zone.offset s.xs.fst.toFloat s.xs.snd.toFloat s.target).snd | Inkproof.Demos.CalendarTime.Ticks.months n => List.map Float.ofInt (Inkproof.Axis.monthTicks s.zone.offset n s.xs.fst.floor s.xs.snd.floor)
+field Inkproof.Demos.CalendarTime.Spec.ticks : Inkproof.Demos.CalendarTime.Spec → Inkproof.Demos.CalendarTime.Ticks
+field Inkproof.Demos.CalendarTime.Spec.times : Inkproof.Demos.CalendarTime.Spec → Array Rat
+field Inkproof.Demos.CalendarTime.Spec.values : Inkproof.Demos.CalendarTime.Spec → Array Rat
+field Inkproof.Demos.CalendarTime.Spec.width : Inkproof.Demos.CalendarTime.Spec → Nat
+def Inkproof.Demos.CalendarTime.Spec.xs : Inkproof.Demos.CalendarTime.Spec → Rat × Rat
+theorem Inkproof.Demos.CalendarTime.Spec.xs_eq : ∀ (s : Inkproof.Demos.CalendarTime.Spec), s.xs = (s.times.getD 0 0, s.times.getD (s.times.size - 1) 0)
+def Inkproof.Demos.CalendarTime.Spec.ys : Inkproof.Demos.CalendarTime.Spec → Rat × Rat
+theorem Inkproof.Demos.CalendarTime.Spec.ys_eq : ∀ (s : Inkproof.Demos.CalendarTime.Spec), s.ys = Inkproof.Scale.autoRange (1 / 10) (List.foldl Min.min (s.values.toList.headD 0) s.values.toList) (List.foldl Max.max (s.values.toList.headD 0) s.values.toList)
+field Inkproof.Demos.CalendarTime.Spec.zone : Inkproof.Demos.CalendarTime.Spec → Inkproof.Demos.CalendarTime.Zone
+inductive Inkproof.Demos.CalendarTime.Ticks : Type
+constructor Inkproof.Demos.CalendarTime.Ticks.clock : Inkproof.Demos.CalendarTime.Ticks
+constructor Inkproof.Demos.CalendarTime.Ticks.months : Nat → Inkproof.Demos.CalendarTime.Ticks
+structure Inkproof.Demos.CalendarTime.Zone : Type
+constructor Inkproof.Demos.CalendarTime.Zone.mk : String → Std.Time.TimeZone.RecurringRule → Inkproof.Demos.CalendarTime.Zone
+field Inkproof.Demos.CalendarTime.Zone.name : Inkproof.Demos.CalendarTime.Zone → String
+def Inkproof.Demos.CalendarTime.Zone.ofRule : String → String → Except String Inkproof.Demos.CalendarTime.Zone
+theorem Inkproof.Demos.CalendarTime.Zone.ofRule_eq : ∀ (name rule : String), Inkproof.Demos.CalendarTime.Zone.ofRule name rule = match Std.Time.TimeZone.parsePosixTz rule with | Except.ok r => Except.ok { name := name, rule := r } | Except.error e => Except.error (ToString.toString name ++ ToString.toString ": " ++ ToString.toString e)
+def Inkproof.Demos.CalendarTime.Zone.offset : Inkproof.Demos.CalendarTime.Zone → Int → Int
+theorem Inkproof.Demos.CalendarTime.Zone.offset_eq : ∀ (z : Inkproof.Demos.CalendarTime.Zone) (t : Int), z.offset t = (z.rule.timezoneAt (Std.Time.Timestamp.ofSecondsSinceUnixEpoch (Std.Time.Second.Offset.ofInt t))).offset.second.val
+field Inkproof.Demos.CalendarTime.Zone.rule : Inkproof.Demos.CalendarTime.Zone → Std.Time.TimeZone.RecurringRule
+def Inkproof.Demos.CalendarTime.chicago : Except String Inkproof.Demos.CalendarTime.Zone
+def Inkproof.Demos.CalendarTime.dstSpecs : Except String (List Inkproof.Demos.CalendarTime.Spec)
+theorem Inkproof.Demos.CalendarTime.dstSpecs_eq : Inkproof.Demos.CalendarTime.dstSpecs = do let __do_lift ← Inkproof.Demos.CalendarTime.utc let __do_lift_1 ← Inkproof.Demos.CalendarTime.london let __do_lift_2 ← Inkproof.Demos.CalendarTime.chicago match (__do_lift, __do_lift_1, __do_lift_2) with | (u, l, c) => Pure.pure (List.flatMap (fun x => match x with | (fst, key, from_, londonChanges) => match Inkproof.Demos.CalendarTime.sliceFrom from_ with | (times, values) => match if londonChanges = Bool.true then (l, c) else (c, l) with | (changing, steady) => List.map (fun z => { name := ToString.toString key ++ ToString.toString "-" ++ ToString.toString z.name, width := 600, height := 300, zone := z, ticks := Inkproof.Demos.CalendarTime.Ticks.clock, times := times, values := values }) [u, changing, steady]) Inkproof.Demos.CalendarTime.ranges)
+def Inkproof.Demos.CalendarTime.hours : Array Rat
+theorem Inkproof.Demos.CalendarTime.hours_eq : Inkproof.Demos.CalendarTime.hours = Array.map (fun h => ↑(Inkproof.Demos.CalendarTime.start2019 + 3600 * ↑h)) (Array.range (365 * 24))
+theorem Inkproof.Demos.CalendarTime.hours_size : Inkproof.Demos.CalendarTime.hours.size = 365 * 24
+def Inkproof.Demos.CalendarTime.london : Except String Inkproof.Demos.CalendarTime.Zone
+def Inkproof.Demos.CalendarTime.monthSpec : Nat → Except String Inkproof.Demos.CalendarTime.Spec
+theorem Inkproof.Demos.CalendarTime.monthSpec_eq : ∀ (seed : Nat), Inkproof.Demos.CalendarTime.monthSpec seed = have times := (List.map (fun k => ↑(86400 * Inkproof.Axis.monthStartDay (2017 * 12 + ↑k))) (List.range 36)).toArray; have draws := (RandomSampling.nats (mkStdGen seed) 36 0 10).fst; do let __do_lift ← Inkproof.Demos.CalendarTime.utc Pure.pure { name := "months", width := 1920, height := 600, zone := __do_lift, ticks := Inkproof.Demos.CalendarTime.Ticks.months 1, times := times, values := Array.mapIdx (fun i v => if (i == 0) = Bool.true then 5 else v) (Array.map (fun v => ↑v) draws) }
+def Inkproof.Demos.CalendarTime.ranges : List (String × String × Int × Bool)
+def Inkproof.Demos.CalendarTime.red : Inkproof.Scene.Color
+def Inkproof.Demos.CalendarTime.sliceFrom : Int → Array Rat × Array Rat
+theorem Inkproof.Demos.CalendarTime.sliceFrom_size : ∀ (from_ : Int), ((from_ - Inkproof.Demos.CalendarTime.start2019) / 3600).toNat + 144 ≤ 365 * 24 → (Inkproof.Demos.CalendarTime.sliceFrom from_).fst.size = 144
+theorem Inkproof.Demos.CalendarTime.sliceFrom_times : ∀ (from_ : Int), (Inkproof.Demos.CalendarTime.sliceFrom from_).fst = Inkproof.Demos.CalendarTime.hours.extract ((from_ - Inkproof.Demos.CalendarTime.start2019) / 3600).toNat (((from_ - Inkproof.Demos.CalendarTime.start2019) / 3600).toNat + 144)
+theorem Inkproof.Demos.CalendarTime.sliceFrom_values : ∀ (from_ : Int), (Inkproof.Demos.CalendarTime.sliceFrom from_).snd = Array.map (fun k => if ((((from_ - Inkproof.Demos.CalendarTime.start2019) / 3600).toNat + k) % 24 == 0) = Bool.true then 1 else 1 / 2) (Array.range 144)
+def Inkproof.Demos.CalendarTime.start2019 : Int
+def Inkproof.Demos.CalendarTime.utc : Except String Inkproof.Demos.CalendarTime.Zone
 structure Inkproof.Demos.Candles.Candle : Type
 field Inkproof.Demos.Candles.Candle.close : Inkproof.Demos.Candles.Candle → Rat
 field Inkproof.Demos.Candles.Candle.high : Inkproof.Demos.Candles.Candle → Rat
