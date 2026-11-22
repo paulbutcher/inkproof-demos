@@ -74,26 +74,58 @@ theorem sampleCells_eq : sampleCells =
 /-- Latencies are counted in buckets this wide, in milliseconds. -/
 def bucket : Nat := 5
 
-/-- The cells of the buckets that hold latencies, valued by their count and the largest count in their column. -/
-def bucketCells : Array (Cell Rat Rat (Nat × Nat)) :=
-  columns.zipIdx.flatMap fun (col, i) =>
-    let counts := col.foldl (fun (acc : Array (Nat × Nat)) v =>
+/-- The buckets of a sorted column that hold latencies, from the lowest, each with its count. -/
+def bucketCounts (col : Array Nat) : Array (Nat × Nat) :=
+  col.foldl (fun (acc : Array (Nat × Nat)) v =>
+    let b := v / (10 * bucket)
+    match acc.back? with
+    | some (b', n) => if b' == b then acc.pop.push (b, n + 1) else acc.push (b, 1)
+    | none => #[(b, 1)]) #[]
+
+theorem bucketCounts_eq (col : Array Nat) : bucketCounts col =
+    col.foldl (fun (acc : Array (Nat × Nat)) v =>
       let b := v / (10 * bucket)
       match acc.back? with
       | some (b', n) => if b' == b then acc.pop.push (b, n + 1) else acc.push (b, 1)
-      | none => #[(b, 1)]) #[]
+      | none => #[(b, 1)]) #[] := rfl
+
+/-- The cells of the buckets that hold latencies, valued by their count and the largest count in their column. -/
+def bucketCells : Array (Cell Rat Rat (Nat × Nat)) :=
+  columns.zipIdx.flatMap fun (col, i) =>
+    let counts := bucketCounts col
     let most := counts.foldl (fun m (_, n) => max m n) 1
     counts.map fun (b, n) => cell i ((b * bucket : Nat) : Rat) (((b + 1) * bucket : Nat) : Rat) (n, most)
 
 theorem bucketCells_eq : bucketCells =
     columns.zipIdx.flatMap fun (col, i) =>
-      let counts := col.foldl (fun (acc : Array (Nat × Nat)) v =>
-        let b := v / (10 * bucket)
-        match acc.back? with
-        | some (b', n) => if b' == b then acc.pop.push (b, n + 1) else acc.push (b, 1)
-        | none => #[(b, 1)]) #[]
+      let counts := bucketCounts col
       let most := counts.foldl (fun m (_, n) => max m n) 1
       counts.map fun (b, n) => cell i ((b * bucket : Nat) : Rat) (((b + 1) * bucket : Nat) : Rat) (n, most) := rfl
+
+/-- The second of each column. -/
+def seconds : Array Rat := (Array.range columns.size).map fun i => ((start + i : Nat) : Rat)
+
+theorem seconds_eq : seconds = (Array.range columns.size).map fun i => ((start + i : Nat) : Rat) := rfl
+
+/-- What the legend reads of each column of latencies: how many there are, the lowest and the highest in milliseconds. -/
+def sampleRows : Array (Array Rat) :=
+  columns.map fun col => #[(col.size : Rat), ((col.getD 0 0 : Nat) : Rat) / 10, ((col.back?.getD 0 : Nat) : Rat) / 10]
+
+theorem sampleRows_eq : sampleRows =
+    columns.map fun col => #[(col.size : Rat), ((col.getD 0 0 : Nat) : Rat) / 10, ((col.back?.getD 0 : Nat) : Rat) / 10] := rfl
+
+/-- What the legend reads of each column of buckets: how many hold latencies, the lower edge of the fullest in milliseconds, and its count. -/
+def bucketRows : Array (Array Rat) :=
+  columns.map fun col =>
+    let counts := bucketCounts col
+    let top := counts.foldl (fun (m : Nat × Nat) c => if c.2 > m.2 then c else m) (0, 0)
+    #[(counts.size : Rat), ((top.1 * bucket : Nat) : Rat), (top.2 : Rat)]
+
+theorem bucketRows_eq : bucketRows =
+    columns.map fun col =>
+      let counts := bucketCounts col
+      let top := counts.foldl (fun (m : Nat × Nat) c => if c.2 > m.2 then c else m) (0, 0)
+      #[(counts.size : Rat), ((top.1 * bucket : Nat) : Rat), (top.2 : Rat)] := rfl
 
 /-- Translucent red, so that overlapping latencies darken. -/
 def sampleColor : Color := ⟨255, 0, 0, 102⟩

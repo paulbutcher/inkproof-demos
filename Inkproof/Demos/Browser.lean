@@ -95,13 +95,29 @@ def Pixels.frameBytes (p : Pixels) (list : Scene.DisplayList) (bg : Color) : Byt
 theorem Pixels.frameBytes_eq (p : Pixels) (list : Scene.DisplayList) (bg : Color) :
     p.frameBytes list bg = Gpu.frameBytes p.backing.1 p.backing.2 (list.scale p.ratio) bg := rfl
 
-/-- The scene of a chart in `f`: `chart` draws the data, given the width and height of text, and the axes' labels go over it. With `traces` it has a legend, and a cursor over the plot. -/
+/-- The legend's group of values named `labels`, one row of `values` at each of `xs` in the data's own units, drawn in `color`; the group is the chart's marks, so it cannot be hidden. -/
+def valueGroup (name : String) (color : Color) (labels : Array String) (xs : Array Rat) (values : Array (Array Rat)) : ValueGroup :=
+  { name, color := cssColor color, labels, xs := xs.map Rat.toFloat, values := values.map fun row => row.map Rat.toFloat }
+
+theorem valueGroup_values (name : String) (color : Color) (labels : Array String) (xs : Array Rat) (values : Array (Array Rat)) :
+    (valueGroup name color labels xs values).values = values.map fun row => row.map Rat.toFloat := rfl
+
+/-- The access of a chart in `f` whose legend reads `groups`, and which has a cursor over the plot. -/
+def groupsAccess (name : String) (f : Frame) (groups : Array ValueGroup) : Access :=
+  { name, points := (groups.getD 0 { name, color := "", labels := #[], xs := #[] }).xs.size, view := some f.viewConfig,
+    plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), groups }
+
+theorem groupsAccess_eq (name : String) (f : Frame) (groups : Array ValueGroup) : groupsAccess name f groups =
+    { name, points := (groups.getD 0 { name, color := "", labels := #[], xs := #[] }).xs.size, view := some f.viewConfig,
+      plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), groups } := rfl
+
+/-- The scene of a chart in `f`: `chart` draws the data, given the width and height of text, and the axes' labels go over it. With `traces` or `groups` it has a legend, and a cursor over the plot. -/
 def frameScene (px : Pixels) (f : Frame) (chart : (String → Float × Float) → Scene.DisplayList)
-    (name : String := "Chart") (traces : Array Trace := #[]) : IO Scene := do
+    (name : String := "Chart") (traces : Array Trace := #[]) (groups : Array ValueGroup := #[]) : IO Scene := do
   let measure ← measurer "12px sans-serif" (texts f)
   let labels := tickLabels (axes f measure)
   pure { commands := px.frameBytes (chart measure) background, labels,
-         access := if traces.isEmpty then {} else accessOf name f traces }
+         access := if !groups.isEmpty then groupsAccess name f groups else if traces.isEmpty then {} else accessOf name f traces }
 
 /-- Define the chart element: it draws the scene `build` makes of its `src` for its canvas's sizes. -/
 def registerPixels (build : String → Pixels → IO Scene) (buttons : Bool := false) : IO Unit :=

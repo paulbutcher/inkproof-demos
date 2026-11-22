@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.19.0
+
+- Latency Heatmap's four charts have a legend that reads the column's, or the bucket's, counts at the cursor.
+
 ## v0.18.0
 
 - Log Scales, Log Scales 2, ArcSinh Scales and Custom Scales use Float v0.8.0's `Float.onRat` in place of their own lifts; `CustomScales.asRat` and its theorem are removed.

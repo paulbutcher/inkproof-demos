@@ -79,6 +79,16 @@ def frame : Frame :=
 theorem frame_eq : frame =
     .sized 1800 600 ((span.1 : Rat), (span.2 : Rat)) (0, ((counts.foldl max 0 : Nat) : Rat) * 21 / 20) := rfl
 
+/-- The middle of each bucket, with its lower edge, its upper edge and its count. -/
+def rows : Array (Rat × Array Rat) :=
+  counts.zipIdx.map fun (n, i) =>
+    let lo : Rat := (span.1 : Rat) + i * bucket
+    (lo + (bucket : Rat) / 2, #[lo, lo + bucket, (n : Rat)])
+
+theorem rows_eq : rows = counts.zipIdx.map fun (n, i) =>
+    let lo : Rat := (span.1 : Rat) + i * bucket
+    (lo + (bucket : Rat) / 2, #[lo, lo + bucket, (n : Rat)]) := rfl
+
 /-- A bar over each bucket, inset by `gap` pixels between neighbours, with a red outline `stroke` wide. -/
 def chart (gap stroke : Rat) (f : Frame) (measure : String → Float × Float) : DisplayList :=
   let p := projection f

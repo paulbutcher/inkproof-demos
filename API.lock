@@ -430,7 +430,11 @@ theorem Inkproof.Demos.Latency.draws_eq : ∀ (seed n : Nat) (ξ ω α : Float),
 theorem Inkproof.Demos.Latency.draws_size : ∀ (seed n : Nat) (ξ ω α : Float), (Inkproof.Demos.Latency.draws seed n ξ ω α).size = n
 def Inkproof.Demos.LatencyHeatmap.bucket : Nat
 def Inkproof.Demos.LatencyHeatmap.bucketCells : Array (Inkproof.Scene.Cell Rat Rat (Nat × Nat))
-theorem Inkproof.Demos.LatencyHeatmap.bucketCells_eq : Inkproof.Demos.LatencyHeatmap.bucketCells = Array.flatMap (fun x => match x with | (col, i) => have counts := Array.foldl (fun acc v => have b := v / (10 * Inkproof.Demos.LatencyHeatmap.bucket); match acc.back? with | Option.some (b', n) => if (b' == b) = Bool.true then acc.pop.push (b, n + 1) else acc.push (b, 1) | Option.none => #[(b, 1)]) #[] col; have most := Array.foldl (fun m x => match x with | (fst, n) => Max.max m n) 1 counts; Array.map (fun x => match x with | (b, n) => Inkproof.Demos.LatencyHeatmap.cell i ↑(b * Inkproof.Demos.LatencyHeatmap.bucket) ↑((b + 1) * Inkproof.Demos.LatencyHeatmap.bucket) (n, most)) counts) Inkproof.Demos.LatencyHeatmap.columns.zipIdx
+theorem Inkproof.Demos.LatencyHeatmap.bucketCells_eq : Inkproof.Demos.LatencyHeatmap.bucketCells = Array.flatMap (fun x => match x with | (col, i) => have counts := Inkproof.Demos.LatencyHeatmap.bucketCounts col; have most := Array.foldl (fun m x => match x with | (fst, n) => Max.max m n) 1 counts; Array.map (fun x => match x with | (b, n) => Inkproof.Demos.LatencyHeatmap.cell i ↑(b * Inkproof.Demos.LatencyHeatmap.bucket) ↑((b + 1) * Inkproof.Demos.LatencyHeatmap.bucket) (n, most)) counts) Inkproof.Demos.LatencyHeatmap.columns.zipIdx
+def Inkproof.Demos.LatencyHeatmap.bucketCounts : Array Nat → Array (Nat × Nat)
+theorem Inkproof.Demos.LatencyHeatmap.bucketCounts_eq : ∀ (col : Array Nat), Inkproof.Demos.LatencyHeatmap.bucketCounts col = Array.foldl (fun acc v => have b := v / (10 * Inkproof.Demos.LatencyHeatmap.bucket); match acc.back? with | Option.some (b', n) => if (b' == b) = Bool.true then acc.pop.push (b, n + 1) else acc.push (b, 1) | Option.none => #[(b, 1)]) #[] col
+def Inkproof.Demos.LatencyHeatmap.bucketRows : Array (Array Rat)
+theorem Inkproof.Demos.LatencyHeatmap.bucketRows_eq : Inkproof.Demos.LatencyHeatmap.bucketRows = Array.map (fun col => have counts := Inkproof.Demos.LatencyHeatmap.bucketCounts col; have top := Array.foldl (fun m c => if c.snd > m.snd then c else m) (0, 0) counts; #[↑counts.size, ↑(top.fst * Inkproof.Demos.LatencyHeatmap.bucket), ↑top.snd]) Inkproof.Demos.LatencyHeatmap.columns
 def Inkproof.Demos.LatencyHeatmap.bucketsDisplay : (String → Float × Float) → Inkproof.Scene.DisplayList
 theorem Inkproof.Demos.LatencyHeatmap.bucketsDisplay_eq : ∀ (measure : String → Float × Float), Inkproof.Demos.LatencyHeatmap.bucketsDisplay measure = Inkproof.Demos.LatencyHeatmap.chart.display measure ++ Inkproof.Scene.DisplayList.clip (Inkproof.Demos.plot Inkproof.Demos.LatencyHeatmap.chart.frame) (Inkproof.Scene.compileHeatmap 1 Inkproof.Demos.LatencyHeatmap.countColor { x := Inkproof.Demos.LatencyHeatmap.chart.xScale.map, y := (Inkproof.Demos.LatencyHeatmap.chart.yScale Inkproof.Demos.LatencyHeatmap.chart.left).map } Inkproof.Demos.LatencyHeatmap.bucketCells)
 def Inkproof.Demos.LatencyHeatmap.cell : {α : Type} → Nat → Rat → Rat → α → Inkproof.Scene.Cell Rat Rat α
@@ -446,10 +450,14 @@ theorem Inkproof.Demos.LatencyHeatmap.millisPerPixel_eq : Inkproof.Demos.Latency
 def Inkproof.Demos.LatencyHeatmap.sampleCells : Array (Inkproof.Scene.Cell Rat Rat Unit)
 theorem Inkproof.Demos.LatencyHeatmap.sampleCells_eq : Inkproof.Demos.LatencyHeatmap.sampleCells = Array.flatMap (fun x => match x with | (col, i) => Array.map (fun v => Inkproof.Demos.LatencyHeatmap.cell i (↑v / 10) (↑v / 10 + Inkproof.Demos.LatencyHeatmap.millisPerPixel) ()) col) Inkproof.Demos.LatencyHeatmap.columns.zipIdx
 def Inkproof.Demos.LatencyHeatmap.sampleColor : Inkproof.Scene.Color
+def Inkproof.Demos.LatencyHeatmap.sampleRows : Array (Array Rat)
+theorem Inkproof.Demos.LatencyHeatmap.sampleRows_eq : Inkproof.Demos.LatencyHeatmap.sampleRows = Array.map (fun col => #[↑col.size, ↑(col.getD 0 0) / 10, ↑(col.back?.getD 0) / 10]) Inkproof.Demos.LatencyHeatmap.columns
 def Inkproof.Demos.LatencyHeatmap.samplesDisplay : (String → Float × Float) → Inkproof.Scene.DisplayList
 theorem Inkproof.Demos.LatencyHeatmap.samplesDisplay_eq : ∀ (measure : String → Float × Float), Inkproof.Demos.LatencyHeatmap.samplesDisplay measure = Inkproof.Demos.LatencyHeatmap.chart.display measure ++ Inkproof.Scene.DisplayList.clip (Inkproof.Demos.plot Inkproof.Demos.LatencyHeatmap.chart.frame) (Inkproof.Scene.compileHeatmap 1 (fun x => Inkproof.Demos.LatencyHeatmap.sampleColor) { x := Inkproof.Demos.LatencyHeatmap.chart.xScale.map, y := (Inkproof.Demos.LatencyHeatmap.chart.yScale Inkproof.Demos.LatencyHeatmap.chart.left).map } Inkproof.Demos.LatencyHeatmap.sampleCells)
+def Inkproof.Demos.LatencyHeatmap.seconds : Array Rat
 def Inkproof.Demos.LatencyHeatmap.secondsPerPixel : Rat
 theorem Inkproof.Demos.LatencyHeatmap.secondsPerPixel_eq : Inkproof.Demos.LatencyHeatmap.secondsPerPixel = (Inkproof.Demos.LatencyHeatmap.chart.xs.snd - Inkproof.Demos.LatencyHeatmap.chart.xs.fst) / (Inkproof.Demos.LatencyHeatmap.chart.frame.right - Inkproof.Demos.LatencyHeatmap.chart.frame.left)
+theorem Inkproof.Demos.LatencyHeatmap.seconds_eq : Inkproof.Demos.LatencyHeatmap.seconds = Array.map (fun i => ↑(Inkproof.Demos.LatencyHeatmap.start + i)) (Array.range Inkproof.Demos.LatencyHeatmap.columns.size)
 def Inkproof.Demos.LatencyHeatmap.start : Nat
 def Inkproof.Demos.LatencyHeatmap.yBounds : Nat × Nat
 theorem Inkproof.Demos.LatencyHeatmap.yBounds_eq : Inkproof.Demos.LatencyHeatmap.yBounds = (Array.foldl Min.min (Inkproof.Demos.LatencyHeatmap.columns.flatten.getD 0 0) Inkproof.Demos.LatencyHeatmap.columns.flatten / 10, (Array.foldl Max.max 0 Inkproof.Demos.LatencyHeatmap.columns.flatten + 9) / 10)
@@ -468,6 +476,8 @@ theorem Inkproof.Demos.LatencyHistogram.counts_eq : Inkproof.Demos.LatencyHistog
 theorem Inkproof.Demos.LatencyHistogram.counts_size : Inkproof.Demos.LatencyHistogram.counts.size = Inkproof.Demos.LatencyHistogram.buckets
 def Inkproof.Demos.LatencyHistogram.frame : Inkproof.Demos.Frame
 theorem Inkproof.Demos.LatencyHistogram.frame_eq : Inkproof.Demos.LatencyHistogram.frame = Inkproof.Demos.Frame.sized 1800 600 (↑Inkproof.Demos.LatencyHistogram.span.fst, ↑Inkproof.Demos.LatencyHistogram.span.snd) (0, ↑(Array.foldl Max.max 0 Inkproof.Demos.LatencyHistogram.counts) * 21 / 20)
+def Inkproof.Demos.LatencyHistogram.rows : Array (Rat × Array Rat)
+theorem Inkproof.Demos.LatencyHistogram.rows_eq : Inkproof.Demos.LatencyHistogram.rows = Array.map (fun x => match x with | (n, i) => have lo := ↑Inkproof.Demos.LatencyHistogram.span.fst + ↑i * ↑Inkproof.Demos.LatencyHistogram.bucket; (lo + ↑Inkproof.Demos.LatencyHistogram.bucket / 2, #[lo, lo + ↑Inkproof.Demos.LatencyHistogram.bucket, ↑n])) Inkproof.Demos.LatencyHistogram.counts.zipIdx
 def Inkproof.Demos.LatencyHistogram.samples : Array Int
 theorem Inkproof.Demos.LatencyHistogram.samples_eq : Inkproof.Demos.LatencyHistogram.samples = Inkproof.Demos.LatencyHistogram.columns.flatten
 def Inkproof.Demos.LatencyHistogram.span : Int × Int
