@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.21.0
+## v0.20.1
 
 - Every page draws its strokes with Gpu v0.18.0's `strokeFrameBytes`, so thin vertical strokes such as x axis ticks have no foot.
 
