@@ -90,10 +90,10 @@ theorem Pixels.ratio_eq (p : Pixels) : p.ratio = if p.css.1 = 0 then 1 else (p.b
 
 /-- The wire bytes of a frame of `list`, laid out in CSS pixels, for the canvas's backing store: the list is scaled by the device pixel ratio so its clips, strokes and markers match the canvas. -/
 def Pixels.frameBytes (p : Pixels) (list : Scene.DisplayList) (bg : Color) : ByteArray :=
-  Gpu.frameBytes p.backing.1 p.backing.2 (list.scale p.ratio) bg
+  Gpu.strokeFrameBytes p.backing.1 p.backing.2 (list.scale p.ratio) bg
 
 theorem Pixels.frameBytes_eq (p : Pixels) (list : Scene.DisplayList) (bg : Color) :
-    p.frameBytes list bg = Gpu.frameBytes p.backing.1 p.backing.2 (list.scale p.ratio) bg := rfl
+    p.frameBytes list bg = Gpu.strokeFrameBytes p.backing.1 p.backing.2 (list.scale p.ratio) bg := rfl
 
 /-- The legend's group of values named `labels`, one row of `values` at each of `xs` in the data's own units, drawn in `color`; the group is the chart's marks, so it cannot be hidden. -/
 def valueGroup (name : String) (color : Color) (labels : Array String) (xs : Array Rat) (values : Array (Array Rat)) : ValueGroup :=

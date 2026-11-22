@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.21.0
+
+- Every page draws its strokes with Gpu v0.18.0's `strokeFrameBytes`, so thin vertical strokes such as x axis ticks have no foot.
+
 ## v0.20.0
 
 - The calendar-time pages use Axis v0.11.0's `posixZone` for zone offsets; `CalendarTime.Zone.ofRule`, `Zone.offset` and their theorems are removed.
