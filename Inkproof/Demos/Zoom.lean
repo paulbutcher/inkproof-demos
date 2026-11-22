@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Inkproof.Core
 import Inkproof.Gpu.Frame
 import Inkproof.Scene
+import Inkproof.Scene.Scale
 import Inkproof.Viewport
 import Inkproof.Demos.Axes
 import Inkproof.Demos.Data
@@ -167,19 +168,19 @@ theorem Chart.viewFrame_eq (c : Chart) (v : Viewport.View Float) : c.viewFrame v
       ((Inkproof.Float.Float.toRat s.start).getD d.1, (Inkproof.Float.Float.toRat (s.start + s.span)).getD d.2)
     { f with xs := range v.x f.xs, ys := range v.y f.ys } := rfl
 
-/-- The commands of a frame of `c` under `v`, and the cache after it. Buffers hold the lines of every view, so a frame uploads only the axes, which change with the view; a cache that starts at another handle keeps charts that share a context apart. -/
-def Chart.commands (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float) :
-    Cache × List Cmd :=
+/-- The commands of a frame of `c` under `v`, and the cache after it, for a target of `size` device pixels where a CSS pixel is `k` of them. Buffers hold the lines of every view, so a frame uploads only the axes, which change with the view; a cache that starts at another handle keeps charts that share a context apart. -/
+def Chart.commands (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float)
+    (size : Nat × Nat) (k : Rat) : Cache × List Cmd :=
   let f := c.viewFrame v
-  let w := c.width
-  let h := c.height
   let data := Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2
-  viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh w h data (plot f) c.data (axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]) background
+  viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 data ((plot f).scale k) c.data
+    ((axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background
 
-theorem Chart.commands_eq (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float) :
-    c.commands cache fresh v measure =
+theorem Chart.commands_eq (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float)
+    (size : Nat × Nat) (k : Rat) :
+    c.commands cache fresh v measure size k =
       let f := c.viewFrame v
-      viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh c.width c.height (Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2)
-        (plot f) c.data (axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]) background := rfl
+      viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 (Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2)
+        ((plot f).scale k) c.data ((axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background := rfl
 
 end Inkproof.Demos.Zoom

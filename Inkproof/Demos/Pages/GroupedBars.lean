@@ -9,8 +9,8 @@ namespace Page.GroupedBars
 open Inkproof.Web.Host Inkproof.Demos Inkproof.Demos.GroupedBars
 
 def run : IO Unit :=
-  Browser.registerLegend fun src off => do
+  Browser.registerLegend fun src px off => do
     let some c := (charts.find? (·.1 == src)).map (·.2) | throw (IO.userError s!"no chart {src}")
-    Browser.barScene c (some off)
+    Browser.barScene px c (some off)
 
 end Page.GroupedBars

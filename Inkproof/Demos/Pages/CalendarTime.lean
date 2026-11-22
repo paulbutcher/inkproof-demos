@@ -8,9 +8,9 @@ namespace Page.CalendarTime
 
 open Inkproof.Web.Host Inkproof.Demos Inkproof
 
-def scene (s : CalendarTime.Spec) (off : Array Bool) : IO Scene := do
+def scene (px : Browser.Pixels) (s : CalendarTime.Spec) (off : Array Bool) : IO Scene := do
   let measure ← measurer "12px sans-serif" s.labelTexts.toArray
-  pure { commands := Gpu.frameBytes s.width s.height (s.chart off measure) background,
+  pure { commands := px.frameBytes (s.chart off measure) background,
          labels := Browser.tickLabels (s.axes measure),
          access := Browser.accessOf s.name s.frame (Browser.seriesTraces off [(CalendarTime.red, s.data)]) }
 
@@ -19,8 +19,8 @@ def run : IO Unit := do
   let dst ← IO.ofExcept CalendarTime.dstSpecs
   let months ← IO.ofExcept (CalendarTime.monthSpec (← Browser.seed))
   let specs := dst ++ [months]
-  Browser.registerLegend fun src off => do
+  Browser.registerLegend fun src px off => do
     let some s := specs.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
-    scene s off
+    scene px s off
 
 end Page.CalendarTime

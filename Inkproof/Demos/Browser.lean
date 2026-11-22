@@ -2,6 +2,7 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+import Inkproof.Scene.Scale
 import Inkproof.Demos
 import Inkproof.Web.Host.Axis
 import Inkproof.Web.Host.Chart
@@ -77,18 +78,42 @@ theorem seriesTraces_eq (off : Array Bool) (ss : List (Color × Core.Series Rat 
 theorem seriesTraces_size (off : Array Bool) (ss : List (Color × Core.Series Rat Rat)) : (seriesTraces off ss).size = ss.length := by
   simp [seriesTraces]
 
-/-- The scene of a `width` by `height` chart in `f`: `chart` draws the data, given the width and height of text, and the axes' labels go over it. With `traces` it has a legend, and a cursor over the plot. -/
-def frameScene (width height : Nat) (f : Frame) (chart : (String → Float × Float) → Scene.DisplayList)
+/-- The sizes of a chart's canvas: in CSS pixels, and in the device pixels of its backing store. -/
+structure Pixels where
+  css : Nat × Nat
+  backing : Nat × Nat
+
+/-- How many device pixels make a CSS pixel across the canvas. -/
+def Pixels.ratio (p : Pixels) : Rat := if p.css.1 = 0 then 1 else (p.backing.1 : Rat) / p.css.1
+
+theorem Pixels.ratio_eq (p : Pixels) : p.ratio = if p.css.1 = 0 then 1 else (p.backing.1 : Rat) / p.css.1 := rfl
+
+/-- The wire bytes of a frame of `list`, laid out in CSS pixels, for the canvas's backing store: the list is scaled by the device pixel ratio so its clips, strokes and markers match the canvas. -/
+def Pixels.frameBytes (p : Pixels) (list : Scene.DisplayList) (bg : Color) : ByteArray :=
+  Gpu.frameBytes p.backing.1 p.backing.2 (list.scale p.ratio) bg
+
+theorem Pixels.frameBytes_eq (p : Pixels) (list : Scene.DisplayList) (bg : Color) :
+    p.frameBytes list bg = Gpu.frameBytes p.backing.1 p.backing.2 (list.scale p.ratio) bg := rfl
+
+/-- The scene of a chart in `f`: `chart` draws the data, given the width and height of text, and the axes' labels go over it. With `traces` it has a legend, and a cursor over the plot. -/
+def frameScene (px : Pixels) (f : Frame) (chart : (String → Float × Float) → Scene.DisplayList)
     (name : String := "Chart") (traces : Array Trace := #[]) : IO Scene := do
   let measure ← measurer "12px sans-serif" (texts f)
   let labels := tickLabels (axes f measure)
-  pure { commands := Gpu.frameBytes width height (chart measure) background, labels,
+  pure { commands := px.frameBytes (chart measure) background, labels,
          access := if traces.isEmpty then {} else accessOf name f traces }
 
-/-- Draw each chart `build` makes from the series its legend has hidden, and again when a click on a legend entry hides or shows one. -/
-def registerLegend (build : String → Array Bool → IO Scene) : IO Unit := do
+/-- Define the chart element: it draws the scene `build` makes of its `src` for its canvas's sizes. -/
+def registerPixels (build : String → Pixels → IO Scene) (buttons : Bool := false) : IO Unit :=
+  Host.registerPixels "inkproof-chart" (fun src css backing => build src ⟨css, backing⟩) buttons
+
+/-- Draw each chart `build` makes from the series its legend has hidden, and again when a click on a legend entry hides or shows one or the canvas changes size. -/
+def registerLegend (build : String → Pixels → Array Bool → IO Scene) : IO Unit := do
   let hidden ← IO.mkRef (({} : Std.HashMap String (Array Bool)))
-  register "inkproof-chart" fun src => do build src ((← hidden.get).getD src #[])
+  let sizes ← IO.mkRef (({} : Std.HashMap String Pixels))
+  registerPixels fun src px => do
+    sizes.modify (·.insert src px)
+    build src px ((← hidden.get).getD src #[])
   let toggled ← Function.ofSyncFn fun args => do
     if let some (Data.ref event _) := args[0]? then
       let el ← event.get "target" Value
@@ -99,24 +124,24 @@ def registerLegend (build : String → Array Bool → IO Scene) : IO Unit := do
       let old := (← hidden.get).getD src #[]
       let off := (old ++ Array.replicate (series + 1 - old.size) false).setIfInBounds series hide
       hidden.modify (·.insert src off)
-      setScene el (← build src off)
+      if let some px := (← sizes.get).get? src then setScene el (← build src px off)
     return .undefined
   (← (← global).get "document").callMethod "addEventListener" #[toJS "inkproof-series", toJS toggled] Unit
 
 /-- The scene of a chart of lines: its axes' labels over the data, and its layers as the legend's series unless they are in `off`. -/
-def lineScene (c : Lines.Chart) (off : Array Bool := #[]) : IO Scene := do
+def lineScene (px : Pixels) (c : Lines.Chart) (off : Array Bool := #[]) : IO Scene := do
   let measure ← measurer "12px sans-serif" c.labelTexts.toArray
   let sides := [Side.bottom, .left] ++ (c.right.map fun _ => Side.right).toList
   let labels := ((c.axes measure).zip sides).toArray.flatMap fun (a, side) => Label.ofDrawing side a
-  pure { commands := Gpu.frameBytes c.width c.height ((c.hide off).display measure) background, labels,
+  pure { commands := px.frameBytes ((c.hide off).display measure) background, labels,
          access := accessOf c.name c.frame (seriesTraces off (c.layers.map fun l => (l.color, l.data))) }
 
-/-- The scene of a `width` by `height` chart on `bg`: `axes` lie on `sides` in order, their labels go over `chart`'s data, and `texts` are every label they may show. -/
-def sidedScene (width height : Nat) (bg : Color) (texts : Array String) (sides : List Side)
+/-- The scene of a chart on `bg`: `axes` lie on `sides` in order, their labels go over `chart`'s data, and `texts` are every label they may show. -/
+def sidedScene (px : Pixels) (bg : Color) (texts : Array String) (sides : List Side)
     (axes : (String → Float × Float) → List AxisDrawing) (chart : (String → Float × Float) → Scene.DisplayList) : IO Scene := do
   let measure ← measurer "12px sans-serif" texts
   let labels := ((axes measure).zip sides).toArray.flatMap fun (a, side) => Label.ofDrawing side a
-  pure { commands := Gpu.frameBytes width height (chart measure) bg, labels }
+  pure { commands := px.frameBytes (chart measure) bg, labels }
 
 /-- The value written at the end of each labelled bar of `c`. -/
 def barLabels (c : Bars.Chart) : Array Label :=
@@ -157,9 +182,9 @@ theorem cloudTraces_eq (cs : Array Scatter.Cloud) (off : Array Bool) : cloudTrac
       { name := s!"Series {i + 1}", color := cssColor c.color, hidden := off.getD i false, xs := #[], ys := #[] } := rfl
 
 /-- The scene of a bar chart: its axes and bars, with each bar's value written at its end. -/
-def barScene (c : Bars.Chart) (off : Option (Array Bool) := none) : IO Scene := do
+def barScene (px : Pixels) (c : Bars.Chart) (off : Option (Array Bool) := none) : IO Scene := do
   let shown := off.elim c (hideBars c)
-  let s ← sidedScene c.width c.height background c.texts c.sides c.axes shown.display
+  let s ← sidedScene px background c.texts c.sides c.axes shown.display
   pure { s with labels := s.labels ++ barLabels shown,
                 access := off.elim {} fun off => { name := "Bars", traces := barTraces c off } }
 
@@ -177,8 +202,8 @@ theorem paneGroup_values (p : Pane.Pane) (name : String) (color : Color) (labels
     (paneGroup p name color labels values).values = values.map fun row => row.map Rat.toFloat := rfl
 
 /-- The scene of a pane whose shapes are `shapes`; with `groups` it has a legend, and a cursor over the plot. -/
-def paneScene (p : Pane.Pane) (shapes : Scene.DisplayList) (name : String := "Chart") (groups : Array ValueGroup := #[]) : IO Scene := do
-  let s ← sidedScene p.width p.height background p.texts p.sides p.axes (p.display shapes)
+def paneScene (px : Pixels) (p : Pane.Pane) (shapes : Scene.DisplayList) (name : String := "Chart") (groups : Array ValueGroup := #[]) : IO Scene := do
+  let s ← sidedScene px background p.texts p.sides p.axes (p.display shapes)
   let f := paneFrame p
   pure { s with access := if groups.isEmpty then {} else
     { name, points := p.groups.size, view := some f.viewConfig, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), groups } }
@@ -207,8 +232,8 @@ def rowGroup (r : Timeline.Row) : ValueGroup :=
 theorem rowGroup_words (r : Timeline.Row) : (rowGroup r).words = (rowStates r).map fun (_, t) => #[t] := rfl
 
 /-- The scene of a timeline: its axes and bars, with each bar's state written on it, and a legend that reads each row's state at the cursor. -/
-def timelineScene (c : Timeline.Chart) : IO Scene := do
-  let s ← sidedScene c.width c.height background c.labelTexts [.bottom, .left] c.axes c.display
+def timelineScene (px : Pixels) (c : Timeline.Chart) : IO Scene := do
+  let s ← sidedScene px background c.labelTexts [.bottom, .left] c.axes c.display
   let f := c.frame
   let labels := c.texts.map fun (text, x, y) =>
     { text, x := Rat.toFloat x, y := Rat.toFloat y, align := if c.centred then .center else .start, baseline := .middle, font := "14px Arial" }

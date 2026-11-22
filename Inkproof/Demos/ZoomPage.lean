@@ -15,12 +15,12 @@ namespace Inkproof.Demos.ZoomPage
 open Lasm.JS Inkproof.Web Inkproof.Web.Host Inkproof.Gpu Inkproof.Viewport Inkproof.Demos
 
 /-- The scene of `c` under `v`, built from the buffers `cache` keeps on the GPU. -/
-def sceneOf (full : Zoom.Chart) (name : String) (cache : SceneCache) (off : Array Bool) (v : View Float) : IO Scene := do
+def sceneOf (full : Zoom.Chart) (name : String) (cache : SceneCache) (px : Browser.Pixels) (off : Array Bool) (v : View Float) : IO Scene := do
   let c : Zoom.Chart := { full with bounds := some full.ranges, lines := full.lines.zipIdx.map fun (l, i) =>
     (if off.getD i false then { l with xs := #[], ys := #[] } else l : Zoom.Line) }
   let f := c.viewFrame v
   let measure ← measurer "12px sans-serif" (texts f ++ (c.marks.map (·.label)).toArray)
-  let cmds ← cache.build fun old first => pure (c.commands old first v measure)
+  let cmds ← cache.build fun old first => pure (c.commands old first v measure px.backing px.ratio)
   let points := (c.lines.map (·.xs.size)).foldl max 0
   let traces := (full.lines.zipIdx.map fun (l, i) =>
     { name := s!"Series {i + 1}", color := s!"rgb({l.color.r},{l.color.g},{l.color.b})",
@@ -32,17 +32,19 @@ def sceneOf (full : Zoom.Chart) (name : String) (cache : SceneCache) (off : Arra
 /-- Draw each named chart, and draw it again under the range the pointer or keys move it to. -/
 def mount (charts : List (String × Zoom.Chart)) : IO Unit := do
   let caches ← charts.mapM fun (name, c) => do pure (name, c, ← SceneCache.new, ← IO.mkRef (View.home c.config), ← IO.mkRef (Array.replicate c.lines.length false))
+  let sizes ← IO.mkRef (({} : Std.HashMap String Browser.Pixels))
   let find (name : String) := caches.find? (·.1 == name)
-  register "inkproof-chart" (buttons := true) fun name => do
+  Browser.registerPixels (buttons := true) fun name px => do
     let some (_, c, cache, view, off) := find name | throw (IO.userError s!"no chart {name}")
-    sceneOf c name cache (← off.get) (← view.get)
+    sizes.modify (·.insert name px)
+    sceneOf c name cache px (← off.get) (← view.get)
   let redraw (restore : Bool) (args : Array Data) : IO Data := do
     if let some (Data.ref event _) := args[0]? then
       let el ← event.get "target" Value
       let name ← el.callMethod "getAttribute" #[toJS "src"] String
       if let some (_, c, cache, view, off) := find name then
         unless restore do view.set (← viewOf (← event.get "detail" Value))
-        setScene el (← sceneOf c name cache (← off.get) (← view.get))
+        if let some px := (← sizes.get).get? name then setScene el (← sceneOf c name cache px (← off.get) (← view.get))
     return .undefined
   let doc ← (← global).get "document"
   for (event, restore) in [("inkproof-view", false), ("inkproof-contextrestored", true)] do
@@ -56,7 +58,7 @@ def mount (charts : List (String × Zoom.Chart)) : IO Unit := do
       let hide ← detail.get "hidden" Bool
       if let some (_, c, cache, view, off) := find name then
         off.modify fun h => h.setIfInBounds series hide
-        setScene el (← sceneOf c name cache (← off.get) (← view.get))
+        if let some px := (← sizes.get).get? name then setScene el (← sceneOf c name cache px (← off.get) (← view.get))
     return .undefined
   doc.callMethod "addEventListener" #[toJS "inkproof-series", toJS toggled] Unit
   let reading ← Function.ofSyncFn fun args => do

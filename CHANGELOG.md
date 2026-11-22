@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.17.0
+
+- Every page draws at the device pixel ratio, except the data strokes of Zoom and Fetch.
+- Scene v0.23.0, Gpu v0.17.0.
+
 ## v0.16.0
 
 - Timezones & DST page: six-day charts of hourly data in UTC, Europe/London and America/Chicago across each zone's 2019 daylight-saving changes, with offsets from Lean's POSIX zone rules.

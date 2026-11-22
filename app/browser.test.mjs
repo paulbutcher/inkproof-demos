@@ -742,28 +742,32 @@ for (const [path, counts] of Object.entries(legends)) {
   });
 }
 
-test('clipped data covers the same part of the plot at device pixel ratio 2 as at 1', async () => {
-  const span = async scale => {
-    const context = await browser.newContext({ deviceScaleFactor: scale });
-    const page = await context.newPage();
-    await page.goto(base + 'scatter/?seed=1');
-    await page.waitForFunction(() => window.getComputedStyle(document.querySelector('inkproof-chart')).width && document.querySelectorAll('inkproof-chart')[1].shadowRoot.querySelector('canvas'));
-    await page.waitForTimeout(3000);
-    const r = await page.evaluate(() => {
-      const c = document.querySelectorAll('inkproof-chart')[1].shadowRoot.querySelector('canvas');
-      const t = document.createElement('canvas'); t.width = c.width; t.height = c.height;
-      const g = t.getContext('2d'); g.drawImage(c, 0, 0);
-      const d = g.getImageData(0, 0, t.width, t.height).data;
-      let x1 = 0, y1 = 0;
-      for (let y = 0; y < t.height; y++) for (let x = 0; x < t.width; x++) {
-        const i = (y * t.width + x) * 4;
-        if (d[i + 3] > 0 && (d[i] < 200 || d[i + 1] < 200 || d[i + 2] < 200)) { if (x > x1) x1 = x; if (y > y1) y1 = y; }
-      }
-      return { x: x1 / t.width, y: y1 / t.height };
-    });
-    await context.close();
-    return r;
-  };
-  const [one, two] = [await span(1), await span(2)];
-  assert.ok(Math.abs(one.x - two.x) < 0.05 && Math.abs(one.y - two.y) < 0.05, `${JSON.stringify(one)} ${JSON.stringify(two)}`);
-});
+for (const [path, chart, density] of [['scatter/?seed=1', 1, true], ['zoom-wheel/', 0, false], ['area-fill/?seed=1', 0, true], ['million/', 0, true]]) {
+  test(`${path} draws its saturated pixels over the same part of its plot at device pixel ratio 2 as at 1`, async () => {
+    const measure = async scale => {
+      const context = await browser.newContext({ deviceScaleFactor: scale });
+      const page = await context.newPage();
+      await page.goto(base + path);
+      await page.waitForFunction(i => document.querySelectorAll('inkproof-chart')[i]?.shadowRoot?.querySelector('canvas'), chart);
+      await page.waitForTimeout(3000);
+      const r = await page.evaluate(i => {
+        const c = document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelector('canvas');
+        const t = document.createElement('canvas'); t.width = c.width; t.height = c.height;
+        const g = t.getContext('2d'); g.drawImage(c, 0, 0);
+        const d = g.getImageData(0, 0, t.width, t.height).data;
+        let n = 0, x1 = 0, y1 = 0;
+        for (let y = 0; y < t.height; y++) for (let x = 0; x < t.width; x++) {
+          const k = (y * t.width + x) * 4;
+          if (Math.max(d[k], d[k + 1], d[k + 2]) - Math.min(d[k], d[k + 1], d[k + 2]) > 100) { n++; if (x > x1) x1 = x; if (y > y1) y1 = y; }
+        }
+        return { n: n / (t.width * t.height), x: x1 / t.width, y: y1 / t.height };
+      }, chart);
+      await context.close();
+      return r;
+    };
+    const [one, two] = [await measure(1), await measure(2)];
+    assert.ok(one.n > 0, 'something saturated is drawn');
+    assert.ok(Math.abs(one.x - two.x) < 0.05 && Math.abs(one.y - two.y) < 0.05, `${JSON.stringify(one)} ${JSON.stringify(two)}`);
+    assert.ok(!density || Math.abs(two.n / one.n - 1) < 0.35, `${JSON.stringify(one)} ${JSON.stringify(two)}`);
+  });
+}

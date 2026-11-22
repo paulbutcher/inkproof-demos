@@ -12,7 +12,7 @@ namespace Page.Million
 open Inkproof.Web.Host Inkproof.Demos Inkproof
 
 def run : IO Unit :=
-  register "inkproof-chart" fun _ => do
+  Browser.registerPixels fun _ px => do
     let numbers := (List.range 12).map (fun (i : Nat) => toString (i * 100000)) ++ (List.range 15).map (fun (i : Nat) => toString ((i : Int) * 100 - 300))
     let measure ← measurer "12px sans-serif" numbers.toArray
     let exts := Million.columnExtents Million.pyramid
@@ -24,6 +24,6 @@ def run : IO Unit :=
     let labels := axisLabels Million.naivePanel ++ axisLabels Million.inkproofPanel ++
       #[title Million.naivePanel s!"One sample per column: {shown} of {n} spikes shown, {n - shown} lost",
         title Million.inkproofPanel s!"Inkproof, lowest and highest per column: {kept} of {n} spikes shown, {n - kept} lost"]
-    pure { commands := Gpu.frameBytes 1200 760 (Million.naiveChart measure ++ Million.inkproofChart exts measure) background, labels }
+    pure { commands := px.frameBytes (Million.naiveChart measure ++ Million.inkproofChart exts measure) background, labels }
 
 end Page.Million

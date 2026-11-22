@@ -9,8 +9,8 @@ namespace Page.Sparklines
 open Inkproof.Web.Host Inkproof.Demos Inkproof.Demos.Sparklines
 
 def run : IO Unit :=
-  register "inkproof-chart" fun src => do
+  Browser.registerPixels fun src px => do
     let some vals := named? src | throw (IO.userError s!"no sparkline {src}")
-    Browser.sidedScene width height pink #[] [] (fun _ => []) (fun _ => chart vals)
+    Browser.sidedScene px pink #[] [] (fun _ => []) (fun _ => chart vals)
 
 end Page.Sparklines

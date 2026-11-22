@@ -9,9 +9,9 @@ namespace Page.SparklinesBars
 open Inkproof.Web.Host Inkproof.Demos Inkproof.Demos.SparklinesBars
 
 def run : IO Unit :=
-  register "inkproof-chart" fun
-    | "split" => Browser.sidedScene width height background #[] [] (fun _ => []) (fun _ => chartSplit)
-    | "colored" => Browser.sidedScene width height background #[] [] (fun _ => []) (fun _ => chartColored)
+  Browser.registerPixels fun src px => match src with
+    | "split" => Browser.sidedScene px background #[] [] (fun _ => []) (fun _ => chartSplit)
+    | "colored" => Browser.sidedScene px background #[] [] (fun _ => []) (fun _ => chartColored)
     | src => throw (IO.userError s!"no chart {src}")
 
 end Page.SparklinesBars

@@ -9,8 +9,8 @@ namespace Page.TimelineDiscrete
 open Inkproof.Web.Host Inkproof.Demos
 
 def run : IO Unit :=
-  register "inkproof-chart" fun src => do
+  Browser.registerPixels fun src px => do
     let some c := Timeline.charts.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
-    Browser.timelineScene c
+    Browser.timelineScene px c
 
 end Page.TimelineDiscrete

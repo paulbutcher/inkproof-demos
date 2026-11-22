@@ -7,6 +7,7 @@ import Inkproof.Web.Host.Chart
 import Inkproof.Web.Host.SceneCache
 import Inkproof.Web.Host.Tiles
 import Inkproof.Demos.Linked
+import Inkproof.Demos.Browser
 import Inkproof.Demos.ZoomPage
 
 namespace Inkproof.Demos.FetchPage
@@ -31,9 +32,11 @@ def mount : IO Unit := do
   let latest ← IO.mkRef 0
   let off ← IO.mkRef #[false]
   let shown ← IO.mkRef (View.home (Linked.fetched #[]).config)
+  let size ← IO.mkRef (none : Option Browser.Pixels)
   let name := "zoom-fetch"
-  register "inkproof-chart" (buttons := true) fun _ => do
-    ZoomPage.sceneOf (← current.get) name cache (← off.get) (View.home (← current.get).config)
+  Browser.registerPixels (buttons := true) fun _ px => do
+    size.set (some px)
+    ZoomPage.sceneOf (← current.get) name cache px (← off.get) (View.home (← current.get).config)
   let doc ← (← global).get "document"
   let update (view : View Float) : IO Unit := do
     shown.set view
@@ -44,8 +47,9 @@ def mount : IO Unit := do
       if (← latest.get) == ticket then
         current.set chart
         cache.invalidate
-        if let .ref el _ := ← doc.callMethod "getElementById" #[toJS "chart"] Data then
-          setScene el (← ZoomPage.sceneOf chart name cache (← off.get) view))
+        if let some px ← size.get then
+          if let .ref el _ := ← doc.callMethod "getElementById" #[toJS "chart"] Data then
+            setScene el (← ZoomPage.sceneOf chart name cache px (← off.get) view))
   let onView ← Function.ofSyncFn fun args => do
     if let some (Data.ref event _) := args[0]? then
       update (← viewOf (← event.get "detail" Value))
@@ -55,7 +59,8 @@ def mount : IO Unit := do
     if let some (Data.ref event _) := args[0]? then
       let detail ← event.get "detail" Value
       off.set #[← detail.get "hidden" Bool]
-      setScene (← event.get "target" Value) (← ZoomPage.sceneOf (← current.get) name cache (← off.get) (← shown.get))
+      if let some px ← size.get then
+        setScene (← event.get "target" Value) (← ZoomPage.sceneOf (← current.get) name cache px (← off.get) (← shown.get))
     return .undefined
   doc.callMethod "addEventListener" #[toJS "inkproof-series", toJS toggled] Unit
   update (View.home (Linked.fetched #[]).config)

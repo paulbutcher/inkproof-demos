@@ -9,8 +9,8 @@ namespace Page.HeatmapCells
 open Inkproof.Web.Host Inkproof.Demos Inkproof.Demos.HeatmapCells
 
 def run : IO Unit :=
-  register "inkproof-chart" fun
-    | "cells" => Browser.sidedScene chart.width chart.height background chart.labelTexts.toArray [.bottom, .left] chart.axes display
+  Browser.registerPixels fun src px => match src with
+    | "cells" => Browser.sidedScene px background chart.labelTexts.toArray [.bottom, .left] chart.axes display
     | src => throw (IO.userError s!"no chart {src}")
 
 end Page.HeatmapCells

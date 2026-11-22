@@ -14,7 +14,7 @@ open Inkproof.Web.Host Inkproof.Demos Inkproof
 def percent (v : Int) : String := s!"{v / 100}.{if v % 100 < 10 then "0" else ""}{v % 100}"
 
 def run : IO Unit :=
-  register "inkproof-chart" fun _ => do
+  Browser.registerPixels fun _ px => do
     let numbers := (List.range 12).map (fun (i : Nat) => toString (i * 10000)) ++ (List.range 11).map (fun (i : Nat) => toString (i * 10))
     let measure ← measurer "12px sans-serif" numbers.toArray
     let exts := ServerEvents.series.map fun f => ServerEvents.extents f
@@ -24,6 +24,6 @@ def run : IO Unit :=
     let notes := ((ServerEvents.names.zip ServerEvents.series).zip exts).zipIdx.toArray.map fun (((name, f), e), i) =>
       { text := s!"{name}: highest {percent (ServerEvents.highest f)} %, drawn {percent (ServerEvents.drawnHighest e)} %",
         x := 60 + 370 * i.toFloat, y := 24, font := "bold 13px sans-serif", color := css[i]?.getD "#000" : Label }
-    pure { commands := Gpu.frameBytes 1200 640 (ServerEvents.chart exts measure) background, labels := ticks ++ notes }
+    pure { commands := px.frameBytes (ServerEvents.chart exts measure) background, labels := ticks ++ notes }
 
 end Page.ServerEvents

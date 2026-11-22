@@ -228,8 +228,8 @@ private def zoomTest : Except String Unit := do
     let zoomed := Viewport.View.step c.config home (.wheel 100 100 4)
     check (zoomed != home) "a wheel notch changes the view"
     check (Viewport.View.step c.config zoomed .reset == home) "reset returns to the home view"
-    let (cache, first) := c.commands {} true home measure
-    let (_, second) := c.commands cache false zoomed measure
+    let (cache, first) := c.commands {} true home measure (c.width, c.height) 1
+    let (_, second) := c.commands cache false zoomed measure (c.width, c.height) 1
     let uploads (cmds : List Gpu.Cmd) := cmds.filterMap fun cmd => match cmd.args with
       | [_, .words ws] => if cmd.op == 1 then some ws else none
       | _ => none

@@ -9,8 +9,8 @@ namespace Page.MissingData
 open Inkproof.Web.Host Inkproof.Demos
 
 def run : IO Unit :=
-  Browser.registerLegend fun src off => do
+  Browser.registerLegend fun src px off => do
     let some c := MissingData.charts.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
-    Browser.lineScene c off
+    Browser.lineScene px c off
 
 end Page.MissingData
