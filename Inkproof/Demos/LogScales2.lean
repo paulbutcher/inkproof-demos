@@ -145,12 +145,12 @@ theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) :
 /-- Data to pixels: the y axis is the chart's own scale. -/
 def Spec.projection (s : Spec) : Projection Rat Rat :=
   let f := s.frame
-  ⟨(Linear.mk f.xs.1 f.xs.2 f.left f.right).map, fun v => (Inkproof.Float.Float.toRat (s.yPixel (Rat.toFloat v))).getD 0⟩
+  ⟨(Linear.mk f.xs.1 f.xs.2 f.left f.right).map, Inkproof.Float.Float.onRat s.yPixel⟩
 
 theorem Spec.projection_x (s : Spec) (x : Rat) :
     s.projection.x x = (Linear.mk s.frame.xs.1 s.frame.xs.2 s.frame.left s.frame.right).map x := rfl
 
-theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = (Inkproof.Float.Float.toRat (s.yPixel (Rat.toFloat v))).getD 0 := rfl
+theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = Inkproof.Float.Float.onRat s.yPixel v := rfl
 
 /-- The axes, then the series unless the legend has hidden it, filled down to the bottom of the plot if it has a fill, and stroked. -/
 def Spec.chart (off : Array Bool) (s : Spec) (measure : String → Float × Float) : DisplayList :=

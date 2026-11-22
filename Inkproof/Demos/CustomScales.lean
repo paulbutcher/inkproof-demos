@@ -43,16 +43,12 @@ def probability (level : Float) : Float := 1 - Float.exp (-(Float.exp level))
 
 theorem probability_eq (level : Float) : probability level = 1 - Float.exp (-(Float.exp level)) := rfl
 
-def asRat (v : Float) : Rat := (Inkproof.Float.Float.toRat v).getD 0
-
-theorem asRat_eq (v : Float) : asRat v = (Inkproof.Float.Float.toRat v).getD 0 := rfl
-
 /-- The curve at each x, `shift` spreads from the fitted level. -/
 def curve (shift : Float) : Array Rat :=
-  times.map fun x => asRat (probability (fittedLevel (Rat.toFloat x) + shift * spread (Rat.toFloat x)))
+  times.map (Inkproof.Float.Float.onRat fun x => probability (fittedLevel x + shift * spread x))
 
 theorem curve_eq (shift : Float) : curve shift =
-    times.map fun x => asRat (probability (fittedLevel (Rat.toFloat x) + shift * spread (Rat.toFloat x))) := rfl
+    times.map (Inkproof.Float.Float.onRat fun x => probability (fittedLevel x + shift * spread x)) := rfl
 
 def upper : Series Rat Rat := Lines.series times ((curve 1).map some)
 def lower : Series Rat Rat := Lines.series times ((curve (-1)).map some)
@@ -207,11 +203,11 @@ theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) : s.axes m
       | .log => compileLogAxis .left (plot f) ⟨s.yScale.domainStart, s.yScale.domainEnd, s.yScale.rangeStart, s.yScale.rangeEnd⟩ Axes.spec measure Axes.style
       | .weibull => compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (weibullTicks.map s.yPixel) weibullLabels]) := rfl
 
-def Spec.px (s : Spec) (v : Rat) : Rat := asRat (s.xPixel (Rat.toFloat v))
-def Spec.py (s : Spec) (v : Rat) : Rat := asRat (s.yPixel (Rat.toFloat v))
+def Spec.px (s : Spec) (v : Rat) : Rat := Inkproof.Float.Float.onRat s.xPixel v
+def Spec.py (s : Spec) (v : Rat) : Rat := Inkproof.Float.Float.onRat s.yPixel v
 
-theorem Spec.px_eq (s : Spec) (v : Rat) : s.px v = asRat (s.xPixel (Rat.toFloat v)) := rfl
-theorem Spec.py_eq (s : Spec) (v : Rat) : s.py v = asRat (s.yPixel (Rat.toFloat v)) := rfl
+theorem Spec.px_eq (s : Spec) (v : Rat) : s.px v = Inkproof.Float.Float.onRat s.xPixel v := rfl
+theorem Spec.py_eq (s : Spec) (v : Rat) : s.py v = Inkproof.Float.Float.onRat s.yPixel v := rfl
 
 /-- Data to pixels along both axes. -/
 def Spec.projection (s : Spec) : Projection Rat Rat := ⟨s.px, s.py⟩

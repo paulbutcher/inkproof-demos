@@ -19,7 +19,7 @@ require «inkproof-scene» from git "https://github.com/paulbutcher/inkproof-sce
 require «inkproof-scale» from git "https://github.com/paulbutcher/inkproof-scale" @ "v0.11.0"
 require «inkproof-axis» from git "https://github.com/paulbutcher/inkproof-axis" @ "v0.9.0"
 require «inkproof-core» from git "https://github.com/paulbutcher/inkproof-core" @ "v0.15.0"
-require «inkproof-float» from git "https://github.com/paulbutcher/inkproof-float" @ "v0.7.0"
+require «inkproof-float» from git "https://github.com/paulbutcher/inkproof-float" @ "v0.8.0"
 require «inkproof-gpu» from git "https://github.com/paulbutcher/inkproof-gpu" @ "v0.17.0"
 require «lean-random-sampling» from git "https://github.com/paulbutcher/lean-random-sampling" @ "v0.1.0"
 

@@ -93,9 +93,9 @@ theorem axes_eq (k : Int) (measure : String → Float × Float) : axes k measure
 /-- Data to pixels: the y axis is the arcsinh scale. -/
 def projection (k : Int) : Projection Rat Rat :=
   ⟨(Linear.mk frame.xs.1 frame.xs.2 frame.left frame.right).map,
-   fun v => (Inkproof.Float.Float.toRat (yPixel k (Rat.toFloat v))).getD 0⟩
+   Inkproof.Float.Float.onRat (yPixel k)⟩
 
-theorem projection_y (k : Int) (v : Rat) : (projection k).y v = (Inkproof.Float.Float.toRat (yPixel k (Rat.toFloat v))).getD 0 := rfl
+theorem projection_y (k : Int) (v : Rat) : (projection k).y v = Inkproof.Float.Float.onRat (yPixel k) v := rfl
 
 def blue : Color := ⟨0, 0, 255, 255⟩
 

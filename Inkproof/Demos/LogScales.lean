@@ -101,9 +101,9 @@ theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) : s.axes m
 /-- Data to pixels: the y axis is the chart's own scale. -/
 def Spec.projection (s : Spec) : Projection Rat Rat :=
   let f := s.frame
-  ⟨(Linear.mk f.xs.1 f.xs.2 f.left f.right).map, fun v => (Inkproof.Float.Float.toRat (s.yPixel (Rat.toFloat v))).getD 0⟩
+  ⟨(Linear.mk f.xs.1 f.xs.2 f.left f.right).map, Inkproof.Float.Float.onRat s.yPixel⟩
 
-theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = (Inkproof.Float.Float.toRat (s.yPixel (Rat.toFloat v))).getD 0 := rfl
+theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = Inkproof.Float.Float.onRat s.yPixel v := rfl
 
 /-- The servers' layers that the legend has not hidden. -/
 def shownLayers (off : Array Bool) : List Layer :=

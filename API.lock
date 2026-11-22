@@ -14,7 +14,7 @@ theorem Inkproof.Demos.ArcsinhScales.labelTexts_eq : Inkproof.Demos.ArcsinhScale
 def Inkproof.Demos.ArcsinhScales.magnitudes : List Rat
 theorem Inkproof.Demos.ArcsinhScales.magnitudes_eq : Inkproof.Demos.ArcsinhScales.magnitudes = List.flatMap (fun e => List.map (fun i => ↑(i + 1) * 10 ^ e / 1000) (List.range 9)) (List.range 6) ++ [1000]
 def Inkproof.Demos.ArcsinhScales.projection : Int → Inkproof.Scene.Projection Rat Rat
-theorem Inkproof.Demos.ArcsinhScales.projection_y : ∀ (k : Int) (v : Rat), (Inkproof.Demos.ArcsinhScales.projection k).y v = (Inkproof.Float.Float.toRat (Inkproof.Demos.ArcsinhScales.yPixel k v.toFloat)).getD 0
+theorem Inkproof.Demos.ArcsinhScales.projection_y : ∀ (k : Int) (v : Rat), (Inkproof.Demos.ArcsinhScales.projection k).y v = Inkproof.Float.Float.onRat (Inkproof.Demos.ArcsinhScales.yPixel k) v
 def Inkproof.Demos.ArcsinhScales.threshold : Int → Rat
 theorem Inkproof.Demos.ArcsinhScales.threshold_eq : ∀ (k : Int), Inkproof.Demos.ArcsinhScales.threshold k = if 0 ≤ k then 10 ^ k.toNat else 1 / 10 ^ (-k).toNat
 def Inkproof.Demos.ArcsinhScales.times : Array Rat
@@ -282,9 +282,9 @@ field Inkproof.Demos.CustomScales.Spec.name : Inkproof.Demos.CustomScales.Spec �
 def Inkproof.Demos.CustomScales.Spec.projection : Inkproof.Demos.CustomScales.Spec → Inkproof.Scene.Projection Rat Rat
 theorem Inkproof.Demos.CustomScales.Spec.projection_eq : ∀ (s : Inkproof.Demos.CustomScales.Spec), s.projection = { x := s.px, y := s.py }
 def Inkproof.Demos.CustomScales.Spec.px : Inkproof.Demos.CustomScales.Spec → Rat → Rat
-theorem Inkproof.Demos.CustomScales.Spec.px_eq : ∀ (s : Inkproof.Demos.CustomScales.Spec) (v : Rat), s.px v = Inkproof.Demos.CustomScales.asRat (s.xPixel v.toFloat)
+theorem Inkproof.Demos.CustomScales.Spec.px_eq : ∀ (s : Inkproof.Demos.CustomScales.Spec) (v : Rat), s.px v = Inkproof.Float.Float.onRat s.xPixel v
 def Inkproof.Demos.CustomScales.Spec.py : Inkproof.Demos.CustomScales.Spec → Rat → Rat
-theorem Inkproof.Demos.CustomScales.Spec.py_eq : ∀ (s : Inkproof.Demos.CustomScales.Spec) (v : Rat), s.py v = Inkproof.Demos.CustomScales.asRat (s.yPixel v.toFloat)
+theorem Inkproof.Demos.CustomScales.Spec.py_eq : ∀ (s : Inkproof.Demos.CustomScales.Spec) (v : Rat), s.py v = Inkproof.Float.Float.onRat s.yPixel v
 def Inkproof.Demos.CustomScales.Spec.xLabels : Inkproof.Demos.CustomScales.Spec → List String
 theorem Inkproof.Demos.CustomScales.Spec.xLabels_eq : ∀ (s : Inkproof.Demos.CustomScales.Spec), s.xLabels = if s.xLog = Bool.true then Inkproof.Axis.tickLabels Inkproof.Demos.Axes.spec.locale (Inkproof.Axis.logTicks s.frame.xs.fst.toFloat s.frame.xs.snd.toFloat Inkproof.Demos.Axes.spec.target) else Inkproof.Demos.Axes.linearLabels s.frame.xs.fst.toFloat s.frame.xs.snd.toFloat
 field Inkproof.Demos.CustomScales.Spec.xLog : Inkproof.Demos.CustomScales.Spec → Bool
@@ -301,15 +301,13 @@ def Inkproof.Demos.CustomScales.Spec.yScale : Inkproof.Demos.CustomScales.Spec �
 theorem Inkproof.Demos.CustomScales.Spec.yScale_eq : ∀ (s : Inkproof.Demos.CustomScales.Spec), s.yScale = { domainStart := s.frame.ys.fst.toFloat, domainEnd := s.frame.ys.snd.toFloat, rangeStart := s.frame.bottom.toFloat, rangeEnd := s.frame.top.toFloat }
 def Inkproof.Demos.CustomScales.Spec.yValue : Inkproof.Demos.CustomScales.Spec → Float → Float
 theorem Inkproof.Demos.CustomScales.Spec.yValue_eq : ∀ (s : Inkproof.Demos.CustomScales.Spec), s.yValue = Inkproof.Scale.Transformed.unmap Inkproof.Demos.CustomScales.forward Inkproof.Demos.CustomScales.backward s.yScale
-def Inkproof.Demos.CustomScales.asRat : Float → Rat
-theorem Inkproof.Demos.CustomScales.asRat_eq : ∀ (v : Float), Inkproof.Demos.CustomScales.asRat v = (Inkproof.Float.Float.toRat v).getD 0
 def Inkproof.Demos.CustomScales.backward : Float → Float
 theorem Inkproof.Demos.CustomScales.backward_eq : ∀ (v : Float), Inkproof.Demos.CustomScales.backward v = Inkproof.Demos.CustomScales.probability v
 def Inkproof.Demos.CustomScales.band : Inkproof.Scene.Color
 def Inkproof.Demos.CustomScales.black : Inkproof.Scene.Color
 def Inkproof.Demos.CustomScales.blue : Inkproof.Scene.Color
 def Inkproof.Demos.CustomScales.curve : Float → Array Rat
-theorem Inkproof.Demos.CustomScales.curve_eq : ∀ (shift : Float), Inkproof.Demos.CustomScales.curve shift = Array.map (fun x => Inkproof.Demos.CustomScales.asRat (Inkproof.Demos.CustomScales.probability (Inkproof.Demos.CustomScales.fittedLevel x.toFloat + shift * Inkproof.Demos.CustomScales.spread x.toFloat))) Inkproof.Demos.CustomScales.times
+theorem Inkproof.Demos.CustomScales.curve_eq : ∀ (shift : Float), Inkproof.Demos.CustomScales.curve shift = Array.map (Inkproof.Float.Float.onRat fun x => Inkproof.Demos.CustomScales.probability (Inkproof.Demos.CustomScales.fittedLevel x + shift * Inkproof.Demos.CustomScales.spread x)) Inkproof.Demos.CustomScales.times
 def Inkproof.Demos.CustomScales.extent : Rat × Rat
 theorem Inkproof.Demos.CustomScales.extent_eq : Inkproof.Demos.CustomScales.extent = ((List.flatMap (fun s => List.filterMap id s.values.toList) [Inkproof.Demos.CustomScales.upper, Inkproof.Demos.CustomScales.lower, Inkproof.Demos.CustomScales.fitted]).min?.getD 0, (List.flatMap (fun s => List.filterMap id s.values.toList) [Inkproof.Demos.CustomScales.upper, Inkproof.Demos.CustomScales.lower, Inkproof.Demos.CustomScales.fitted]).max?.getD 1)
 def Inkproof.Demos.CustomScales.fitted : Inkproof.Core.Series Rat Rat
@@ -603,7 +601,7 @@ field Inkproof.Demos.LogScales.Spec.log : Inkproof.Demos.LogScales.Spec → Bool
 constructor Inkproof.Demos.LogScales.Spec.mk : String → Bool → Inkproof.Demos.LogScales.Spec
 field Inkproof.Demos.LogScales.Spec.name : Inkproof.Demos.LogScales.Spec → String
 def Inkproof.Demos.LogScales.Spec.projection : Inkproof.Demos.LogScales.Spec → Inkproof.Scene.Projection Rat Rat
-theorem Inkproof.Demos.LogScales.Spec.projection_y : ∀ (s : Inkproof.Demos.LogScales.Spec) (v : Rat), s.projection.y v = (Inkproof.Float.Float.toRat (s.yPixel v.toFloat)).getD 0
+theorem Inkproof.Demos.LogScales.Spec.projection_y : ∀ (s : Inkproof.Demos.LogScales.Spec) (v : Rat), s.projection.y v = Inkproof.Float.Float.onRat s.yPixel v
 def Inkproof.Demos.LogScales.Spec.yLabels : Inkproof.Demos.LogScales.Spec → List String
 theorem Inkproof.Demos.LogScales.Spec.yLabels_eq : ∀ (s : Inkproof.Demos.LogScales.Spec), s.yLabels = Inkproof.Axis.tickLabels Inkproof.Demos.Axes.spec.locale (if s.log = Bool.true then Inkproof.Axis.logTicks s.ys.fst.toFloat s.ys.snd.toFloat Inkproof.Demos.Axes.spec.target else Inkproof.Axis.linearTicks s.ys.fst.toFloat s.ys.snd.toFloat Inkproof.Demos.Axes.spec.target)
 def Inkproof.Demos.LogScales.Spec.yPixel : Inkproof.Demos.LogScales.Spec → Float → Float
@@ -647,7 +645,7 @@ constructor Inkproof.Demos.LogScales2.Spec.mk : String → Nat → Nat → Inkpr
 field Inkproof.Demos.LogScales2.Spec.name : Inkproof.Demos.LogScales2.Spec → String
 def Inkproof.Demos.LogScales2.Spec.projection : Inkproof.Demos.LogScales2.Spec → Inkproof.Scene.Projection Rat Rat
 theorem Inkproof.Demos.LogScales2.Spec.projection_x : ∀ (s : Inkproof.Demos.LogScales2.Spec) (x : Rat), s.projection.x x = { domainStart := s.frame.xs.fst, domainEnd := s.frame.xs.snd, rangeStart := s.frame.left, rangeEnd := s.frame.right }.map x
-theorem Inkproof.Demos.LogScales2.Spec.projection_y : ∀ (s : Inkproof.Demos.LogScales2.Spec) (v : Rat), s.projection.y v = (Inkproof.Float.Float.toRat (s.yPixel v.toFloat)).getD 0
+theorem Inkproof.Demos.LogScales2.Spec.projection_y : ∀ (s : Inkproof.Demos.LogScales2.Spec) (v : Rat), s.projection.y v = Inkproof.Float.Float.onRat s.yPixel v
 field Inkproof.Demos.LogScales2.Spec.stroke : Inkproof.Demos.LogScales2.Spec → Inkproof.Scene.Color
 field Inkproof.Demos.LogScales2.Spec.width : Inkproof.Demos.LogScales2.Spec → Nat
 field Inkproof.Demos.LogScales2.Spec.xs : Inkproof.Demos.LogScales2.Spec → Rat × Rat
