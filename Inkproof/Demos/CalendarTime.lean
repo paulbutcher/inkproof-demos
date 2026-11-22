@@ -4,9 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 
 The data are those of uPlot's `timezones-dst` and `months` demos, Copyright (c) 2022 Leon Sorokin, released under the MIT license.
 -/
-import Std.Time
 import RandomSampling
 import Inkproof.Axis
+import Inkproof.Axis.PosixZone
 import Inkproof.Core
 import Inkproof.Scene
 import Inkproof.Scale
@@ -18,32 +18,25 @@ namespace Inkproof.Demos.CalendarTime
 
 open Inkproof.Axis Inkproof.Core Inkproof.Scene Inkproof.Scale Inkproof.Demos
 
-/-- A time zone: its name and the parsed POSIX rule that says when it changes offset. -/
+/-- A time zone: its name and the seconds east of UTC its clocks are at each instant. -/
 structure Zone where
   name : String
-  rule : Std.Time.TimeZone.RecurringRule
+  offset : Int → Int
 
 /-- The zone a POSIX rule describes, or why the rule does not parse. -/
-def Zone.ofRule (name rule : String) : Except String Zone :=
-  match Std.Time.TimeZone.parsePosixTz rule with
-  | .ok r => .ok ⟨name, r⟩
+def zone (name rule : String) : Except String Zone :=
+  match posixZone rule with
+  | .ok f => .ok ⟨name, f⟩
   | .error e => .error s!"{name}: {e}"
 
-theorem Zone.ofRule_eq (name rule : String) : Zone.ofRule name rule =
-    match Std.Time.TimeZone.parsePosixTz rule with
-    | .ok r => .ok ⟨name, r⟩
+theorem zone_eq (name rule : String) : zone name rule =
+    match posixZone rule with
+    | .ok f => .ok ⟨name, f⟩
     | .error e => .error s!"{name}: {e}" := rfl
 
-def utc : Except String Zone := Zone.ofRule "UTC" "UTC0"
-def london : Except String Zone := Zone.ofRule "Europe/London" "GMT0BST,M3.5.0/1,M10.5.0"
-def chicago : Except String Zone := Zone.ofRule "America/Chicago" "CST6CDT,M3.2.0,M11.1.0"
-
-/-- Seconds east of UTC that the zone's clocks are at the instant `t`. -/
-def Zone.offset (z : Zone) (t : Int) : Int :=
-  (z.rule.timezoneAt (Std.Time.Timestamp.ofSecondsSinceUnixEpoch (Std.Time.Second.Offset.ofInt t))).offset.second.val
-
-theorem Zone.offset_eq (z : Zone) (t : Int) : z.offset t =
-    (z.rule.timezoneAt (Std.Time.Timestamp.ofSecondsSinceUnixEpoch (Std.Time.Second.Offset.ofInt t))).offset.second.val := rfl
+def utc : Except String Zone := zone "UTC" "UTC0"
+def london : Except String Zone := zone "Europe/London" "GMT0BST,M3.5.0/1,M10.5.0"
+def chicago : Except String Zone := zone "America/Chicago" "CST6CDT,M3.2.0,M11.1.0"
 
 /-- How the time axis places its ticks: at clock intervals, or on the first of every `n`th month. -/
 inductive Ticks where

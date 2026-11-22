@@ -213,13 +213,9 @@ inductive Inkproof.Demos.CalendarTime.Ticks : Type
 constructor Inkproof.Demos.CalendarTime.Ticks.clock : Inkproof.Demos.CalendarTime.Ticks
 constructor Inkproof.Demos.CalendarTime.Ticks.months : Nat → Inkproof.Demos.CalendarTime.Ticks
 structure Inkproof.Demos.CalendarTime.Zone : Type
-constructor Inkproof.Demos.CalendarTime.Zone.mk : String → Std.Time.TimeZone.RecurringRule → Inkproof.Demos.CalendarTime.Zone
+constructor Inkproof.Demos.CalendarTime.Zone.mk : String → (Int → Int) → Inkproof.Demos.CalendarTime.Zone
 field Inkproof.Demos.CalendarTime.Zone.name : Inkproof.Demos.CalendarTime.Zone → String
-def Inkproof.Demos.CalendarTime.Zone.ofRule : String → String → Except String Inkproof.Demos.CalendarTime.Zone
-theorem Inkproof.Demos.CalendarTime.Zone.ofRule_eq : ∀ (name rule : String), Inkproof.Demos.CalendarTime.Zone.ofRule name rule = match Std.Time.TimeZone.parsePosixTz rule with | Except.ok r => Except.ok { name := name, rule := r } | Except.error e => Except.error (ToString.toString name ++ ToString.toString ": " ++ ToString.toString e)
-def Inkproof.Demos.CalendarTime.Zone.offset : Inkproof.Demos.CalendarTime.Zone → Int → Int
-theorem Inkproof.Demos.CalendarTime.Zone.offset_eq : ∀ (z : Inkproof.Demos.CalendarTime.Zone) (t : Int), z.offset t = (z.rule.timezoneAt (Std.Time.Timestamp.ofSecondsSinceUnixEpoch (Std.Time.Second.Offset.ofInt t))).offset.second.val
-field Inkproof.Demos.CalendarTime.Zone.rule : Inkproof.Demos.CalendarTime.Zone → Std.Time.TimeZone.RecurringRule
+field Inkproof.Demos.CalendarTime.Zone.offset : Inkproof.Demos.CalendarTime.Zone → Int → Int
 def Inkproof.Demos.CalendarTime.chicago : Except String Inkproof.Demos.CalendarTime.Zone
 def Inkproof.Demos.CalendarTime.dstSpecs : Except String (List Inkproof.Demos.CalendarTime.Spec)
 theorem Inkproof.Demos.CalendarTime.dstSpecs_eq : Inkproof.Demos.CalendarTime.dstSpecs = do let __do_lift ← Inkproof.Demos.CalendarTime.utc let __do_lift_1 ← Inkproof.Demos.CalendarTime.london let __do_lift_2 ← Inkproof.Demos.CalendarTime.chicago match (__do_lift, __do_lift_1, __do_lift_2) with | (u, l, c) => Pure.pure (List.flatMap (fun x => match x with | (fst, key, from_, londonChanges) => match Inkproof.Demos.CalendarTime.sliceFrom from_ with | (times, values) => match if londonChanges = Bool.true then (l, c) else (c, l) with | (changing, steady) => List.map (fun z => { name := ToString.toString key ++ ToString.toString "-" ++ ToString.toString z.name, width := 600, height := 300, zone := z, ticks := Inkproof.Demos.CalendarTime.Ticks.clock, times := times, values := values }) [u, changing, steady]) Inkproof.Demos.CalendarTime.ranges)
@@ -237,6 +233,8 @@ theorem Inkproof.Demos.CalendarTime.sliceFrom_times : ∀ (from_ : Int), (Inkpro
 theorem Inkproof.Demos.CalendarTime.sliceFrom_values : ∀ (from_ : Int), (Inkproof.Demos.CalendarTime.sliceFrom from_).snd = Array.map (fun k => if ((((from_ - Inkproof.Demos.CalendarTime.start2019) / 3600).toNat + k) % 24 == 0) = Bool.true then 1 else 1 / 2) (Array.range 144)
 def Inkproof.Demos.CalendarTime.start2019 : Int
 def Inkproof.Demos.CalendarTime.utc : Except String Inkproof.Demos.CalendarTime.Zone
+def Inkproof.Demos.CalendarTime.zone : String → String → Except String Inkproof.Demos.CalendarTime.Zone
+theorem Inkproof.Demos.CalendarTime.zone_eq : ∀ (name rule : String), Inkproof.Demos.CalendarTime.zone name rule = match Inkproof.Axis.posixZone rule with | Except.ok f => Except.ok { name := name, offset := f } | Except.error e => Except.error (ToString.toString name ++ ToString.toString ": " ++ ToString.toString e)
 structure Inkproof.Demos.Candles.Candle : Type
 field Inkproof.Demos.Candles.Candle.close : Inkproof.Demos.Candles.Candle → Rat
 field Inkproof.Demos.Candles.Candle.high : Inkproof.Demos.Candles.Candle → Rat

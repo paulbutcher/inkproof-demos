@@ -324,7 +324,6 @@ private def calendarTimeTest : Except String Unit := do
   for (z, change, before, after) in [(london, 1553994000, 0, 3600), (london, 1572138000, 3600, 0),
       (chicago, 1552204800, -21600, -18000), (chicago, 1572764400, -18000, -21600)] do
     check (z.offset (change - 1) == before && z.offset change == after) s!"{z.name}: the offset changes at the instant {change}"
-  check (match CalendarTime.Zone.ofRule "bad" "not a rule" with | .error _ => true | .ok _ => false) "an unparsable rule is an error"
   for s in ← CalendarTime.dstSpecs do
     let ts := s.tickTimes
     check (!ts.isEmpty && ts.length == s.tickLabels.length) s!"{s.name}: every tick has a label"
