@@ -10,13 +10,15 @@ Released under Apache 2.0 license as described in the file LICENSE.
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
       inkproof-chart { display: block; width: 800px; height: 400px; }
+      figure { display: inline-block; margin: 0 0 8px 0; vertical-align: top; }
+      figure p { margin: 4px 0; width: 0; min-width: 100%; }
     </style>
     <script type="module" src="./main.js"></script>
   </head>
   <body>
     <h1>Sparklines (w/ floating bars)</h1>
     <p><a href="../">All demos</a></p>
-    <inkproof-chart id="split" src="split"></inkproof-chart>
-    <inkproof-chart id="colored" src="colored"></inkproof-chart>
+    <figure><p>A line with the area under it shaded by value, over floating bars: bars, area and line are green above zero and red below, changing at once at zero, and a bar that crosses zero is split in two colours.</p><inkproof-chart id="split" src="split"></inkproof-chart></figure>
+    <figure><p>The same data, but each bar is a single colour: red if it reaches below zero, green otherwise.</p><inkproof-chart id="colored" src="colored"></inkproof-chart></figure>
   </body>
 </html>

@@ -10,26 +10,28 @@ Released under Apache 2.0 license as described in the file LICENSE.
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
       inkproof-chart { display: inline-block; vertical-align: top; }
+      figure { display: inline-block; margin: 0 0 8px 0; vertical-align: top; }
+      figure p { margin: 4px 0; width: 0; min-width: 100%; }
     </style>
     <script type="module" src="./main.js"></script>
   </head>
   <body>
     <h1>Grouped and stacked bars</h1>
     <p><a href="../">All demos</a></p>
-    <inkproof-chart src="multi-grouped" legend="static" style="width: 800px; height: 400px"></inkproof-chart>
-    <inkproof-chart src="multi-stacked" legend="static" style="width: 800px; height: 400px"></inkproof-chart>
+    <figure><p>Several groups of several bars each, side by side within each group.</p><inkproof-chart src="multi-grouped" legend="static" style="width: 800px; height: 400px"></inkproof-chart></figure>
+    <figure><p>The same bars stacked within each group, so the scale grows to fit the tallest stack.</p><inkproof-chart src="multi-stacked" legend="static" style="width: 800px; height: 400px"></inkproof-chart></figure>
     <br>
-    <inkproof-chart src="multi-grouped-horizontal" legend="static" style="width: 400px; height: 800px"></inkproof-chart>
-    <inkproof-chart src="multi-stacked-horizontal" legend="static" style="width: 400px; height: 800px"></inkproof-chart>
+    <figure><p>The grouped bars laid out sideways.</p><inkproof-chart src="multi-grouped-horizontal" legend="static" style="width: 400px; height: 800px"></inkproof-chart></figure>
+    <figure><p>The stacked bars laid out sideways.</p><inkproof-chart src="multi-stacked-horizontal" legend="static" style="width: 400px; height: 800px"></inkproof-chart></figure>
     <br>
-    <inkproof-chart src="one-bar-grouped" legend="static" style="width: 800px; height: 400px"></inkproof-chart>
-    <inkproof-chart src="one-bar-stacked" legend="static" style="width: 800px; height: 400px"></inkproof-chart>
+    <figure><p>Several groups with one bar each, so grouping makes no difference.</p><inkproof-chart src="one-bar-grouped" legend="static" style="width: 800px; height: 400px"></inkproof-chart></figure>
+    <figure><p>Several groups with one bar each, stacked, which looks the same as grouped.</p><inkproof-chart src="one-bar-stacked" legend="static" style="width: 800px; height: 400px"></inkproof-chart></figure>
     <br>
-    <inkproof-chart src="one-group-grouped" legend="static" style="width: 800px; height: 400px"></inkproof-chart>
-    <inkproof-chart src="one-group-stacked" legend="static" style="width: 800px; height: 400px"></inkproof-chart>
+    <figure><p>A single group of several bars, side by side.</p><inkproof-chart src="one-group-grouped" legend="static" style="width: 800px; height: 400px"></inkproof-chart></figure>
+    <figure><p>A single group of several bars, stacked into one column.</p><inkproof-chart src="one-group-stacked" legend="static" style="width: 800px; height: 400px"></inkproof-chart></figure>
     <br>
-    <inkproof-chart src="single-grouped" legend="static" style="width: 800px; height: 400px"></inkproof-chart>
-    <inkproof-chart src="single-stacked" legend="static" style="width: 800px; height: 400px"></inkproof-chart>
+    <figure><p>The smallest case: one group with one bar.</p><inkproof-chart src="single-grouped" legend="static" style="width: 800px; height: 400px"></inkproof-chart></figure>
+    <figure><p>The smallest case again, stacked.</p><inkproof-chart src="single-stacked" legend="static" style="width: 800px; height: 400px"></inkproof-chart></figure>
     <br>
   </body>
 </html>

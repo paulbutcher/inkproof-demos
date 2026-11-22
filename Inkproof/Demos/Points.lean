@@ -106,9 +106,10 @@ theorem multiChart_eq (off : Array Bool) (f : Frame) (measure : String → Float
         shown off 3 (compileLine ⟨⟨2, orange⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesD) ++
           compileIsolated ⟨⟨3, orange⟩, .circle, 5/2⟩ (projection f) (Segmented.single seriesD)) := rfl
 
-/-- Two charts of one walk of 180 samples, the second over a range wide enough that its markers would overlap, so none are drawn. -/
+/-- A walk of 180 samples, drawn with a marker at every sample. -/
 def single : Panel := .sized 1920 300 (1, 180) (40, 65)
 
+/-- The same walk over an x range that squeezes it into a third of the width, where markers would overlap; the page turns them off by hand, as `singleChart`'s `markers` argument. -/
 def singleDense : Panel := .sized 1920 300 (-400, 180) (40, 65)
 
 def singleSeries : Series Rat Rat := walk 5 180 50
