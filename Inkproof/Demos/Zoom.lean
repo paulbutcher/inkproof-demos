@@ -173,7 +173,7 @@ def Chart.commands (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewport.View
     (size : Nat × Nat) (k : Rat) : Cache × List Cmd :=
   let f := c.viewFrame v
   let data := Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2
-  viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 data ((plot f).scale k) c.data
+  viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 data ((plot f).scale k) (DisplayList.scaleSizes k c.data)
     ((axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background
 
 theorem Chart.commands_eq (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float)
@@ -181,6 +181,6 @@ theorem Chart.commands_eq (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewpo
     c.commands cache fresh v measure size k =
       let f := c.viewFrame v
       viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 (Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2)
-        ((plot f).scale k) c.data ((axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background := rfl
+        ((plot f).scale k) (DisplayList.scaleSizes k c.data) ((axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background := rfl
 
 end Inkproof.Demos.Zoom

@@ -742,7 +742,7 @@ for (const [path, counts] of Object.entries(legends)) {
   });
 }
 
-for (const [path, chart, density] of [['scatter/?seed=1', 1, true], ['zoom-wheel/', 0, false], ['area-fill/?seed=1', 0, true], ['million/', 0, true]]) {
+for (const [path, chart, density] of [['scatter/?seed=1', 1, true], ['zoom-wheel/', 0, true], ['area-fill/?seed=1', 0, true], ['million/', 0, true]]) {
   test(`${path} draws its saturated pixels over the same part of its plot at device pixel ratio 2 as at 1`, async () => {
     const measure = async scale => {
       const context = await browser.newContext({ deviceScaleFactor: scale });

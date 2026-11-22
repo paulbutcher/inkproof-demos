@@ -2,8 +2,8 @@
 
 ## v0.17.0
 
-- Every page draws at the device pixel ratio, except the data strokes of Zoom and Fetch.
-- Scene v0.23.0, Gpu v0.17.0.
+- Every page draws at the device pixel ratio, Zoom and Fetch data strokes included.
+- Scene v0.24.0, Gpu v0.17.0.
 
 ## v0.16.0
 
@@ -21,7 +21,7 @@
 - Timeline Discrete has a legend with a row for each device that reads its state at the cursor.
 - Inkproof-web v0.19.0.
 - Axis Control has a legend that follows the cursor over its half million points.
-- Inkproof-web v0.17.0: the legend shows a dash for a missing value, the cursor works over half a million points, and clipped data is drawn whole at device pixel ratio 2.
+- Inkproof-web v0.17.0: the legend shows a dash for a missing value, the cursor works over half a million points.
 - The Grouped and stacked bars page and the line charts of Multi-Bars have a static legend that hides a series on a click.
 - The Scatter Plot chart has a static legend that hides a cloud on a click.
 
