@@ -1,9 +1,12 @@
 # Changelog
 
+## v0.20.0
+
+- The calendar-time pages use Axis v0.11.0's `posixZone` for zone offsets; `CalendarTime.Zone.ofRule`, `Zone.offset` and their theorems are removed.
+
 ## v0.19.0
 
 - Latency Heatmap's four charts have a legend that reads the column's, or the bucket's, counts at the cursor.
-- The calendar-time pages use Axis v0.11.0's `posixZone` for zone offsets; `CalendarTime.Zone.ofRule`, `Zone.offset` and their theorems are removed.
 
 ## v0.18.0
 
