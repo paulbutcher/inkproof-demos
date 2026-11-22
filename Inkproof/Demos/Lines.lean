@@ -121,14 +121,14 @@ theorem values_eq (layers : List Layer) : values layers = layers.flatMap fun l =
 
 /-- The y axis showing every value of the layers, as `autoRange` pads them. -/
 def autoYAxis (layers : List Layer) (suffix : String := "") : YAxis :=
-  match values layers with
-  | [] => { range := (0, 1), suffix }
-  | v :: vs => { range := autoRange (1 / 10) (vs.foldl min v) (vs.foldl max v), suffix }
+  match (values layers).min?, (values layers).max? with
+  | some lo, some hi => { range := autoRange (1 / 10) lo hi, suffix }
+  | _, _ => { range := (0, 1), suffix }
 
 theorem autoYAxis_eq (layers : List Layer) (suffix : String) : autoYAxis layers suffix =
-    match values layers with
-    | [] => { range := (0, 1), suffix }
-    | v :: vs => { range := autoRange (1 / 10) (vs.foldl min v) (vs.foldl max v), suffix } := rfl
+    match (values layers).min?, (values layers).max? with
+    | some lo, some hi => { range := autoRange (1 / 10) lo hi, suffix }
+    | _, _ => { range := (0, 1), suffix } := rfl
 
 def Chart.frame (c : Chart) : Frame :=
   ⟨60, c.width - (if c.right.isSome then 80 else 20), 20, c.height - 40, c.xs, c.left.range⟩

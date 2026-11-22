@@ -36,47 +36,6 @@ def libs : Array Lib := #[
   ⟨"ZingChart v2.9.10", 871, #[717, 7, 1, 105], (290, 195), some #[9021, 305, 41, 71], none⟩,
   ⟨"amCharts v5.3.7", 625, #[1601, 3, 3, 46], (147, 121), some #[9171, 71, 460, 167], some #[1611, 17, 35, 65]⟩]
 
-def total (xs : Array Rat) : Rat := xs.foldl (· + ·) 0
-
-theorem total_empty : total #[] = 0 := rfl
-
-theorem total_eq (xs : Array Rat) : total xs = xs.toList.sum := by
-  have h : ∀ (l : List Rat) (a : Rat), l.foldl (· + ·) a = a + l.sum := by
-    intro l
-    induction l with
-    | nil => intro a; simp [Rat.add_zero]
-    | cons x l ih => intro a; rw [List.foldl_cons, ih, List.sum_cons]; rw [Rat.add_assoc]
-  rw [total, ← Array.foldl_toList, h, Rat.zero_add]
-
-/-- The largest of `vs`, or zero. -/
-def largest (vs : Array Rat) : Rat := vs.foldl max 0
-
-theorem largest_empty : largest #[] = 0 := rfl
-
-theorem le_largest (vs : Array Rat) {v : Rat} (h : v ∈ vs) : v ≤ largest vs := by
-  have key : ∀ (l : List Rat) (a : Rat), a ≤ l.foldl max a ∧ ∀ v ∈ l, v ≤ l.foldl max a := by
-    intro l
-    induction l with
-    | nil => intro a; simp
-    | cons x l ih =>
-      intro a
-      obtain ⟨h1, h2⟩ := ih (max a x)
-      refine ⟨Rat.le_trans (Std.left_le_max) h1, ?_⟩
-      intro v hv
-      rcases List.mem_cons.mp hv with rfl | hv
-      · exact Rat.le_trans (Std.right_le_max) h1
-      · exact h2 v hv
-  rw [largest, ← Array.foldl_toList]
-  exact (key vs.toList 0).2 v (Array.mem_toList_iff.mpr h)
-
-theorem zero_le_largest (vs : Array Rat) : 0 ≤ largest vs := by
-  rw [largest, ← Array.foldl_toList]
-  generalize vs.toList = l
-  suffices ∀ a : Rat, a ≤ l.foldl max a from this 0
-  induction l with
-  | nil => intro a; exact Rat.le_refl
-  | cons x l ih => intro a; exact Rat.le_trans (Std.left_le_max) (ih _)
-
 /-- The scale shared by the render times and the random line, which is the left axis. -/
 def renderRange : Rat × Rat := (0, 4000)
 
@@ -90,20 +49,20 @@ theorem random_size (seed : Nat) : (random seed).size = libs.size := by
 
 /-- A series of the libraries' values on a scale that runs from zero to its largest value. -/
 def series (fill : Color) (values : Array (Option Rat)) : Series :=
-  { fill, values, range := (0, largest (values.filterMap id)) }
+  { fill, values, range := (0, (values.filterMap id).max?.getD 0) }
 
 theorem series_range (fill : Color) (values : Array (Option Rat)) :
-    (series fill values).range = (0, largest (values.filterMap id)) := rfl
+    (series fill values).range = (0, (values.filterMap id).max?.getD 0) := rfl
 
 /-- The six series of uPlot's page, each on its own scale except that the two heaps share one. -/
 def benchmarkSeries : Array Series :=
   let heaps := libs.map (·.heap.1) ++ libs.map (·.heap.2)
   #[series ⟨51, 187, 85, 255⟩ (libs.map (some ·.size)),
-    { fill := ⟨181, 111, 171, 255⟩, values := libs.map (some <| total ·.render), range := renderRange },
-    { fill := ⟨187, 17, 51, 255⟩, values := libs.map (some ·.heap.1), range := (0, largest heaps) },
-    { fill := ⟨247, 148, 32, 255⟩, values := libs.map (some ·.heap.2), range := (0, largest heaps) },
-    series ⟨85, 138, 181, 255⟩ (libs.map (·.interact.map total)),
-    series ⟨250, 213, 92, 255⟩ (libs.map (·.toggle.map total))]
+    { fill := ⟨181, 111, 171, 255⟩, values := libs.map (some <| ·.render.sum), range := renderRange },
+    { fill := ⟨187, 17, 51, 255⟩, values := libs.map (some ·.heap.1), range := (0, heaps.max?.getD 0) },
+    { fill := ⟨247, 148, 32, 255⟩, values := libs.map (some ·.heap.2), range := (0, heaps.max?.getD 0) },
+    series ⟨85, 138, 181, 255⟩ (libs.map (·.interact.map Array.sum)),
+    series ⟨250, 213, 92, 255⟩ (libs.map (·.toggle.map Array.sum))]
 
 /-- The benchmark chart: grouped bars with a line over them, laid out across or down. -/
 def benchmark (seed : Nat) (horizontal : Bool) : Chart :=

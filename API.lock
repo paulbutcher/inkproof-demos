@@ -390,7 +390,7 @@ field Inkproof.Demos.Lines.YAxis.suffix : Inkproof.Demos.Lines.YAxis → String
 def Inkproof.Demos.Lines.YAxis.ticks : Inkproof.Demos.Lines.YAxis → List Float × List String
 theorem Inkproof.Demos.Lines.YAxis.ticks_eq : ∀ (a : Inkproof.Demos.Lines.YAxis), a.ticks = (Inkproof.Axis.linearTicks a.range.fst.toFloat a.range.snd.toFloat 10, List.map (fun x => x ++ a.suffix) (Inkproof.Axis.tickLabels Inkproof.Axis.Locale.en (Inkproof.Axis.linearTicks a.range.fst.toFloat a.range.snd.toFloat 10)))
 def Inkproof.Demos.Lines.autoYAxis : List Inkproof.Demos.Lines.Layer → optParam String "" → Inkproof.Demos.Lines.YAxis
-theorem Inkproof.Demos.Lines.autoYAxis_eq : ∀ (layers : List Inkproof.Demos.Lines.Layer) (suffix : String), Inkproof.Demos.Lines.autoYAxis layers suffix = match Inkproof.Demos.Lines.values layers with | [] => { range := (0, 1), suffix := suffix } | v :: vs => { range := Inkproof.Scale.autoRange (1 / 10) (List.foldl Min.min v vs) (List.foldl Max.max v vs), suffix := suffix }
+theorem Inkproof.Demos.Lines.autoYAxis_eq : ∀ (layers : List Inkproof.Demos.Lines.Layer) (suffix : String), Inkproof.Demos.Lines.autoYAxis layers suffix = match (Inkproof.Demos.Lines.values layers).min?, (Inkproof.Demos.Lines.values layers).max? with | Option.some lo, Option.some hi => { range := Inkproof.Scale.autoRange (1 / 10) lo hi, suffix := suffix } | x, x_1 => { range := (0, 1), suffix := suffix }
 def Inkproof.Demos.Lines.scaled : Nat → Array Int → Array Rat
 theorem Inkproof.Demos.Lines.scaled_eq : ∀ (scale : Nat) (vals : Array Int), Inkproof.Demos.Lines.scaled scale vals = Array.map (fun v => ↑v / ↑scale) vals
 def Inkproof.Demos.Lines.series : Array Rat → Array (Option Rat) → Inkproof.Core.Series Rat Rat
@@ -499,21 +499,18 @@ def Inkproof.Demos.LogScales2.floorInt : Float → Int
 theorem Inkproof.Demos.LogScales2.floorInt_eq : ∀ (x : Float), Inkproof.Demos.LogScales2.floorInt x = x.floor.toInt64.toInt
 instance Inkproof.Demos.LogScales2.instDecidableEqKind : DecidableEq Inkproof.Demos.LogScales2.Kind
 def Inkproof.Demos.LogScales2.magenta : Inkproof.Scene.Color
-def Inkproof.Demos.LogScales2.ofDecimal : Int → Int → Rat
-theorem Inkproof.Demos.LogScales2.ofDecimal_eq : ∀ (n e : Int), Inkproof.Demos.LogScales2.ofDecimal n e = if e < 0 then ↑n / 10 ^ (-e).toNat else ↑n * 10 ^ e.toNat
 def Inkproof.Demos.LogScales2.orange : Inkproof.Scene.Color
 def Inkproof.Demos.LogScales2.points : Nat → Bool → List (Option Rat) → Inkproof.Core.Series Rat Rat
 theorem Inkproof.Demos.LogScales2.points_eq : ∀ (x0 : Nat) (positive : Bool) (ys : List (Option Rat)), Inkproof.Demos.LogScales2.points x0 positive ys = Inkproof.Core.Series.ofUnsorted (Array.map (fun x => match x with | (y, i) => (↑(x0 + i), y.bind fun v => if (positive && Decidable.decide (v ≤ 0)) = Bool.true then Option.none else Option.some v)) ys.zipIdx.toArray)
 def Inkproof.Demos.LogScales2.powerOfTen : Int → String
 theorem Inkproof.Demos.LogScales2.powerOfTen_eq : ∀ (e : Int), Inkproof.Demos.LogScales2.powerOfTen e = ("1e" ++ if e < 0 then "" else "+") ++ ToString.toString e
 def Inkproof.Demos.LogScales2.powerOfTwo : Int → String
-theorem Inkproof.Demos.LogScales2.powerOfTwo_eq : ∀ (e : Int), Inkproof.Demos.LogScales2.powerOfTwo e = ("2" ++ if e < 0 then "⁻" else "") ++ String.ofList (List.map (fun c => Inkproof.Demos.LogScales2.sups.getD (c.toNat - '0'.toNat) c) (ToString.toString e.natAbs).toList)
+theorem Inkproof.Demos.LogScales2.powerOfTwo_eq : ∀ (e : Int), Inkproof.Demos.LogScales2.powerOfTwo e = ("2" ++ if e < 0 then "⁻" else "") ++ e.natAbs.toSuperscriptString
 def Inkproof.Demos.LogScales2.purple : Inkproof.Scene.Color
 def Inkproof.Demos.LogScales2.red : Inkproof.Scene.Color
 def Inkproof.Demos.LogScales2.signed : List Rat
 theorem Inkproof.Demos.LogScales2.signed_eq : Inkproof.Demos.LogScales2.signed = List.map (fun draw => [-100, -10, -1, -1 / 10, -1 / 100, -1 / 1000, 0, 1 / 1000, 1 / 100, 1 / 10, 1, 10, 100].getD draw 0) (RandomSampling.nats (mkStdGen 7) 130 0 12).fst.toList.reverse
 def Inkproof.Demos.LogScales2.specs : List Inkproof.Demos.LogScales2.Spec
-def Inkproof.Demos.LogScales2.sups : List Char
 def Inkproof.Demos.LogScalesSource.numbers : String → Array Int
 theorem Inkproof.Demos.LogScalesSource.numbers_eq : ∀ (text : String), Inkproof.Demos.LogScalesSource.numbers text = (Inkproof.Demos.LogScalesSource.parseNumbers text).getD #[]
 def Inkproof.Demos.LogScalesSource.parseNumbers : String → Option (Array Int)
@@ -589,9 +586,6 @@ theorem Inkproof.Demos.MultiBars.durations_eq : ∀ (seed : Nat), Inkproof.Demos
 theorem Inkproof.Demos.MultiBars.durations_size : ∀ (seed : Nat), (Inkproof.Demos.MultiBars.durations seed).size = 26
 def Inkproof.Demos.MultiBars.failedFill : Inkproof.Scene.Color
 def Inkproof.Demos.MultiBars.failedOutline : Inkproof.Scene.Color
-def Inkproof.Demos.MultiBars.largest : Array Rat → Rat
-theorem Inkproof.Demos.MultiBars.largest_empty : Inkproof.Demos.MultiBars.largest #[] = 0
-theorem Inkproof.Demos.MultiBars.le_largest : ∀ (vs : Array Rat) {v : Rat}, v ∈ vs → v ≤ Inkproof.Demos.MultiBars.largest vs
 def Inkproof.Demos.MultiBars.letters : Array String
 theorem Inkproof.Demos.MultiBars.letters_getElem? : ∀ (i : Nat), i < 26 → Inkproof.Demos.MultiBars.letters[i]? = Option.some (String.singleton (Char.ofNat ('a'.toNat + i)))
 theorem Inkproof.Demos.MultiBars.letters_size : Inkproof.Demos.MultiBars.letters.size = 26
@@ -608,16 +602,12 @@ theorem Inkproof.Demos.MultiBars.random_eq : ∀ (seed : Nat), Inkproof.Demos.Mu
 theorem Inkproof.Demos.MultiBars.random_size : ∀ (seed : Nat), (Inkproof.Demos.MultiBars.random seed).size = Inkproof.Demos.MultiBars.libs.size
 def Inkproof.Demos.MultiBars.renderRange : Rat × Rat
 def Inkproof.Demos.MultiBars.series : Inkproof.Scene.Color → Array (Option Rat) → Inkproof.Demos.Bars.Series
-theorem Inkproof.Demos.MultiBars.series_range : ∀ (fill : Inkproof.Scene.Color) (values : Array (Option Rat)), (Inkproof.Demos.MultiBars.series fill values).range = (0, Inkproof.Demos.MultiBars.largest (Array.filterMap id values))
+theorem Inkproof.Demos.MultiBars.series_range : ∀ (fill : Inkproof.Scene.Color) (values : Array (Option Rat)), (Inkproof.Demos.MultiBars.series fill values).range = (0, (Array.filterMap id values).max?.getD 0)
 def Inkproof.Demos.MultiBars.status : Nat → Nat
 def Inkproof.Demos.MultiBars.statusColors : Nat → Inkproof.Scene.Color × Inkproof.Scene.Color
 theorem Inkproof.Demos.MultiBars.statusColors_eq : ∀ (i : Nat), Inkproof.Demos.MultiBars.statusColors i = match Inkproof.Demos.MultiBars.status i with | 0 => (Inkproof.Demos.MultiBars.okFill, Inkproof.Demos.MultiBars.okOutline) | 1 => (Inkproof.Demos.MultiBars.pendingFill, Inkproof.Demos.MultiBars.pendingOutline) | x => (Inkproof.Demos.MultiBars.failedFill, Inkproof.Demos.MultiBars.failedOutline)
 theorem Inkproof.Demos.MultiBars.status_eq : ∀ (i : Nat), Inkproof.Demos.MultiBars.status i = if (i % 12 == 0) = Bool.true then 1 else if (i % 10 == 0) = Bool.true then 2 else 0
 theorem Inkproof.Demos.MultiBars.status_zero : Inkproof.Demos.MultiBars.status 0 = 1
-def Inkproof.Demos.MultiBars.total : Array Rat → Rat
-theorem Inkproof.Demos.MultiBars.total_empty : Inkproof.Demos.MultiBars.total #[] = 0
-theorem Inkproof.Demos.MultiBars.total_eq : ∀ (xs : Array Rat), Inkproof.Demos.MultiBars.total xs = xs.toList.sum
-theorem Inkproof.Demos.MultiBars.zero_le_largest : ∀ (vs : Array Rat), 0 ≤ Inkproof.Demos.MultiBars.largest vs
 structure Inkproof.Demos.Pane.Pane : Type
 def Inkproof.Demos.Pane.Pane.axes : Inkproof.Demos.Pane.Pane → (String → Float × Float) → List Inkproof.Scene.AxisDrawing
 theorem Inkproof.Demos.Pane.Pane.axes_eq : ∀ (p : Inkproof.Demos.Pane.Pane) (measure : String → Float × Float), p.axes measure = have r := p.plot; have value := fun range => { domainStart := range.fst.toFloat, domainEnd := range.snd.toFloat, rangeStart := r.y1.toFloat, rangeEnd := r.y0.toFloat }; have categories := { categories := p.groups, rangeStart := r.x0.toFloat, rangeEnd := r.x1.toFloat }; [Inkproof.Scene.compileCategoricalAxis Inkproof.Scene.Side.bottom r categories id p.target Inkproof.Demos.Axes.spec.labelGap measure (have __src := Inkproof.Demos.Axes.style; { line := __src.line, lineHalfWidth := __src.lineHalfWidth, tick := __src.tick, tickHalfWidth := __src.tickHalfWidth, tickLength := __src.tickLength, grid := Option.none, labelGap := __src.labelGap }), Inkproof.Scene.compileLinearAxis Inkproof.Scene.Side.left r (value p.left) Inkproof.Demos.Axes.spec measure Inkproof.Demos.Axes.style] ++ (Option.map (fun range => Inkproof.Scene.compileLinearAxis Inkproof.Scene.Side.right r (value range) Inkproof.Demos.Axes.spec measure (have __src := Inkproof.Demos.Axes.style; { line := __src.line, lineHalfWidth := __src.lineHalfWidth, tick := __src.tick, tickHalfWidth := __src.tickHalfWidth, tickLength := __src.tickLength, grid := Option.none, labelGap := __src.labelGap })) p.right).toList

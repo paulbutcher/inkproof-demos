@@ -14,14 +14,9 @@ namespace Inkproof.Demos.LogScales2
 
 open Inkproof.Axis Inkproof.Core Inkproof.Scene Inkproof.Scale Inkproof.Demos
 
-/-- `n * 10^e`, exactly. -/
-def ofDecimal (n : Int) (e : Int) : Rat := if e < 0 then (n : Rat) / 10 ^ (-e).toNat else (n : Rat) * 10 ^ e.toNat
-
-theorem ofDecimal_eq (n e : Int) : ofDecimal n e = if e < 0 then (n : Rat) / 10 ^ (-e).toNat else (n : Rat) * 10 ^ e.toNat := rfl
-
 /-- The values `i * 10^m` for `m` in `-6..7` and `i` in `1..9`, then `10^8`: nine to a decade, on a linear scale all but the last decade crowd the bottom. -/
 def decades : List Rat :=
-  (List.range 14).flatMap (fun (k : Nat) => (List.range 9).map fun (i : Nat) => ofDecimal ((i : Int) + 1) ((k : Int) - 6)) ++ [ofDecimal 1 8]
+  (List.range 14).flatMap (fun (k : Nat) => (List.range 9).map fun (i : Nat) => Rat.ofScientific (i + 1) (k < 6) ((k : Int) - 6).natAbs) ++ [1e8]
 
 theorem decades_length : decades.length = 127 := by simp [decades]; rfl
 
@@ -70,14 +65,11 @@ def floorInt (x : Float) : Int := x.floor.toInt64.toInt
 
 theorem floorInt_eq (x : Float) : floorInt x = x.floor.toInt64.toInt := rfl
 
-def sups : List Char := ['⁰', '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹']
-
 /-- `2` to the power `e`, written with superscript digits. -/
 def powerOfTwo (e : Int) : String :=
-  "2" ++ (if e < 0 then "⁻" else "") ++ String.ofList ((toString e.natAbs).toList.map fun c => sups.getD (c.toNat - '0'.toNat) c)
+  "2" ++ (if e < 0 then "⁻" else "") ++ e.natAbs.toSuperscriptString
 
-theorem powerOfTwo_eq (e : Int) : powerOfTwo e =
-    "2" ++ (if e < 0 then "⁻" else "") ++ String.ofList ((toString e.natAbs).toList.map fun c => sups.getD (c.toNat - '0'.toNat) c) := rfl
+theorem powerOfTwo_eq (e : Int) : powerOfTwo e = "2" ++ (if e < 0 then "⁻" else "") ++ e.natAbs.toSuperscriptString := rfl
 
 /-- `1e+8` for `e = 8`, as JavaScript's `toExponential` writes it. -/
 def powerOfTen (e : Int) : String := "1e" ++ (if e < 0 then "" else "+") ++ toString e
@@ -192,17 +184,17 @@ private def wide (name : String) (kind : Kind) (ys : Rat × Rat) (stroke : Color
 def specs : List Spec :=
   let ys := decades.map some
   let all := points 1 false ys
-  [wide "linear" .linear (0, ofDecimal 11 7) magenta none all,
-   wide "log10" .log10 (ofDecimal 1 (-6), ofDecimal 1 8) orange none all,
+  [wide "linear" .linear (0, 11e7) magenta none all,
+   wide "log10" .log10 (1e-6, 1e8) orange none all,
    wide "log2" .log2 (1 / 2 ^ 20, 2 ^ 27) purple none all,
-   ⟨"signed", 1200, 450, .log10, (0, 129), (ofDecimal 1 (-3), 100), blue, some ⟨0, 0, 255, 26⟩, points 0 true (signed.map some)⟩,
-   ⟨"skip10", 800, 300, .log10, (0, 1), (ofDecimal 1 (-14), ofDecimal 1 14), red, none,
-     points 0 false [some (ofDecimal 1 (-14)), some (ofDecimal 1 14)]⟩,
+   ⟨"signed", 1200, 450, .log10, (0, 129), (1e-3, 100), blue, some ⟨0, 0, 255, 26⟩, points 0 true (signed.map some)⟩,
+   ⟨"skip10", 800, 300, .log10, (0, 1), (1e-14, 1e14), red, none,
+     points 0 false [some (1e-14), some (1e14)]⟩,
    ⟨"skip2", 800, 300, .log2, (0, 1), (1 / 2 ^ 10, 2 ^ 20), blue, none,
      points 0 false [some (1 / 2 ^ 10), some (2 ^ 20)]⟩,
    ⟨"nulls", 800, 400, .log10, (0, 2), (100, 1000), red, none,
      points 0 false [some 100, some 200, some 1000]⟩,
-   ⟨"tiny", 800, 600, .log10, (0, 1), (ofDecimal 3 (-16), ofDecimal 5 (-13)), red, some ⟨255, 0, 0, 26⟩,
-     points 0 false [some (ofDecimal 31992 (-20)), some (ofDecimal 49047 (-17))]⟩]
+   ⟨"tiny", 800, 600, .log10, (0, 1), (3e-16, 5e-13), red, some ⟨255, 0, 0, 26⟩,
+     points 0 false [some (31992e-20), some (49047e-17)]⟩]
 
 end Inkproof.Demos.LogScales2

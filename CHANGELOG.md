@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.16.0
+
+- Multi-Bars, Lines and Log Scales 2 use Lean's `Array.sum`, `max?`, `min?`, `Nat.toSuperscriptString` and `Rat.ofScientific` in place of their own; `MultiBars.total`, `largest`, `LogScales2.ofDecimal` and `sups` and their theorems are removed.
+
 ## v0.15.1
 
 - Candlestick and Box Whisker have a legend that reads each chart's group of values (open, high, low, close and volume; the box's five numbers) at the cursor.

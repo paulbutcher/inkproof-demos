@@ -17,3 +17,7 @@ A zoom page draws its lines once, in data coordinates, and `Zoom.Chart.commands`
 ## Composed shapes
 
 Candles, boxes and timeline bars are rectangles, strips and markers placed in pixels from a pane's scales (`Pane`), a category at a time, so their properties (a body spans open to close, a box's quartiles lie in order) are tested on the shapes themselves. A pixel takes the colour of the last command that covers it and translucent colours are not blended, so a shaded range that must show the data through it is drawn under the data, in data coordinates, while its dashed edges and label box are drawn in pixels over it.
+
+## Lean core in the pages
+
+Totals, extremes, superscript exponents and decimal constants are Init's (`Array.sum`, `Array.max?`, `List.min?`, `Nat.toSuperscriptString`, `Rat.ofScientific`), not the site's own. They are plain structural code with no JavaScript FFI, so they run under Lasm unchanged; the pages are built under Lasm to check it.
