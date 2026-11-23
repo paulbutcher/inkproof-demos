@@ -9,8 +9,16 @@ namespace Inkproof.Demos.Axes
 
 open Inkproof.Scale Inkproof.Scene Inkproof.Axis
 
+/-- uPlot's default axis: no axis line, and ticks and gridlines of the same faint 2px stroke. -/
 def style : AxisStyle :=
-  ⟨⟨0, .flat ⟨0, 0, 0, 255⟩⟩, 1/2, ⟨0, .flat ⟨0, 0, 0, 255⟩⟩, 1/2, 6, some (⟨0, .flat ⟨0, 0, 0, 30⟩⟩, 1/2), 14⟩
+  let faint : Paint := ⟨0, .flat ⟨0, 0, 0, 18⟩⟩
+  ⟨faint, 0, faint, 1, 10, some (faint, 1), 5⟩
+
+/-- Half the width of a series' stroke, one pixel in all: uPlot's default. -/
+def strokeHalfWidth : Rat := 1 / 2
+
+theorem style_spec : style.lineHalfWidth = 0 ∧ style.tickLength = 10 ∧ style.tickHalfWidth = 1 ∧
+    style.grid.map (·.2) = some 1 := ⟨rfl, rfl, rfl, rfl⟩
 
 /-- Ten ticks in English, with at least eight pixels between labels. -/
 def spec : TickSpec := ⟨.en, 10, 8⟩

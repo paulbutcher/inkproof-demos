@@ -114,11 +114,11 @@ theorem shownLayers_eq (off : Array Bool) : shownLayers off = (layers.zipIdx.fil
 /-- The axes, then every server's line that the legend has not hidden. -/
 def Spec.chart (off : Array Bool) (s : Spec) (measure : String → Float × Float) : DisplayList :=
   (s.axes measure).foldl (· ++ ·.display) #[] ++
-    (shownLayers off).foldl (fun out l => out ++ compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ s.projection (Segmented.single l.data)) #[]
+    (shownLayers off).foldl (fun out l => out ++ compileLine ⟨⟨1, l.color⟩, Axes.strokeHalfWidth, false, none, .straight⟩ s.projection (Segmented.single l.data)) #[]
 
 theorem Spec.chart_eq (off : Array Bool) (s : Spec) (measure : String → Float × Float) : s.chart off measure =
     (s.axes measure).foldl (· ++ ·.display) #[] ++
-      (shownLayers off).foldl (fun out l => out ++ compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ s.projection (Segmented.single l.data)) #[] := rfl
+      (shownLayers off).foldl (fun out l => out ++ compileLine ⟨⟨1, l.color⟩, Axes.strokeHalfWidth, false, none, .straight⟩ s.projection (Segmented.single l.data)) #[] := rfl
 
 def specs : List Spec := [⟨"log", true⟩, ⟨"linear", false⟩]
 

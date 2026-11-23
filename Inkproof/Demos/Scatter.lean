@@ -137,17 +137,18 @@ theorem bubbleChart_eq (f : Frame) (measure : String → Float × Float) :
 
 /-- The scatter plot's series: ten thousand points with both coordinates in `0..500`, in the colour of their markers. -/
 structure Cloud where
+  name : String := "Value"
   color : Color
   points : Array (Rat × Rat)
 
 /-- Four clouds of ten thousand points each. -/
 def clouds (seed : Nat) : Array Cloud :=
   #[(red, 0), (green, 1), (blue, 2), (orange, 3)].map fun (color, i) =>
-    ⟨color, ((Data.ints (2 * (seed + i)) 10000 0 500).zip (Data.ints (2 * (seed + i) + 1) 10000 0 500)).map fun (x, y) => ((x : Rat), (y : Rat))⟩
+    ⟨"Value", color, ((Data.ints (2 * (seed + i)) 10000 0 500).zip (Data.ints (2 * (seed + i) + 1) 10000 0 500)).map fun (x, y) => ((x : Rat), (y : Rat))⟩
 
 theorem clouds_eq (seed : Nat) : clouds seed =
     #[(red, 0), (green, 1), (blue, 2), (orange, 3)].map fun (color, i) =>
-      ⟨color, ((Data.ints (2 * (seed + i)) 10000 0 500).zip (Data.ints (2 * (seed + i) + 1) 10000 0 500)).map fun (x, y) => ((x : Rat), (y : Rat))⟩ := rfl
+      ⟨"Value", color, ((Data.ints (2 * (seed + i)) 10000 0 500).zip (Data.ints (2 * (seed + i) + 1) 10000 0 500)).map fun (x, y) => ((x : Rat), (y : Rat))⟩ := rfl
 
 /-- The scatter chart's frame, 1920 by 600: the ranges of all the points. -/
 def scatterFrame (seed : Nat) : Frame :=

@@ -41,11 +41,11 @@ theorem series_eq : series = Series.ofUnsorted (ys.mapIdx fun i v => (((i + 1 : 
 
 /-- The dashed line at zero, over the whole width. -/
 def zero : DisplayList :=
-  compileLine ⟨⟨0, .flat ⟨128, 128, 128, 255⟩⟩, 1 / 2, false, some ⟨3, 3⟩, .straight⟩ (projection frame)
+  compileLine ⟨⟨0, .flat ⟨128, 128, 128, 255⟩⟩, Axes.strokeHalfWidth, false, some ⟨3, 3⟩, .straight⟩ (projection frame)
     (Segmented.single (Series.ofUnsorted #[(1, some 0), (16, some 0)]))
 
 theorem zero_eq : zero =
-    compileLine ⟨⟨0, .flat ⟨128, 128, 128, 255⟩⟩, 1 / 2, false, some ⟨3, 3⟩, .straight⟩ (projection frame)
+    compileLine ⟨⟨0, .flat ⟨128, 128, 128, 255⟩⟩, Axes.strokeHalfWidth, false, some ⟨3, 3⟩, .straight⟩ (projection frame)
       (Segmented.single (Series.ofUnsorted #[(1, some 0), (16, some 0)])) := rfl
 
 /-- The bar of the point at `x`, 60% of the space between points wide. -/
@@ -76,11 +76,11 @@ def lineLayer : DisplayList :=
   let g := Segmented.single series
   let p := projection frame
   compileArea ⟨1, fillGradient⟩ 0 p g ++
-    compileLine ⟨⟨1, zeroSteps⟩, 1 / 2, false, none, .straight⟩ p g
+    compileLine ⟨⟨1, zeroSteps⟩, Axes.strokeHalfWidth, false, none, .straight⟩ p g
 
 theorem lineLayer_eq : lineLayer =
     compileArea ⟨1, fillGradient⟩ 0 (projection frame) (Segmented.single series) ++
-      compileLine ⟨⟨1, zeroSteps⟩, 1 / 2, false, none, .straight⟩ (projection frame) (Segmented.single series) := rfl
+      compileLine ⟨⟨1, zeroSteps⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection frame) (Segmented.single series) := rfl
 
 /-- The bars, each green above zero and red below it. -/
 def splitBars : DisplayList :=

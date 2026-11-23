@@ -45,11 +45,11 @@ def chart (vals : Array Rat) : DisplayList :=
   let f := frame vals
   let g := Segmented.single (series vals)
   compileArea ⟨0, .flat ⟨179, 229, 252, 255⟩⟩ f.ys.1 (projection f) g ++
-    compileLine ⟨⟨1, .flat ⟨3, 169, 244, 255⟩⟩, 1 / 2, false, none, .straight⟩ (projection f) g
+    compileLine ⟨⟨1, .flat ⟨3, 169, 244, 255⟩⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection f) g
 
 theorem chart_eq (vals : Array Rat) : chart vals =
     compileArea ⟨0, .flat ⟨179, 229, 252, 255⟩⟩ (frame vals).ys.1 (projection (frame vals)) (Segmented.single (series vals)) ++
-      compileLine ⟨⟨1, .flat ⟨3, 169, 244, 255⟩⟩, 1 / 2, false, none, .straight⟩ (projection (frame vals)) (Segmented.single (series vals)) := rfl
+      compileLine ⟨⟨1, .flat ⟨3, 169, 244, 255⟩⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection (frame vals)) (Segmented.single (series vals)) := rfl
 
 /-- The sparkline named `name`, which is a stock's symbol and either `volume` or `close`, joined by a hyphen. -/
 def named? (name : String) : Option (Array Rat) :=

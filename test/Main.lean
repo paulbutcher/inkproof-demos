@@ -378,5 +378,20 @@ private def customScalesTest : Except String Unit := do
   check (slopes.all fun m => (m - slopes.headD 0).abs ≤ 1e-3 * (slopes.headD 0).abs) "the fitted curve is a straight line on log x against the Weibull scale"
   check (CustomScales.weibullTicks.length == CustomScales.weibullLabels.length) "each Weibull tick has a label"
 
+private def faint (c : Command) : Bool := match c.color with | .flat ⟨_, _, _, a⟩ => a == 18 | _ => false
+
+private def parityTest : Except String Unit := do
+  let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
+  let f := Frame.sized 400 300 (0, 100) (0, 100)
+  let positive (d : DisplayList) := d.toList.filterMap fun c => match c.shape with | .strip hw _ => if hw > 0 then some (hw, c) else none | _ => none
+  let axes := positive (axisDisplay f measure)
+  check (!axes.isEmpty && axes.all fun (hw, c) => hw == 1 && faint c) "an axis draws only faint ticks and gridlines, each two pixels wide, and no axis line"
+  let ticks := (Axes.linearLabels 0 100).length
+  check (axes.length == 4 * ticks) "each tick of each axis has a tick mark and a gridline, and nothing else is drawn"
+  for (name, d) in [("axis control", AxisControl.chart measure),
+      ("log scales 2", (LogScales2.specs.head?.map (·.chart #[] measure)).getD #[])] do
+    let strokes := positive d |>.filter fun (_, c) => !faint c
+    check (!strokes.isEmpty && strokes.all fun (hw, _) => hw == 1 / 2) s!"{name}: the series is one pixel wide, uPlot's default"
+
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, ⟨"calendar time", calendarTimeTest⟩, ⟨"arcsinh scales", arcsinhTest⟩, ⟨"custom scales", customScalesTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, ⟨"calendar time", calendarTimeTest⟩, ⟨"arcsinh scales", arcsinhTest⟩, ⟨"custom scales", customScalesTest⟩, ⟨"parity with uPlot", parityTest⟩, platformTest (args.contains "--expect-wasm")]

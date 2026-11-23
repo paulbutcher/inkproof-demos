@@ -15,6 +15,7 @@ open Inkproof.Axis Inkproof.Core Inkproof.Scale Inkproof.Scene Inkproof.Demos
 
 /-- One series of bars: a value for each group, missing where `none`, drawn against the value range `range`. -/
 structure Series where
+  name : String := ""
   fill : Color
   values : Array (Option Rat)
   range : Rat × Rat
@@ -23,6 +24,7 @@ structure Series where
 
 /-- A line through the groups' centres at the values `values` of the scale `range`. -/
 structure Line where
+  name : String := ""
   color : Color
   values : Array Rat
   range : Rat × Rat

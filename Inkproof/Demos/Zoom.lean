@@ -89,13 +89,13 @@ def Chart.data (c : Chart) : DisplayList :=
   (c.marks.filter (fun m => m.start < m.stop)).toArray.map (fun m => (⟨0, m.fill, .rect ⟨m.start, c.ranges.2.1, m.stop, c.ranges.2.2⟩⟩ : Command)) ++
   c.lines.foldl (fun d l =>
     d ++ (l.fill.map fun f => compileArea ⟨0, f⟩ c.ranges.2.1 ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))).getD #[] ++
-      compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))) #[]
+      compileLine ⟨⟨1, l.color⟩, Axes.strokeHalfWidth, false, none, .straight⟩ ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))) #[]
 
 theorem Chart.data_eq (c : Chart) : c.data =
   (c.marks.filter (fun m => m.start < m.stop)).toArray.map (fun m => (⟨0, m.fill, .rect ⟨m.start, c.ranges.2.1, m.stop, c.ranges.2.2⟩⟩ : Command)) ++
   c.lines.foldl (fun d l =>
     d ++ (l.fill.map fun f => compileArea ⟨0, f⟩ c.ranges.2.1 ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))).getD #[] ++
-      compileLine ⟨⟨1, l.color⟩, 1 / 2, false, none, .straight⟩ ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))) #[] := rfl
+      compileLine ⟨⟨1, l.color⟩, Axes.strokeHalfWidth, false, none, .straight⟩ ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))) #[] := rfl
 
 /-- The pixel columns of the mark's start and stop in the frame `f`. -/
 def Mark.columns (f : Frame) (m : Mark) : Rat × Rat :=

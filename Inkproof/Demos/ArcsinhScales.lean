@@ -108,12 +108,12 @@ def chart (k : Int) (off : Array Bool) (measure : String → Float × Float) : D
   (axes k measure).foldl (· ++ ·.display) #[] ++
     (if off.getD 0 false then #[]
      else compileArea ⟨0, .flat ⟨0, 0, 255, 26⟩⟩ frame.ys.1 (projection k) (Segmented.single data) ++
-          compileLine ⟨⟨1, blue⟩, 1 / 2, false, none, .straight⟩ (projection k) (Segmented.single data))
+          compileLine ⟨⟨1, blue⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection k) (Segmented.single data))
 
 theorem chart_eq (k : Int) (off : Array Bool) (measure : String → Float × Float) : chart k off measure =
     (axes k measure).foldl (· ++ ·.display) #[] ++
       (if off.getD 0 false then #[]
        else compileArea ⟨0, .flat ⟨0, 0, 255, 26⟩⟩ frame.ys.1 (projection k) (Segmented.single data) ++
-            compileLine ⟨⟨1, blue⟩, 1 / 2, false, none, .straight⟩ (projection k) (Segmented.single data)) := rfl
+            compileLine ⟨⟨1, blue⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection k) (Segmented.single data)) := rfl
 
 end Inkproof.Demos.ArcsinhScales

@@ -69,7 +69,7 @@ def chart (seed : Nat) (hidden : Array Bool) (f : Frame) (measure : String → F
   (colors.zipIdx.filter fun (_, i) => !hidden.getD i false).toArray.flatMap fun ((stroke, fill), i) =>
     let s := pageSeries seed i
     let g := Segmented.single s
-    compileArea ⟨0, fill⟩ 0 (projection f) g ++ compileLine ⟨⟨1, stroke⟩, 1/2, false, none, .straight⟩ (projection f) g ++
+    compileArea ⟨0, fill⟩ 0 (projection f) g ++ compileLine ⟨⟨1, stroke⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection f) g ++
       (s.xs.zip s.values).flatMap fun (x, y) => y.elim #[] fun y => compileRing ⟨2, stroke, background, 3, 1⟩ ⟨(projection f).x x, (projection f).y y⟩
 
 theorem chart_eq (seed : Nat) (hidden : Array Bool) (f : Frame) (measure : String → Float × Float) :
@@ -77,7 +77,7 @@ theorem chart_eq (seed : Nat) (hidden : Array Bool) (f : Frame) (measure : Strin
       (colors.zipIdx.filter fun (_, i) => !hidden.getD i false).toArray.flatMap fun ((stroke, fill), i) =>
         let s := pageSeries seed i
         let g := Segmented.single s
-        compileArea ⟨0, fill⟩ 0 (projection f) g ++ compileLine ⟨⟨1, stroke⟩, 1/2, false, none, .straight⟩ (projection f) g ++
+        compileArea ⟨0, fill⟩ 0 (projection f) g ++ compileLine ⟨⟨1, stroke⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection f) g ++
           (s.xs.zip s.values).flatMap fun (x, y) => y.elim #[] fun y => compileRing ⟨2, stroke, background, 3, 1⟩ ⟨(projection f).x x, (projection f).y y⟩ := rfl
 
 end Inkproof.Demos.AreaFill

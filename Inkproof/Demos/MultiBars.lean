@@ -48,32 +48,33 @@ theorem random_size (seed : Nat) : (random seed).size = libs.size := by
   simp [random, Data.ints_size]
 
 /-- A series of the libraries' values on a scale that runs from zero to its largest value. -/
-def series (fill : Color) (values : Array (Option Rat)) : Series :=
-  { fill, values, range := (0, (values.filterMap id).max?.getD 0) }
+def series (name : String) (fill : Color) (values : Array (Option Rat)) : Series :=
+  { name, fill, values, range := (0, (values.filterMap id).max?.getD 0) }
 
-theorem series_range (fill : Color) (values : Array (Option Rat)) :
-    (series fill values).range = (0, (values.filterMap id).max?.getD 0) := rfl
+theorem series_eq (name : String) (fill : Color) (values : Array (Option Rat)) :
+    series name fill values =
+      { name, fill, values, range := (0, (values.filterMap id).max?.getD 0) } := rfl
 
 /-- The six series of uPlot's page, each on its own scale except that the two heaps share one. -/
 def benchmarkSeries : Array Series :=
   let heaps := libs.map (·.heap.1) ++ libs.map (·.heap.2)
-  #[series ⟨51, 187, 85, 255⟩ (libs.map (some ·.size)),
-    { fill := ⟨181, 111, 171, 255⟩, values := libs.map (some <| ·.render.sum), range := renderRange },
-    { fill := ⟨187, 17, 51, 255⟩, values := libs.map (some ·.heap.1), range := (0, heaps.max?.getD 0) },
-    { fill := ⟨247, 148, 32, 255⟩, values := libs.map (some ·.heap.2), range := (0, heaps.max?.getD 0) },
-    series ⟨85, 138, 181, 255⟩ (libs.map (·.interact.map Array.sum)),
-    series ⟨250, 213, 92, 255⟩ (libs.map (·.toggle.map Array.sum))]
+  #[series "Lib Size (KB)" ⟨51, 187, 85, 255⟩ (libs.map (some ·.size)),
+    { name := "Render Time (ms)", fill := ⟨181, 111, 171, 255⟩, values := libs.map (some <| ·.render.sum), range := renderRange },
+    { name := "Peak Heap (MB)", fill := ⟨187, 17, 51, 255⟩, values := libs.map (some ·.heap.1), range := (0, heaps.max?.getD 0) },
+    { name := "Final Heap (MB)", fill := ⟨247, 148, 32, 255⟩, values := libs.map (some ·.heap.2), range := (0, heaps.max?.getD 0) },
+    series "Interact 10s (ms)" ⟨85, 138, 181, 255⟩ (libs.map (·.interact.map Array.sum)),
+    series "Toggle 6x (ms)" ⟨250, 213, 92, 255⟩ (libs.map (·.toggle.map Array.sum))]
 
 /-- The benchmark chart: grouped bars with a line over them, laid out across or down. -/
 def benchmark (seed : Nat) (horizontal : Bool) : Chart :=
   { width := if horizontal then 800 else 2300, height := if horizontal then 2300 else 800, horizontal,
     groups := libs.map (·.name), series := benchmarkSeries, axis := renderRange,
-    lines := #[⟨⟨128, 0, 128, 255⟩, random seed, renderRange⟩] }
+    lines := #[⟨"Random line", ⟨128, 0, 128, 255⟩, random seed, renderRange⟩] }
 
 theorem benchmark_eq (seed : Nat) (horizontal : Bool) : benchmark seed horizontal =
     { width := if horizontal then 800 else 2300, height := if horizontal then 2300 else 800, horizontal,
       groups := libs.map (·.name), series := benchmarkSeries, axis := renderRange,
-      lines := #[⟨⟨128, 0, 128, 255⟩, random seed, renderRange⟩] } := rfl
+      lines := #[⟨"Random line", ⟨128, 0, 128, 255⟩, random seed, renderRange⟩] } := rfl
 
 theorem benchmark_groups (seed : Nat) (horizontal : Bool) : (benchmark seed horizontal).groups = libs.map (·.name) := rfl
 

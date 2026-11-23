@@ -663,17 +663,21 @@ test('tooltip and legend: the tooltip names the nearest point, the legend reads 
 });
 
 // Static legends: the pages whose uPlot demo has a key without values.
-for (const [path, chart] of [['grouped-bars/', 0], ['multi-bars/', 2], ['scatter/', 1]]) {
-  test(`${path.slice(0, -1)}: the static legend lists the series without values and hides a series on a click`, async () => {
+const barNames = ['Lib Size (KB)', 'Render Time (ms)', 'Peak Heap (MB)', 'Final Heap (MB)', 'Interact 10s (ms)', 'Toggle 6x (ms)', 'Random line'];
+for (const [path, chart, expected] of [['grouped-bars/', 0, ['Metric 1', 'Metric 2', 'Metric 3']], ['multi-bars/', 2, barNames], ['multi-bars/', 3, barNames], ['scatter/', 1, ['Value', 'Value', 'Value', 'Value']]]) {
+  test(`${path.slice(0, -1)} chart ${chart}: the static legend names the series as uPlot's does, lists no values and hides a series on a click`, async () => {
     const { page, problems } = await open(path);
     const rows = () => page.evaluate(i => [...document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelectorAll('.legend button')].map(b => b.textContent), chart);
     await page.waitForFunction(i => document.querySelectorAll('inkproof-chart')[i]?.shadowRoot.querySelector('.legend button'), chart);
     const names = await rows();
-    assert.ok(names.length > 0);
+    assert.deepEqual(names, expected);
     assert.ok(names.every(n => !n.includes(':') && !n.includes('(last)')), `no values in ${names}`);
     const before = await page.evaluate(() => window.draws.length);
     await page.evaluate(i => document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelector('.legend button').click(), chart);
     await page.waitForFunction(n => window.draws.length > n, before);
+    const afterFirst = await page.evaluate(() => window.draws.length);
+    await page.evaluate(i => [...document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelectorAll('.legend button')].at(-1).click(), chart);
+    await page.waitForFunction(n => window.draws.length > n, afterFirst);
     assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
     await page.close();
   });

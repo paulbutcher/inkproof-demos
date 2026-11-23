@@ -16,7 +16,7 @@ def crimson : Color := ⟨187, 17, 51, 255⟩
 def make (groups : Array String) (metrics : List (Color × Array Rat)) (range : Rat × Rat)
     (stacked horizontal : Bool) : Chart :=
   { width := if horizontal then 400 else 800, height := if horizontal then 800 else 400, groups, stacked, horizontal,
-    series := metrics.toArray.map fun (fill, vs) => { fill, values := vs.map some, range }, axis := range }
+    series := metrics.toArray.mapIdx fun i (fill, vs) => { name := s!"Metric {i + 1}", fill, values := vs.map some, range }, axis := range }
 
 theorem make_groups (groups : Array String) (metrics : List (Color × Array Rat)) (range : Rat × Rat)
     (stacked horizontal : Bool) : (make groups metrics range stacked horizontal).groups = groups := rfl

@@ -128,12 +128,12 @@ def red : Color := ⟨255, 0, 0, 255⟩
 def Spec.chart (off : Array Bool) (s : Spec) (measure : String → Float × Float) : DisplayList :=
   (s.axes measure).foldl (· ++ ·.display) #[] ++
     (if off.getD 0 false then #[]
-     else compileLine ⟨⟨1, red⟩, 1 / 2, false, none, .straight⟩ (projection s.frame) (Segmented.single s.data))
+     else compileLine ⟨⟨1, red⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection s.frame) (Segmented.single s.data))
 
 theorem Spec.chart_eq (off : Array Bool) (s : Spec) (measure : String → Float × Float) : s.chart off measure =
     (s.axes measure).foldl (· ++ ·.display) #[] ++
       (if off.getD 0 false then #[]
-       else compileLine ⟨⟨1, red⟩, 1 / 2, false, none, .straight⟩ (projection s.frame) (Segmented.single s.data)) := rfl
+       else compileLine ⟨⟨1, red⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection s.frame) (Segmented.single s.data)) := rfl
 
 /-- 2019-01-01T00:00:00Z. -/
 def start2019 : Int := 1546300800

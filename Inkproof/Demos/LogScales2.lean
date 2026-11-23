@@ -160,7 +160,7 @@ def Spec.chart (off : Array Bool) (s : Spec) (measure : String → Float × Floa
   (match s.fill with
     | some c => compileArea ⟨0, c⟩ s.ys.1 s.projection g
     | none => #[]) ++
-  compileLine ⟨⟨1, s.stroke⟩, 1, false, none, .straight⟩ s.projection g
+  compileLine ⟨⟨1, s.stroke⟩, Axes.strokeHalfWidth, false, none, .straight⟩ s.projection g
 
 theorem Spec.chart_eq (off : Array Bool) (s : Spec) (measure : String → Float × Float) :
     s.chart off measure =
@@ -169,7 +169,7 @@ theorem Spec.chart_eq (off : Array Bool) (s : Spec) (measure : String → Float 
       (match s.fill with
         | some c => compileArea ⟨0, c⟩ s.ys.1 s.projection (Segmented.single s.data)
         | none => #[]) ++
-      compileLine ⟨⟨1, s.stroke⟩, 1, false, none, .straight⟩ s.projection (Segmented.single s.data) := rfl
+      compileLine ⟨⟨1, s.stroke⟩, Axes.strokeHalfWidth, false, none, .straight⟩ s.projection (Segmented.single s.data) := rfl
 
 def magenta : Color := ⟨255, 0, 255, 255⟩
 def orange : Color := ⟨255, 165, 0, 255⟩

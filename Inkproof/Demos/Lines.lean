@@ -87,7 +87,7 @@ structure Layer where
   data : Series Rat Rat
   color : Color
   fill : Option Color := none
-  halfWidth : Rat := 1 / 2
+  halfWidth : Rat := Axes.strokeHalfWidth
   dash : Option DashPattern := none
   onRight : Bool := false
   /-- Adjacent points further apart than this are not joined. -/

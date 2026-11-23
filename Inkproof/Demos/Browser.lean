@@ -171,31 +171,40 @@ def barLabels (c : Bars.Chart) : Array Label :=
       { text, x := Rat.toFloat ((r.x0 + r.x1) / 2), y := Rat.toFloat (if b.positive then min r.y0 r.y1 - 2 else max r.y0 r.y1 + 2),
         align := .center, baseline := if b.positive then .bottom else .top, font := "10px sans-serif" }
 
-/-- The chart with the series in `off` drawn without bars; the others keep their places. -/
+/-- The chart with the series in `off` drawn without bars, and the lines after them in `off` without strokes; the others keep their places. -/
 def hideBars (c : Bars.Chart) (off : Array Bool) : Bars.Chart :=
-  { c with series := c.series.zipIdx.map fun (s, i) =>
-      if off.getD i false then { s with values := s.values.map fun _ => none } else s }
+  { c with
+    series := c.series.zipIdx.map fun (s, i) =>
+      if off.getD i false then { s with values := s.values.map fun _ => none } else s
+    lines := (c.lines.zipIdx.filter fun (_, i) => !off.getD (c.series.size + i) false).map (·.1) }
 
 theorem hideBars_series (c : Bars.Chart) (off : Array Bool) : (hideBars c off).series =
     c.series.zipIdx.map fun (s, i) => if off.getD i false then { s with values := s.values.map fun _ => none } else s := rfl
 
-/-- The legend's entries for the series of a bar chart, named `Series 1`, `Series 2` and so on, those `off` marked hidden; they carry no data, so the legend is a static one. -/
+theorem hideBars_lines (c : Bars.Chart) (off : Array Bool) : (hideBars c off).lines =
+    (c.lines.zipIdx.filter fun (_, i) => !off.getD (c.series.size + i) false).map (·.1) := rfl
+
+/-- The legend's entries for the bar series of a chart and then its lines, each under its own name, those `off` marked hidden; they carry no data, so the legend is a static one. -/
 def barTraces (c : Bars.Chart) (off : Array Bool) : Array Trace :=
-  c.series.zipIdx.map fun (s, i) =>
-    { name := s!"Series {i + 1}", color := cssColor s.fill, hidden := off.getD i false, xs := #[], ys := #[] }
+  c.series.zipIdx.map (fun (s, i) =>
+    { name := s.name, color := cssColor s.fill, hidden := off.getD i false, xs := #[], ys := #[] : Trace }) ++
+  c.lines.zipIdx.map fun (l, i) =>
+    { name := l.name, color := cssColor l.color, hidden := off.getD (c.series.size + i) false, xs := #[], ys := #[] }
 
 theorem barTraces_eq (c : Bars.Chart) (off : Array Bool) : barTraces c off =
-    c.series.zipIdx.map fun (s, i) =>
-      { name := s!"Series {i + 1}", color := cssColor s.fill, hidden := off.getD i false, xs := #[], ys := #[] } := rfl
+    c.series.zipIdx.map (fun (s, i) =>
+      { name := s.name, color := cssColor s.fill, hidden := off.getD i false, xs := #[], ys := #[] : Trace }) ++
+    c.lines.zipIdx.map fun (l, i) =>
+      { name := l.name, color := cssColor l.color, hidden := off.getD (c.series.size + i) false, xs := #[], ys := #[] } := rfl
 
-/-- The legend's entries for the clouds of a scatter plot, named `Series 1`, `Series 2` and so on, those `off` marked hidden; they carry no data, so the legend is a static one. -/
+/-- The legend's entries for the clouds of a scatter plot, each under its own name, those `off` marked hidden; they carry no data, so the legend is a static one. -/
 def cloudTraces (cs : Array Scatter.Cloud) (off : Array Bool) : Array Trace :=
   cs.zipIdx.map fun (c, i) =>
-    { name := s!"Series {i + 1}", color := cssColor c.color, hidden := off.getD i false, xs := #[], ys := #[] }
+    { name := c.name, color := cssColor c.color, hidden := off.getD i false, xs := #[], ys := #[] }
 
 theorem cloudTraces_eq (cs : Array Scatter.Cloud) (off : Array Bool) : cloudTraces cs off =
     cs.zipIdx.map fun (c, i) =>
-      { name := s!"Series {i + 1}", color := cssColor c.color, hidden := off.getD i false, xs := #[], ys := #[] } := rfl
+      { name := c.name, color := cssColor c.color, hidden := off.getD i false, xs := #[], ys := #[] } := rfl
 
 /-- The scene of a bar chart: its axes and bars, with each bar's value written at its end. -/
 def barScene (px : Pixels) (c : Bars.Chart) (off : Option (Array Bool) := none) : IO Scene := do
