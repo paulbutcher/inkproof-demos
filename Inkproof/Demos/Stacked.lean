@@ -72,11 +72,16 @@ def areaChart (off : Array Bool) (f : Frame) (measure : String → Float × Floa
 theorem areaChart_eq (off : Array Bool) (f : Frame) (measure : String → Float × Float) :
     areaChart off f measure = axisDisplay f measure ++ compileStackedAreas paint (projection f) (hide off areaSeries) := rfl
 
+/-- The width in pixels of a bar: 60% of the distance between adjacent x values, which are one apart. -/
+def barWidth (f : Frame) : Rat := ((projection f).x 1 - (projection f).x 0) * 3 / 5
+
+theorem barWidth_eq (f : Frame) : barWidth f = ((projection f).x 1 - (projection f).x 0) * 3 / 5 := rfl
+
 def barChart (off : Array Bool) (seed : Nat) (f : Frame) (measure : String → Float × Float) : DisplayList :=
-  axisDisplay f measure ++ compileStackedBars paint (3 / 5) (projection f) (hide off (barSeries seed))
+  axisDisplay f measure ++ compileStackedBars paint (barWidth f) (projection f) (hide off (barSeries seed))
 
 theorem barChart_eq (off : Array Bool) (seed : Nat) (f : Frame) (measure : String → Float × Float) :
-    barChart off seed f measure = axisDisplay f measure ++ compileStackedBars paint (3 / 5) (projection f) (hide off (barSeries seed)) := rfl
+    barChart off seed f measure = axisDisplay f measure ++ compileStackedBars paint (barWidth f) (projection f) (hide off (barSeries seed)) := rfl
 
 /-- The colour of series `k` without its transparency, as the legend shows it. -/
 def colour (k : Nat) : Color := { fills.getD k ⟨0, 0, 0, 255⟩ with a := 255 }

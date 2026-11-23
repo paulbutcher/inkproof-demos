@@ -25,6 +25,14 @@ private def stackedTest : Except String Unit := do
   let bars := Stacked.barSeries 1
   check (bars.all fun s => s.size == Stacked.base.length) "the bar series share their x values"
   check ((bars.getD 0 default).values.any (·.isNone)) "the first bar series keeps its gap"
+  for width in [400, 800, 1600] do
+    let f := Frame.sized width 400 (-1, 101) (-100, 1200)
+    let spacing := (projection f).x 1 - (projection f).x 0
+    let rects (d : DisplayList) := d.toList.filterMap fun c => match c.shape with | .rect r => some (c.layer, r) | _ => none
+    let axes := rects (axisDisplay f fun _ => (0, 0))
+    let bar := (rects (Stacked.barChart #[] 1 f fun _ => (0, 0))).filter fun c => c.1 == 0 && !axes.contains c
+    check (!bar.isEmpty) "the first bar series draws bars"
+    check (bar.all fun (_, r) => r.x1 - r.x0 > 0 && r.x1 - r.x0 ≤ spacing && r.x1 - r.x0 == spacing * 3 / 5) s!"at width {width} a bar is 60% of the spacing of its centres"
 
 private partial def strokes : Shape → List (Rat × List (List Pt))
   | .strip hw items => [(hw, Item.runs items)]
