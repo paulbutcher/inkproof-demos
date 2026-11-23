@@ -103,6 +103,9 @@ def valueGroup (name : String) (color : Color) (labels : Array String) (xs : Arr
 theorem valueGroup_values (name : String) (color : Color) (labels : Array String) (xs : Array Rat) (values : Array (Array Rat)) :
     (valueGroup name color labels xs values).values = values.map fun row => row.map Rat.toFloat := rfl
 
+/-- The font the axes' labels are set in, for measuring them. -/
+def font : String := Host.textFont Axes.text
+
 /-- The access of a chart in `f` whose legend reads `groups`, and which has a cursor over the plot. -/
 def groupsAccess (name : String) (f : Frame) (groups : Array ValueGroup) : Access :=
   { name, points := (groups.getD 0 { name, color := "", labels := #[], xs := #[] }).xs.size, view := some f.viewConfig,
@@ -115,7 +118,7 @@ theorem groupsAccess_eq (name : String) (f : Frame) (groups : Array ValueGroup) 
 /-- The scene of a chart in `f`: `chart` draws the data, given the width and height of text, and the axes' labels go over it. With `traces` or `groups` it has a legend, and a cursor over the plot. -/
 def frameScene (px : Pixels) (f : Frame) (chart : (String → Float × Float) → Scene.DisplayList)
     (name : String := "Chart") (traces : Array Trace := #[]) (groups : Array ValueGroup := #[]) : IO Scene := do
-  let measure ← measurer "12px sans-serif" (texts f)
+  let measure ← measurer font (texts f)
   let labels := tickLabels (axes f measure)
   pure { commands := px.frameBytes (chart measure) background, labels,
          access := if !groups.isEmpty then groupsAccess name f groups else if traces.isEmpty then {} else accessOf name f traces }
@@ -201,7 +204,7 @@ def registerLegend (build : String → Pixels → Array Bool → IO Scene) : IO 
 
 /-- The drawing of a chart of lines: its axes, then its bands, each shown while the layers it lies between are, and each layer; the legend's series are the layers. -/
 def lineDrawing (c : Lines.Chart) : IO Drawing := do
-  let measure ← measurer "12px sans-serif" c.labelTexts.toArray
+  let measure ← measurer font c.labelTexts.toArray
   let sides := [Side.bottom, .left] ++ (c.right.map fun _ => Side.right).toList
   let labels := ((c.axes measure).zip sides).toArray.flatMap fun (a, side) => Label.ofDrawing side a
   let off (i : Nat) (h : Array Bool) := h.getD i false
@@ -219,21 +222,29 @@ def registerLines (charts : List Lines.Chart) : IO Unit :=
 /-- The scene of a chart on `bg`: `axes` lie on `sides` in order, their labels go over `chart`'s data, and `texts` are every label they may show. -/
 def sidedScene (px : Pixels) (bg : Color) (texts : Array String) (sides : List Side)
     (axes : (String → Float × Float) → List AxisDrawing) (chart : (String → Float × Float) → Scene.DisplayList) : IO Scene := do
-  let measure ← measurer "12px sans-serif" texts
+  let measure ← measurer font texts
   let labels := ((axes measure).zip sides).toArray.flatMap fun (a, side) => Label.ofDrawing side a
   pure { commands := px.frameBytes (chart measure) bg, labels }
 
 /-- The value written at the end of each labelled bar of `c`. -/
-def barLabels (c : Bars.Chart) : Array Label :=
+def barLabels (c : Bars.Chart) (style : TextStyle := {}) : Array Label :=
   c.bars.filterMap fun b => b.label.map fun v =>
     let r := b.rect
-    let text := Inkproof.Web.showFloat (Rat.toFloat v)
+    let text := (Axes.numbers.format (Rat.toFloat v)).getD ""
     if c.horizontal then
       { text, x := Rat.toFloat (if b.positive then max r.x0 r.x1 + 3 else min r.x0 r.x1 - 3), y := Rat.toFloat ((r.y0 + r.y1) / 2),
-        align := if b.positive then .start else .end, baseline := .middle, font := "10px sans-serif" }
+        align := if b.positive then .start else .end, baseline := .middle, font := Host.textFont style, color := Host.colorCss style.color }
     else
       { text, x := Rat.toFloat ((r.x0 + r.x1) / 2), y := Rat.toFloat (if b.positive then min r.y0 r.y1 - 2 else max r.y0 r.y1 + 2),
-        align := .center, baseline := if b.positive then .bottom else .top, font := "10px sans-serif" }
+        align := .center, baseline := if b.positive then .bottom else .top, font := Host.textFont style, color := Host.colorCss style.color }
+
+theorem barLabels_text (c : Bars.Chart) (style : TextStyle) : (barLabels c style).map (·.text) =
+    c.bars.filterMap fun b => b.label.map fun v => (Axes.numbers.format (Rat.toFloat v)).getD "" := by
+  unfold barLabels
+  simp only [Array.map_filterMap, Option.map_map, Function.comp_def]
+  congr 1
+  funext b
+  cases b.label <;> simp <;> split <;> rfl
 
 /-- The chart with the series in `off` drawn without bars, and the lines after them in `off` without strokes; the others keep their places. -/
 def hideBars (c : Bars.Chart) (off : Array Bool) : Bars.Chart :=
@@ -273,7 +284,7 @@ theorem cloudTraces_eq (cs : Array Scatter.Cloud) (off : Array Bool) : cloudTrac
 /-- The drawing of a chart in `f`: `axesDisplay` is drawn always and each of `parts` unless the legend hides the series of its index; the legend is `traces`. -/
 def frameDrawing (f : Frame) (axesDisplay : (String → Float × Float) → Scene.DisplayList) (parts : Array Scene.DisplayList)
     (name : String) (traces : Array Bool → Array Trace) : IO Drawing := do
-  let measure ← measurer "12px sans-serif" (texts f)
+  let measure ← measurer font (texts f)
   pure { base := axesDisplay measure, labels := tickLabels (axes f measure)
          parts := Part.indexed parts
          access := fun off => { name, traces := traces off } }
@@ -333,7 +344,7 @@ def timelineScene (px : Pixels) (c : Timeline.Chart) : IO Scene := do
   let s ← sidedScene px background c.labelTexts [.bottom, .left] c.axes c.display
   let f := c.frame
   let labels := c.texts.map fun (text, x, y) =>
-    { text, x := Rat.toFloat x, y := Rat.toFloat y, align := if c.centred then .center else .start, baseline := .middle, font := "14px Arial" }
+    { text, x := Rat.toFloat x, y := Rat.toFloat y, align := if c.centred then .center else .start, baseline := .middle, font := Host.textFont { family := "Arial", size := 14 } }
   let access : Access := { name := c.name, points := c.rows.size, view := some f.viewConfig, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), groups := c.rows.map rowGroup }
   pure { s with labels := s.labels ++ labels, access }
 

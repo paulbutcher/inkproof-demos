@@ -13,7 +13,7 @@ open Lasm.JS Inkproof.Web Inkproof.Web.Host Inkproof.Demos Inkproof
 def scene (seed : Nat) (hidden : Array Bool) (px : Browser.Pixels) : IO Scene := do
   let f := Frame.sized px.css.1 px.css.2 (1, 30) (-12, 12)
   let numbers := (List.range 30).map (fun i => toString i) ++ (List.range 25).map (fun (i : Nat) => toString ((i : Int) - 12))
-  let measure ← measurer "12px sans-serif" numbers.toArray
+  let measure ← measurer Browser.font numbers.toArray
   let labels := Browser.tickLabels (axes f measure)
   let traces := (AreaFill.colors.zipIdx.map fun ((stroke, _), i) =>
     let s := AreaFill.pageSeries seed i

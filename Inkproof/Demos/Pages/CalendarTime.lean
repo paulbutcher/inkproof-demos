@@ -9,7 +9,7 @@ namespace Page.CalendarTime
 open Inkproof.Web.Host Inkproof.Demos Inkproof
 
 def scene (px : Browser.Pixels) (s : CalendarTime.Spec) (off : Array Bool) : IO Scene := do
-  let measure ← measurer "12px sans-serif" s.labelTexts.toArray
+  let measure ← measurer Browser.font s.labelTexts.toArray
   pure { commands := px.frameBytes (s.chart off measure) background,
          labels := Browser.tickLabels (s.axes measure),
          access := Browser.accessOf s.name s.frame (Browser.seriesTraces off [(CalendarTime.red, s.data)]) }

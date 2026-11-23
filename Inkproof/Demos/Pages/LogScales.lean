@@ -11,7 +11,7 @@ open Inkproof.Web.Host Inkproof.Demos Inkproof
 def run : IO Unit :=
   Browser.registerRetained fun src px cache => do
     let some s := LogScales.specs.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
-    let measure ← measurer "12px sans-serif" s.labelTexts.toArray
+    let measure ← measurer Browser.font s.labelTexts.toArray
     let axes := s.axes measure
     px.drawing cache
       { base := axes.foldl (· ++ ·.display) #[], labels := Browser.tickLabels axes

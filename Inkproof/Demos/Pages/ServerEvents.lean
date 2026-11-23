@@ -16,7 +16,7 @@ def percent (v : Int) : String := s!"{v / 100}.{if v % 100 < 10 then "0" else ""
 def run : IO Unit :=
   Browser.registerPixels fun _ px => do
     let numbers := (List.range 12).map (fun (i : Nat) => toString (i * 10000)) ++ (List.range 11).map (fun (i : Nat) => toString (i * 10))
-    let measure ← measurer "12px sans-serif" numbers.toArray
+    let measure ← measurer Browser.font numbers.toArray
     let exts := ServerEvents.series.map fun f => ServerEvents.extents f
     let axes := axes ServerEvents.panel measure
     let ticks := Browser.tickLabels axes

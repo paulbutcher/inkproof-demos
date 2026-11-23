@@ -19,7 +19,7 @@ def sceneOf (full : Zoom.Chart) (name : String) (cache : SceneCache) (px : Brows
   let c : Zoom.Chart := { full with bounds := some full.ranges, lines := full.lines.zipIdx.map fun (l, i) =>
     (if off.getD i false then { l with xs := #[], ys := #[] } else l : Zoom.Line) }
   let f := c.viewFrame v
-  let measure ← measurer "12px sans-serif" (texts f ++ (c.marks.map (·.label)).toArray)
+  let measure ← measurer Browser.font (texts f ++ (c.marks.map (·.label)).toArray)
   let cmds ← cache.build fun old first => pure (c.commands old first v measure px.backing px.ratio)
   let points := (c.lines.map (·.xs.size)).foldl max 0
   let traces := (full.lines.zipIdx.map fun (l, i) =>

@@ -13,7 +13,7 @@ def axisRed : String := "red"
 
 def run : IO Unit :=
   Browser.registerPixels fun _ px => do
-    let measure ← measurer "12px sans-serif" (AxisControl.labelTexts ++ ["X Axis Label", "Y Axis Label"]).toArray
+    let measure ← measurer Browser.font (AxisControl.labelTexts ++ ["X Axis Label", "Y Axis Label"]).toArray
     let axes := AxisControl.axes measure
     let ticks := (axes.zip [Side.bottom, .right]).toArray.flatMap fun (a, side) =>
       (Label.ofDrawing side a).map fun l => if side == .right then { l with color := axisRed } else l

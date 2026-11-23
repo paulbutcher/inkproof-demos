@@ -9,15 +9,21 @@ namespace Inkproof.Demos.Axes
 
 open Inkproof.Scale Inkproof.Scene Inkproof.Axis
 
+/-- The text of axis labels, and of every other label a page draws. -/
+def text : TextStyle := { size := 12 }
+
+/-- How numbers are written in bar labels; a page gives its legend and tooltip the same words in `number-format`. -/
+def numbers : NumberFormat := {}
+
 /-- uPlot's default axis: no axis line, and ticks and gridlines of the same faint 2px stroke. -/
 def style : AxisStyle :=
   let faint : Paint := ⟨0, .flat ⟨0, 0, 0, 18⟩⟩
-  ⟨faint, 0, faint, 1, 10, some (faint, 1), 5⟩
+  { tick := faint, tickHalfWidth := 1, tickLength := 10, grid := some (faint, 1), labelGap := 5, showLine := false, labelText := text }
 
 /-- Half the width of a series' stroke, one pixel in all: uPlot's default. -/
 def strokeHalfWidth : Rat := 1 / 2
 
-theorem style_spec : style.lineHalfWidth = 0 ∧ style.tickLength = 10 ∧ style.tickHalfWidth = 1 ∧
+theorem style_spec : style.showLine = false ∧ style.tickLength = 10 ∧ style.tickHalfWidth = 1 ∧
     style.grid.map (·.2) = some 1 := ⟨rfl, rfl, rfl, rfl⟩
 
 /-- Ten ticks in English, with at least eight pixels between labels. -/

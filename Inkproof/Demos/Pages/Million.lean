@@ -14,7 +14,7 @@ open Inkproof.Web.Host Inkproof.Demos Inkproof
 def run : IO Unit :=
   Browser.registerPixels fun _ px => do
     let numbers := (List.range 12).map (fun (i : Nat) => toString (i * 100000)) ++ (List.range 15).map (fun (i : Nat) => toString ((i : Int) * 100 - 300))
-    let measure ← measurer "12px sans-serif" numbers.toArray
+    let measure ← measurer Browser.font numbers.toArray
     let exts := Million.columnExtents Million.pyramid
     let shown := Million.shownCount Million.naiveShown
     let kept := Million.shownCount (Million.inkproofShown exts)

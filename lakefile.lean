@@ -12,12 +12,12 @@ package «inkproof-demos» where
     ⟨`warningAsError, true⟩
   ]
 
-require «inkproof-web» from git "https://github.com/paulbutcher/inkproof-web" @ "v0.19.0"
+require «inkproof-web» from git "https://github.com/paulbutcher/inkproof-web" @ "v0.23.0"
 require «inkproof-export» from git "https://github.com/paulbutcher/inkproof-export" @ "v0.5.0"
 require «inkproof-viewport» from git "https://github.com/paulbutcher/inkproof-viewport" @ "v0.10.0"
-require «inkproof-scene» from git "https://github.com/paulbutcher/inkproof-scene" @ "v0.24.0"
+require «inkproof-scene» from git "https://github.com/paulbutcher/inkproof-scene" @ "v0.28.0"
 require «inkproof-scale» from git "https://github.com/paulbutcher/inkproof-scale" @ "v0.11.0"
-require «inkproof-axis» from git "https://github.com/paulbutcher/inkproof-axis" @ "v0.11.0"
+require «inkproof-axis» from git "https://github.com/paulbutcher/inkproof-axis" @ "v0.13.0"
 require «inkproof-core» from git "https://github.com/paulbutcher/inkproof-core" @ "v0.15.0"
 require «inkproof-float» from git "https://github.com/paulbutcher/inkproof-float" @ "v0.8.0"
 require «inkproof-gpu» from git "https://github.com/paulbutcher/inkproof-gpu" @ "v0.20.0"
