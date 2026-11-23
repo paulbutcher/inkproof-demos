@@ -11,6 +11,7 @@ import Inkproof.Demos.Frame
 import Inkproof.Demos.Bars
 import Inkproof.Web.Access
 import Inkproof.Web.Host.Console
+import Inkproof.Web.Host.SceneCache
 import Lasm.JS
 
 namespace Inkproof.Demos.Browser
@@ -123,13 +124,63 @@ def frameScene (px : Pixels) (f : Frame) (chart : (String → Float × Float) �
 def registerPixels (build : String → Pixels → IO Scene) (buttons : Bool := false) : IO Unit :=
   Host.registerPixels "inkproof-chart" (fun src css backing => build src ⟨css, backing⟩) buttons
 
-/-- Draw each chart `build` makes from the series its legend has hidden, and again when a click on a legend entry hides or shows one or the canvas changes size. -/
-def registerLegend (build : String → Pixels → Array Bool → IO Scene) : IO Unit := do
+/-- A part of a chart that the legend can hide: drawn unless `hidden` says so for the legend's hidden series. -/
+structure Part where
+  display : Scene.DisplayList
+  hidden : Array Bool → Bool
+
+/-- The parts `displays`, each hidden with the legend's series of its index. -/
+def Part.indexed (displays : Array Scene.DisplayList) : Array Part :=
+  displays.zipIdx.map fun (display, i) => ⟨display, (·.getD i false)⟩
+
+theorem Part.indexed_eq (displays : Array Scene.DisplayList) :
+    Part.indexed displays = displays.zipIdx.map fun (display, i) => ⟨display, (·.getD i false)⟩ := rfl
+
+/-- A chart as parts the legend shows or hides: what is always drawn, the parts that may be hidden, the axes' labels, and what the legend reads for the hidden series. -/
+structure Drawing where
+  base : Scene.DisplayList
+  parts : Array Part
+  labels : Array Label
+  access : Array Bool → Access
+
+/-- A drawing's display lists cut into the pieces of each paint layer and tessellated once, in the pixels of `p`: piece `j` of a layer is the base's (`j = 0`) or part `j - 1`'s commands on it. Drawing the pieces layer by layer paints what the concatenated lists paint. -/
+def Pixels.retain (p : Pixels) (d : Drawing) : Array (Array Gpu.Layer) :=
+  let lists := #[d.base] ++ d.parts.map (·.display)
+  let scaled := lists.map (·.scale p.ratio)
+  let numbers := (scaled.flatMap fun l => l.map (·.layer)).qsort (· < ·) |>.toList.eraseDups
+  numbers.toArray.map fun n => scaled.map fun l => Gpu.Layer.stroke (l.filter (·.layer == n))
+
+theorem Pixels.retain_eq (p : Pixels) (d : Drawing) : p.retain d =
+    let scaled := (#[d.base] ++ d.parts.map (·.display)).map (·.scale p.ratio)
+    let numbers := (scaled.flatMap fun l => l.map (·.layer)).qsort (· < ·) |>.toList.eraseDups
+    numbers.toArray.map fun n => scaled.map fun l => Gpu.Layer.stroke (l.filter (·.layer == n)) := rfl
+
+/-- The scene of `d` with its hidden parts left out, from pieces `retained` by `p.retain d` and the buffers `cache` keeps on the GPU: no piece is tessellated or uploaded again. -/
+def Pixels.drawRetained (p : Pixels) (cache : SceneCache) (d : Drawing) (retained : Array (Array Gpu.Layer)) (off : Array Bool) : IO Scene := do
+  let shown (j : Nat) := j == 0 || !(d.parts[j - 1]?.elim false (·.hidden off))
+  let pick (keep : Bool) := retained.toList.flatMap fun pieces => (pieces.toList.zipIdx.filter fun (_, j) => shown j == keep).map (·.1)
+  let bytes ← cache.build fun old first =>
+    let (cache', cmds) := Gpu.strokeLayersFrame (Gpu.tessellateStroke ⟨0, 0⟩) old first p.backing.1 p.backing.2 (pick true) (pick false) background
+    pure (cache', ByteArray.mk (Gpu.encode cmds).toArray)
+  pure { commands := bytes, labels := d.labels, access := d.access off }
+
+/-- The scene of a chart drawn once for each size of its canvas, and again for each set of hidden series without making or tessellating anything again. -/
+def Pixels.drawing (p : Pixels) (cache : SceneCache) (d : Drawing) : IO (Array Bool → IO Scene) := do
+  let retained := p.retain d
+  pure (p.drawRetained cache d retained)
+
+/-- Define the chart element, and draw each chart `build` makes of its `src` for its canvas's size and the series its legend has hidden. A click on a legend entry hides or shows a series by calling what `build` returned again, and only a change of size calls `build` again. `build` is given the cache of the chart's buffers on the GPU. -/
+def registerRetained (build : String → Pixels → SceneCache → IO (Array Bool → IO Scene)) : IO Unit := do
   let hidden ← IO.mkRef (({} : Std.HashMap String (Array Bool)))
-  let sizes ← IO.mkRef (({} : Std.HashMap String Pixels))
+  let draws ← IO.mkRef (({} : Std.HashMap String (Array Bool → IO Scene)))
+  let caches ← IO.mkRef (({} : Std.HashMap String SceneCache))
   registerPixels fun src px => do
-    sizes.modify (·.insert src px)
-    build src px ((← hidden.get).getD src #[])
+    let cache ← match (← caches.get).get? src with
+      | some c => pure c
+      | none => do let c ← SceneCache.new; caches.modify (·.insert src c); pure c
+    let draw ← build src px cache
+    draws.modify (·.insert src draw)
+    draw ((← hidden.get).getD src #[])
   let toggled ← Function.ofSyncFn fun args => do
     if let some (Data.ref event _) := args[0]? then
       let el ← event.get "target" Value
@@ -140,17 +191,30 @@ def registerLegend (build : String → Pixels → Array Bool → IO Scene) : IO 
       let old := (← hidden.get).getD src #[]
       let off := (old ++ Array.replicate (series + 1 - old.size) false).setIfInBounds series hide
       hidden.modify (·.insert src off)
-      if let some px := (← sizes.get).get? src then setScene el (← build src px off)
+      if let some draw := (← draws.get).get? src then setScene el (← draw off)
     return .undefined
   (← (← global).get "document").callMethod "addEventListener" #[toJS "inkproof-series", toJS toggled] Unit
 
-/-- The scene of a chart of lines: its axes' labels over the data, and its layers as the legend's series unless they are in `off`. -/
-def lineScene (px : Pixels) (c : Lines.Chart) (off : Array Bool := #[]) : IO Scene := do
+/-- Draw each chart `build` makes from the series its legend has hidden, and again when a click on a legend entry hides or shows one or the canvas changes size; `build` runs again for every click. -/
+def registerLegend (build : String → Pixels → Array Bool → IO Scene) : IO Unit :=
+  registerRetained fun src px _ => pure (build src px)
+
+/-- The drawing of a chart of lines: its axes, then its bands, each shown while the layers it lies between are, and each layer; the legend's series are the layers. -/
+def lineDrawing (c : Lines.Chart) : IO Drawing := do
   let measure ← measurer "12px sans-serif" c.labelTexts.toArray
   let sides := [Side.bottom, .left] ++ (c.right.map fun _ => Side.right).toList
   let labels := ((c.axes measure).zip sides).toArray.flatMap fun (a, side) => Label.ofDrawing side a
-  pure { commands := px.frameBytes ((c.hide off).display measure) background, labels,
-         access := accessOf c.name c.frame (seriesTraces off (c.layers.map fun l => (l.color, l.data))) }
+  let off (i : Nat) (h : Array Bool) := h.getD i false
+  pure { base := (c.axes measure).foldl (· ++ ·.display) #[], labels
+         parts := (c.bands.map fun b => ⟨c.bandDisplay b, fun h => off b.lower h || off b.upper h⟩).toArray ++
+           (c.layers.zipIdx.map fun (l, i) => ⟨c.layerDisplay l, off i⟩).toArray
+         access := fun h => accessOf c.name c.frame (seriesTraces h (c.layers.map fun l => (l.color, l.data))) }
+
+/-- Draw the chart of `charts` that each element's `src` names, its legend hiding its layers. -/
+def registerLines (charts : List Lines.Chart) : IO Unit :=
+  registerRetained fun src px cache => do
+    let some c := charts.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
+    px.drawing cache (← lineDrawing c)
 
 /-- The scene of a chart on `bg`: `axes` lie on `sides` in order, their labels go over `chart`'s data, and `texts` are every label they may show. -/
 def sidedScene (px : Pixels) (bg : Color) (texts : Array String) (sides : List Side)
@@ -205,6 +269,14 @@ def cloudTraces (cs : Array Scatter.Cloud) (off : Array Bool) : Array Trace :=
 theorem cloudTraces_eq (cs : Array Scatter.Cloud) (off : Array Bool) : cloudTraces cs off =
     cs.zipIdx.map fun (c, i) =>
       { name := c.name, color := cssColor c.color, hidden := off.getD i false, xs := #[], ys := #[] } := rfl
+
+/-- The drawing of a chart in `f`: `axesDisplay` is drawn always and each of `parts` unless the legend hides the series of its index; the legend is `traces`. -/
+def frameDrawing (f : Frame) (axesDisplay : (String → Float × Float) → Scene.DisplayList) (parts : Array Scene.DisplayList)
+    (name : String) (traces : Array Bool → Array Trace) : IO Drawing := do
+  let measure ← measurer "12px sans-serif" (texts f)
+  pure { base := axesDisplay measure, labels := tickLabels (axes f measure)
+         parts := Part.indexed parts
+         access := fun off => { name, traces := traces off } }
 
 /-- The scene of a bar chart: its axes and bars, with each bar's value written at its end. -/
 def barScene (px : Pixels) (c : Bars.Chart) (off : Option (Array Bool) := none) : IO Scene := do

@@ -9,8 +9,6 @@ namespace Page.HighLowBands
 open Inkproof.Web.Host Inkproof.Demos
 
 def run : IO Unit :=
-  Browser.registerLegend fun src px off => do
-    let some c := HighLowBands.charts.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
-    Browser.lineScene px c off
+  Browser.registerLines HighLowBands.charts
 
 end Page.HighLowBands

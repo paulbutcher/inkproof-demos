@@ -9,8 +9,6 @@ namespace Page.PathGapClip
 open Inkproof.Web.Host Inkproof.Demos
 
 def run : IO Unit :=
-  Browser.registerLegend fun src px off => do
-    let some c := PathGapClip.charts.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
-    Browser.lineScene px c off
+  Browser.registerLines PathGapClip.charts
 
 end Page.PathGapClip

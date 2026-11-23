@@ -9,8 +9,6 @@ namespace Page.Gradients
 open Inkproof.Web.Host Inkproof.Demos
 
 def run : IO Unit :=
-  Browser.registerLegend fun src px off => do
-    let some c := Gradients.charts.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
-    Browser.lineScene px c off
+  Browser.registerLines Gradients.charts
 
 end Page.Gradients

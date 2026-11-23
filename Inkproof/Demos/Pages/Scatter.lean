@@ -9,13 +9,16 @@ namespace Page.Scatter
 open Inkproof.Web.Host Inkproof.Demos Inkproof.Demos.Scatter Inkproof.Scene
 
 def run : IO Unit := do
-  let seed ← Browser.seed
-  Browser.registerLegend fun src px off => match src with
-    | "bubble" => Browser.sidedScene px background (labelTexts bubbleFrame) [.bottom, .left, .right]
-        (bubbleAxes bubbleFrame) (bubbleChart bubbleFrame)
+  let cs := clouds (← Browser.seed)
+  let f := cloudsFrame cs
+  Browser.registerRetained fun src px cache => match src with
+    | "bubble" => do
+        let scene ← Browser.sidedScene px background (labelTexts bubbleFrame) [.bottom, .left, .right]
+          (bubbleAxes bubbleFrame) (bubbleChart bubbleFrame)
+        pure fun _ => pure scene
     | "scatter" => do
-        let s ← Browser.frameScene px (scatterFrame seed) (scatterChart seed (scatterFrame seed) off)
-        pure { s with access := { name := "Scatter", traces := Browser.cloudTraces (clouds seed) off } }
+        let d ← Browser.frameDrawing f (axisDisplay f) (cs.map (cloudDisplay f)) "Scatter" (Browser.cloudTraces cs)
+        px.drawing cache d
     | src => throw (IO.userError s!"no chart {src}")
 
 end Page.Scatter

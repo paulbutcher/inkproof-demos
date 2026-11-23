@@ -9,12 +9,13 @@ namespace Page.LogScales
 open Inkproof.Web.Host Inkproof.Demos Inkproof
 
 def run : IO Unit :=
-  Browser.registerLegend fun src px off => do
+  Browser.registerRetained fun src px cache => do
     let some s := LogScales.specs.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
     let measure ← measurer "12px sans-serif" s.labelTexts.toArray
-    let labels := Browser.tickLabels (s.axes measure)
-    let traces := Browser.seriesTraces off (LogScales.layers.map fun l => (l.color, l.data))
-    pure { commands := px.frameBytes (s.chart off measure) background, labels,
-           access := Browser.accessOf "Log Scales" s.frame traces }
+    let axes := s.axes measure
+    px.drawing cache
+      { base := axes.foldl (· ++ ·.display) #[], labels := Browser.tickLabels axes
+        parts := Browser.Part.indexed (LogScales.layers.toArray.map s.layerDisplay)
+        access := fun off => Browser.accessOf "Log Scales" s.frame (Browser.seriesTraces off (LogScales.layers.map fun l => (l.color, l.data))) }
 
 end Page.LogScales

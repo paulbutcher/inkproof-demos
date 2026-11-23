@@ -150,24 +150,39 @@ theorem clouds_eq (seed : Nat) : clouds seed =
     #[(red, 0), (green, 1), (blue, 2), (orange, 3)].map fun (color, i) =>
       ⟨"Value", color, ((Data.ints (2 * (seed + i)) 10000 0 500).zip (Data.ints (2 * (seed + i) + 1) 10000 0 500)).map fun (x, y) => ((x : Rat), (y : Rat))⟩ := rfl
 
-/-- The scatter chart's frame, 1920 by 600: the ranges of all the points. -/
-def scatterFrame (seed : Nat) : Frame :=
-  let all := (clouds seed).flatMap (·.points)
+/-- The scatter chart's frame, 1920 by 600: the ranges of the points of `cs`. -/
+def cloudsFrame (cs : Array Cloud) : Frame :=
+  let all := cs.flatMap (·.points)
   ⟨60, 1900, 20, 560, Data.extent (all.map (·.1)), Data.extent (all.map (·.2))⟩
 
-theorem scatterFrame_eq (seed : Nat) : scatterFrame seed =
-    let all := (clouds seed).flatMap (·.points)
+theorem cloudsFrame_eq (cs : Array Cloud) : cloudsFrame cs =
+    let all := cs.flatMap (·.points)
     ⟨60, 1900, 20, 560, Data.extent (all.map (·.1)), Data.extent (all.map (·.2))⟩ := rfl
 
-/-- The axes, then a disc of diameter 5 at each point of each cloud not in `off`. -/
+/-- The scatter chart's frame for the clouds of `seed`. -/
+def scatterFrame (seed : Nat) : Frame := cloudsFrame (clouds seed)
+
+theorem scatterFrame_eq (seed : Nat) : scatterFrame seed = cloudsFrame (clouds seed) := rfl
+
+/-- A disc of diameter 5 at each point of `c`, cut off at the plot's edge. -/
+def cloudDisplay (f : Frame) (c : Cloud) : DisplayList :=
+  DisplayList.clip (plot f) (compileScatter ⟨⟨1, c.color⟩, .circle, 5 / 2⟩ (projection f) (Series.ofUnsorted (c.points.map fun (x, y) => (x, some y))))
+
+theorem cloudDisplay_eq (f : Frame) (c : Cloud) : cloudDisplay f c =
+    DisplayList.clip (plot f) (compileScatter ⟨⟨1, c.color⟩, .circle, 5 / 2⟩ (projection f) (Series.ofUnsorted (c.points.map fun (x, y) => (x, some y)))) := rfl
+
+/-- The axes, then the cloud of each of `cs` not in `off`. -/
+def cloudsChart (cs : Array Cloud) (f : Frame) (off : Array Bool) (measure : String → Float × Float) : DisplayList :=
+  axisDisplay f measure ++ cs.zipIdx.flatMap fun (c, i) => if off.getD i false then #[] else cloudDisplay f c
+
+theorem cloudsChart_eq (cs : Array Cloud) (f : Frame) (off : Array Bool) (measure : String → Float × Float) : cloudsChart cs f off measure =
+    axisDisplay f measure ++ cs.zipIdx.flatMap fun (c, i) => if off.getD i false then #[] else cloudDisplay f c := rfl
+
+/-- The scatter chart of `seed`: the axes, then a disc at each point of each cloud not in `off`. -/
 def scatterChart (seed : Nat) (f : Frame) (off : Array Bool) (measure : String → Float × Float) : DisplayList :=
-  axisDisplay f measure ++ DisplayList.clip (plot f) ((clouds seed).zipIdx.flatMap fun (c, i) =>
-    if off.getD i false then #[] else
-    compileScatter ⟨⟨1, c.color⟩, .circle, 5 / 2⟩ (projection f) (Series.ofUnsorted (c.points.map fun (x, y) => (x, some y))))
+  cloudsChart (clouds seed) f off measure
 
 theorem scatterChart_eq (seed : Nat) (f : Frame) (off : Array Bool) (measure : String → Float × Float) : scatterChart seed f off measure =
-    axisDisplay f measure ++ DisplayList.clip (plot f) ((clouds seed).zipIdx.flatMap fun (c, i) =>
-      if off.getD i false then #[] else
-      compileScatter ⟨⟨1, c.color⟩, .circle, 5 / 2⟩ (projection f) (Series.ofUnsorted (c.points.map fun (x, y) => (x, some y)))) := rfl
+    cloudsChart (clouds seed) f off measure := rfl
 
 end Inkproof.Demos.Scatter

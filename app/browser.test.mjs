@@ -775,3 +775,24 @@ for (const [path, chart, density] of [['scatter/?seed=1', 1, true], ['zoom-wheel
     assert.ok(!density || Math.abs(two.n / one.n - 1) < 0.35, `${JSON.stringify(one)} ${JSON.stringify(two)}`);
   });
 }
+
+test('scatter: hiding and showing a cloud uploads no cloud again, and the draw follows the click', async () => {
+  const { page, problems } = await open('scatter/');
+  await page.waitForFunction(() => window.draws.length >= 2, null, { timeout: 60000 });
+  await page.waitForTimeout(500);
+  const chart = page.locator('inkproof-chart').nth(1);
+  const toggle = async series => {
+    const before = await page.evaluate(() => window.draws.length);
+    const started = Date.now();
+    await chart.locator(`button[data-series="${series}"]`).click();
+    await page.waitForFunction(n => window.draws.length > n, before, { timeout: 60000 });
+    return Date.now() - started;
+  };
+  const frame = await page.evaluate(() => window.draws.length);
+  const times = [await toggle(1), await toggle(2), await toggle(1), await toggle(2)];
+  console.log(`scatter toggle times (ms): ${times.join(', ')}`);
+  const later = await page.evaluate(frame => window.uploads.filter(u => u.frame >= frame).length, frame);
+  assert.equal(later, 0, 'a toggle uploads no buffer again');
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});

@@ -9,8 +9,6 @@ namespace Page.LinePaths
 open Inkproof.Web.Host Inkproof.Demos
 
 def run : IO Unit :=
-  Browser.registerLegend fun src px off => do
-    let some c := LinePaths.charts.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
-    Browser.lineScene px c off
+  Browser.registerLines LinePaths.charts
 
 end Page.LinePaths

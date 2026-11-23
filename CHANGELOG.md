@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.22.0
+
+- A legend click on the Scatter, Log Scales, Gradients, High Low Bands, Line Paths, Missing Data and Path Gap Clip pages draws again from retained layers, uploading and tessellating nothing again.
+- Depends on inkproof-gpu v0.20.0.
+
 ## v0.21.0
 
 - The Stacked page's bars are 60% of the pixel distance between adjacent x values wide, not hairlines.
