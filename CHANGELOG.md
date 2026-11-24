@@ -1,9 +1,12 @@
 # Changelog
 
+## v0.32.0
+
+- Log Scales and Log Scales 2 draw faint minor gridlines and title each chart inside the chart.
+
 ## v0.31.0
 
 - Log Scales labels 1, 2 and 5 of each power of ten, and Log Scales 2 ticks and labels its log axes as powers of the base.
-- Log Scales and Log Scales 2 draw faint minor gridlines and title each chart inside the chart.
 
 ## v0.30.1
 
