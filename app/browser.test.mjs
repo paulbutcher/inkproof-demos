@@ -776,23 +776,27 @@ for (const [path, chart, density] of [['scatter/?seed=1', 1, true], ['zoom-wheel
   });
 }
 
-test('scatter: hiding and showing a cloud uploads no cloud again, and the draw follows the click', async () => {
-  const { page, problems } = await open('scatter/');
-  await page.waitForFunction(() => window.draws.length >= 2, null, { timeout: 60000 });
-  await page.waitForTimeout(500);
-  const chart = page.locator('inkproof-chart').nth(1);
-  const toggle = async series => {
-    const before = await page.evaluate(() => window.draws.length);
-    const started = Date.now();
-    await chart.locator(`button[data-series="${series}"]`).click();
-    await page.waitForFunction(n => window.draws.length > n, before, { timeout: 60000 });
-    return Date.now() - started;
-  };
-  const frame = await page.evaluate(() => window.draws.length);
-  const times = [await toggle(1), await toggle(2), await toggle(1), await toggle(2)];
-  console.log(`scatter toggle times (ms): ${times.join(', ')}`);
-  const later = await page.evaluate(frame => window.uploads.filter(u => u.frame >= frame).length, frame);
-  assert.equal(later, 0, 'a toggle uploads no buffer again');
-  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
-  await page.close();
-});
+for (const [path, index, series, label] of [['scatter/', 1, [1, 2], 'scatter'], ['points/', 0, [1, 2], 'points'], ['sync-cursor/', 0, [1, 2], 'sync cursor']]) {
+  test(`${label}: hiding and showing a series uploads no buffer again, and the draw follows the click`, async () => {
+    const { page, problems } = await open(path);
+    await page.waitForFunction(() => window.draws.length >= document.querySelectorAll('inkproof-chart').length, null, { timeout: 60000 });
+    await page.waitForTimeout(1000);
+    const chart = page.locator('inkproof-chart').nth(index);
+    const toggle = async n => {
+      const before = await page.evaluate(() => window.draws.length);
+      const started = Date.now();
+      await chart.locator(`button[data-series="${n}"]`).dispatchEvent('click');
+      await page.waitForFunction(count => window.draws.length > count, before, { timeout: 60000 });
+      return Date.now() - started;
+    };
+    const frame = await page.evaluate(() => window.draws.length);
+    const times = [];
+    for (const n of [...series, ...series]) times.push(await toggle(n));
+    console.log(`${label} toggle times (ms): ${times.join(', ')}`);
+    const later = await page.evaluate(frame => window.uploads.filter(u => u.frame >= frame).length, frame);
+    if (later) console.log(JSON.stringify(await page.evaluate(frame => window.uploads.filter(u => u.frame >= frame).map(u => [u.frame, u.size]), frame)));
+    assert.equal(later, 0, 'a toggle uploads no buffer again');
+    assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+    await page.close();
+  });
+}

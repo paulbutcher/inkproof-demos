@@ -1,10 +1,14 @@
 # Changelog
 
+## v0.23.0
+
+- A legend click on the Points and Sync Cursor pages draws again from retained layers, uploading and tessellating nothing again.
+- Axis labels, bar labels and the timeline's state text are set in Scene's shared text style, bar labels, legend and tooltip share one number format, the default axis hides its line with the optional axis parts, and pages use Web's list-of-words `interaction` and `cursor` attributes.
+
 ## v0.22.0
 
 - A legend click on the Scatter, Log Scales, Gradients, High Low Bands, Line Paths, Missing Data and Path Gap Clip pages draws again from retained layers, uploading and tessellating nothing again.
 - Depends on inkproof-gpu v0.20.0.
-- Axis labels, bar labels and the timeline's state text are set in Scene's shared text style, bar labels, legend and tooltip share one number format, the default axis hides its line with the optional axis parts, and pages use Web's list-of-words `interaction` and `cursor` attributes.
 
 ## v0.21.0
 

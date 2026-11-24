@@ -236,14 +236,18 @@ private def zoomTest : Except String Unit := do
     let zoomed := Viewport.View.step c.config home (.wheel 100 100 4)
     check (zoomed != home) "a wheel notch changes the view"
     check (Viewport.View.step c.config zoomed .reset == home) "reset returns to the home view"
-    let (cache, first) := c.commands {} true home measure (c.width, c.height) 1
-    let (_, second) := c.commands cache false zoomed measure (c.width, c.height) 1
+    let layers := c.retain 1
+    let (cache, first) := c.commands {} true home measure (c.width, c.height) 1 layers #[]
+    let (cache, second) := c.commands cache false zoomed measure (c.width, c.height) 1 layers #[]
+    let (_, hidden) := c.commands cache false zoomed measure (c.width, c.height) 1 layers #[true]
+    let (_, shownAgain) := c.commands cache false zoomed measure (c.width, c.height) 1 layers #[]
     let uploads (cmds : List Gpu.Cmd) := cmds.filterMap fun cmd => match cmd.args with
       | [_, .words ws] => if cmd.op == 1 then some ws else none
       | _ => none
-    let lines := c.data.toList.map (Gpu.tessellateStroke ⟨0, 0⟩)
+    let lines := layers.toList.flatMap (·.words)
     check (lines.all (uploads first).contains) "the first frame uploads every line"
     check (lines.all fun l => !(uploads second).contains l) "a frame under another view uploads no line again"
+    check (lines.all fun l => !(uploads hidden).contains l && !(uploads shownAgain).contains l) "hiding a line and showing it again uploads no line again"
 
 private def linkedTest : Except String Unit := do
   check (Linked.syncCharts.length == 3) "sync cursor has three charts"
@@ -325,7 +329,7 @@ private def annotationsTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
   check ((c.markTexts f measure).length == 2 && (c.markTexts { f with xs := (20, 25) } measure).isEmpty) "a note outside the range has no label"
   check (c.marks.all fun m => (Zoom.Mark.commands { f with xs := (20, 25) } measure m).isEmpty || m.stop ≥ 20) "a note outside the range draws nothing"
-  check (c.data.any fun cmd => match cmd.shape with | .rect r => r.x0 == 9.3 && r.x1 == 18.5 | _ => false) "the shaded range is a rectangle over its data interval"
+  check (c.markData.any fun cmd => match cmd.shape with | .rect r => r.x0 == 9.3 && r.x1 == 18.5 | _ => false) "the shaded range is a rectangle over its data interval"
 
 private def calendarTimeTest : Except String Unit := do
   let (london, chicago) := (← CalendarTime.london, ← CalendarTime.chicago)

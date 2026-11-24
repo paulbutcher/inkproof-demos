@@ -84,18 +84,26 @@ theorem Chart.config_eq (c : Chart) : c.config =
       ⟨Rat.toFloat length, span / 1000, span, ⟨Rat.toFloat r.1, span⟩, 5 / 4, 1 / 10⟩
     ⟨axis (f.right - f.left) f.xs, axis (f.bottom - f.top) f.ys⟩ := rfl
 
-/-- The lines in data coordinates, which a frame draws under any view without a new upload, each under the area it fills down to the least y of the chart. A mark that spans a range is a rectangle over the whole height of the chart, drawn first because a pixel takes the colour of the last command to cover it. -/
-def Chart.data (c : Chart) : DisplayList :=
-  (c.marks.filter (fun m => m.start < m.stop)).toArray.map (fun m => (⟨0, m.fill, .rect ⟨m.start, c.ranges.2.1, m.stop, c.ranges.2.2⟩⟩ : Command)) ++
-  c.lines.foldl (fun d l =>
-    d ++ (l.fill.map fun f => compileArea ⟨0, f⟩ c.ranges.2.1 ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))).getD #[] ++
-      compileLine ⟨⟨1, l.color⟩, Axes.strokeHalfWidth, false, none, .straight⟩ ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))) #[]
+/-- The rectangle of each mark that spans a range, over the whole height of the chart, drawn first because a pixel takes the colour of the last command to cover it. -/
+def Chart.markData (c : Chart) : DisplayList :=
+  (c.marks.filter (fun m => m.start < m.stop)).toArray.map (fun m => (⟨0, m.fill, .rect ⟨m.start, c.ranges.2.1, m.stop, c.ranges.2.2⟩⟩ : Command))
 
-theorem Chart.data_eq (c : Chart) : c.data =
-  (c.marks.filter (fun m => m.start < m.stop)).toArray.map (fun m => (⟨0, m.fill, .rect ⟨m.start, c.ranges.2.1, m.stop, c.ranges.2.2⟩⟩ : Command)) ++
-  c.lines.foldl (fun d l =>
-    d ++ (l.fill.map fun f => compileArea ⟨0, f⟩ c.ranges.2.1 ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))).getD #[] ++
-      compileLine ⟨⟨1, l.color⟩, Axes.strokeHalfWidth, false, none, .straight⟩ ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))) #[] := rfl
+theorem Chart.markData_eq (c : Chart) : c.markData =
+    (c.marks.filter (fun m => m.start < m.stop)).toArray.map (fun m => (⟨0, m.fill, .rect ⟨m.start, c.ranges.2.1, m.stop, c.ranges.2.2⟩⟩ : Command)) := rfl
+
+/-- A line in data coordinates, which a frame draws under any view without a new upload, over the area it fills down to the least y of the chart. -/
+def Chart.lineData (c : Chart) (l : Line) : DisplayList :=
+  (l.fill.map fun f => compileArea ⟨0, f⟩ c.ranges.2.1 ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))).getD #[] ++
+    compileLine ⟨⟨1, l.color⟩, Axes.strokeHalfWidth, false, none, .straight⟩ ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))
+
+theorem Chart.lineData_eq (c : Chart) (l : Line) : c.lineData l =
+    (l.fill.map fun f => compileArea ⟨0, f⟩ c.ranges.2.1 ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some)))).getD #[] ++
+      compileLine ⟨⟨1, l.color⟩, Axes.strokeHalfWidth, false, none, .straight⟩ ⟨id, id⟩ (Segmented.single (Lines.series l.xs (l.ys.map some))) := rfl
+
+/-- The marks' rectangles, then each line, as the pieces a legend shows or hides: the first is always drawn, and piece `i + 1` is line `i`. -/
+def Chart.pieces (c : Chart) : Array DisplayList := #[c.markData] ++ c.lines.toArray.map c.lineData
+
+theorem Chart.pieces_eq (c : Chart) : c.pieces = #[c.markData] ++ c.lines.toArray.map c.lineData := rfl
 
 /-- The pixel columns of the mark's start and stop in the frame `f`. -/
 def Mark.columns (f : Frame) (m : Mark) : Rat × Rat :=
@@ -168,19 +176,30 @@ theorem Chart.viewFrame_eq (c : Chart) (v : Viewport.View Float) : c.viewFrame v
       ((Inkproof.Float.Float.toRat s.start).getD d.1, (Inkproof.Float.Float.toRat (s.start + s.span)).getD d.2)
     { f with xs := range v.x f.xs, ys := range v.y f.ys } := rfl
 
-/-- The commands of a frame of `c` under `v`, and the cache after it, for a target of `size` device pixels where a CSS pixel is `k` of them. Buffers hold the lines of every view, so a frame uploads only the axes, which change with the view; a cache that starts at another handle keeps charts that share a context apart. -/
+/-- The pieces of `c` tessellated once, with their sizes scaled by `k`, for a target where a CSS pixel is `k` device pixels. -/
+def Chart.retain (c : Chart) (k : Rat) : Array Gpu.Layer :=
+  c.pieces.map fun d => Gpu.Layer.stroke (DisplayList.scaleSizes k d)
+
+theorem Chart.retain_eq (c : Chart) (k : Rat) : c.retain k = c.pieces.map fun d => Gpu.Layer.stroke (DisplayList.scaleSizes k d) := rfl
+
+/-- The commands of a frame of `c` under `v`, and the cache after it, for a target of `size` device pixels where a CSS pixel is `k` of them, from `layers` retained by `c.retain k`: the lines whose index is in `off` are left out but their buffers stay resident, so a frame uploads only the axes, which change with the view, and a line shown again uploads nothing. A cache that starts at another handle keeps charts that share a context apart. -/
 def Chart.commands (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float)
-    (size : Nat × Nat) (k : Rat) : Cache × List Cmd :=
+    (size : Nat × Nat) (k : Rat) (layers : Array Gpu.Layer) (off : Array Bool) : Cache × List Cmd :=
   let f := c.viewFrame v
   let data := Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2
-  viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 data ((plot f).scale k) (DisplayList.scaleSizes k c.data)
+  let hidden (j : Nat) := j != 0 && off.getD (j - 1) false
+  let pick (keep : Bool) := (layers.toList.zipIdx.filter fun (_, j) => hidden j != keep).map (·.1)
+  viewLayersFrame (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 data ((plot f).scale k) (pick true) (pick false)
     ((axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background
 
 theorem Chart.commands_eq (c : Chart) (cache : Cache) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float)
-    (size : Nat × Nat) (k : Rat) :
-    c.commands cache fresh v measure size k =
+    (size : Nat × Nat) (k : Rat) (layers : Array Gpu.Layer) (off : Array Bool) :
+    c.commands cache fresh v measure size k layers off =
       let f := c.viewFrame v
-      viewOverlayFrame (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 (Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2)
-        ((plot f).scale k) (DisplayList.scaleSizes k c.data) ((axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background := rfl
+      let hidden (j : Nat) := j != 0 && off.getD (j - 1) false
+      let pick (keep : Bool) := (layers.toList.zipIdx.filter fun (_, j) => hidden j != keep).map (·.1)
+      viewLayersFrame (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 (Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2)
+        ((plot f).scale k) (pick true) (pick false)
+        ((axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background := rfl
 
 end Inkproof.Demos.Zoom

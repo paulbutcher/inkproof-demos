@@ -7,18 +7,21 @@ import Inkproof.Demos.Browser
 
 namespace Page.Points
 
+-- A closed term would be evaluated when the module initialises, which every page pays for.
+set_option compiler.extract_closed false
+
 open Inkproof.Web Inkproof.Web.Host Inkproof.Scene Inkproof.Demos Inkproof.Demos.Points Inkproof
 
 def run : IO Unit :=
-  Browser.registerLegend fun src px off => match src with
-    | "multi" => Browser.frameScene px multi.frame (multiChart off multi.frame) "Points"
-        (Browser.seriesTraces off [(green, seriesA), (red, seriesB), (blue, seriesC), (orange, seriesD)])
-    | "single" => Browser.frameScene px single.frame (singleChart off single.frame · true) "Points"
-        (Browser.seriesTraces off [(green, singleSeries)])
-    | "dense" => Browser.frameScene px singleDense.frame (singleChart off singleDense.frame · false) "Points"
-        (Browser.seriesTraces off [(green, singleSeries)])
-    | "sparse" => Browser.frameScene px sparseFrame.frame (sparseChart off sparseFrame.frame) "Points"
-        (Browser.seriesTraces off [(magenta, sparseSeries)])
+  Browser.registerRetained fun src px cache => do
+    let draw (panel : Panel) (parts : Array DisplayList) (series : List (Color × Inkproof.Core.Series Rat Rat)) : IO _ := do
+      let d ← Browser.frameDrawing panel.frame (axisDisplay panel.frame) parts "Points" fun _ => #[]
+      px.drawing cache { d with access := fun off => Browser.accessOf "Points" panel.frame (Browser.seriesTraces off series) }
+    match src with
+    | "multi" => draw multi (multiParts multi.frame) [(green, seriesA), (red, seriesB), (blue, seriesC), (orange, seriesD)]
+    | "single" => draw single (singleParts true single.frame) [(green, singleSeries)]
+    | "dense" => draw singleDense (singleParts false singleDense.frame) [(green, singleSeries)]
+    | "sparse" => draw sparseFrame (sparseParts sparseFrame.frame) [(magenta, sparseSeries)]
     | src => throw (IO.userError s!"no chart {src}")
 
 end Page.Points

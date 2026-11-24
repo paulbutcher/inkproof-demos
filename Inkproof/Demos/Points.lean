@@ -77,34 +77,25 @@ def seriesB : Series Rat Rat := walk 2 200 50
 def seriesC : Series Rat Rat := walk 3 200 50
 def seriesD : Series Rat Rat := walk 4 200 75 [1, 100, 102, 130, 133, 198]
 
-/-- The shapes of series `i`, unless the legend has hidden it. -/
-def shown (off : Array Bool) (i : Nat) (shapes : DisplayList) : DisplayList :=
-  if off.getD i false then #[] else shapes
-
-theorem shown_eq (off : Array Bool) (i : Nat) (shapes : DisplayList) :
-    shown off i shapes = if off.getD i false then #[] else shapes := rfl
-
-/-- The four series of the first chart, each unless hidden. -/
-def multiChart (off : Array Bool) (f : Frame) (measure : String → Float × Float) : DisplayList :=
+/-- The shapes of each of the four series of the first chart, in series order; the legend hides a series by leaving its shapes out. -/
+def multiParts (f : Frame) : Array DisplayList :=
   let proj := projection f
   let line (c : Color) (s : Series Rat Rat) := compileLine ⟨⟨2, c⟩, 1, false, none, .straight⟩ proj (Segmented.single s)
-  axisDisplay f measure ++
-    shown off 0 (line green seriesA) ++
-    shown off 1 (compileArea ⟨0, .flat ⟨255, 0, 0, 26⟩⟩ f.ys.1 proj (Segmented.single seriesB) ++ line red seriesB ++
-      compileScatter ⟨⟨3, red⟩, .circle, 5/2⟩ proj seriesB) ++
-    shown off 2 (rings 3 blue (5/2) proj seriesC) ++
-    shown off 3 (line orange seriesD ++ compileIsolated ⟨⟨3, orange⟩, .circle, 5/2⟩ proj (Segmented.single seriesD))
+  #[line green seriesA,
+    compileArea ⟨0, .flat ⟨255, 0, 0, 26⟩⟩ f.ys.1 proj (Segmented.single seriesB) ++ line red seriesB ++
+      compileScatter ⟨⟨3, red⟩, .circle, 5/2⟩ proj seriesB,
+    rings 3 blue (5/2) proj seriesC,
+    line orange seriesD ++ compileIsolated ⟨⟨3, orange⟩, .circle, 5/2⟩ proj (Segmented.single seriesD)]
 
-theorem multiChart_eq (off : Array Bool) (f : Frame) (measure : String → Float × Float) :
-    multiChart off f measure =
-      axisDisplay f measure ++
-        shown off 0 (compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesA)) ++
-        shown off 1 (compileArea ⟨0, .flat ⟨255, 0, 0, 26⟩⟩ f.ys.1 (projection f) (Segmented.single seriesB) ++
+theorem multiParts_eq (f : Frame) :
+    multiParts f =
+      #[compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesA),
+        compileArea ⟨0, .flat ⟨255, 0, 0, 26⟩⟩ f.ys.1 (projection f) (Segmented.single seriesB) ++
           compileLine ⟨⟨2, red⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesB) ++
-          compileScatter ⟨⟨3, red⟩, .circle, 5/2⟩ (projection f) seriesB) ++
-        shown off 2 (rings 3 blue (5/2) (projection f) seriesC) ++
-        shown off 3 (compileLine ⟨⟨2, orange⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesD) ++
-          compileIsolated ⟨⟨3, orange⟩, .circle, 5/2⟩ (projection f) (Segmented.single seriesD)) := rfl
+          compileScatter ⟨⟨3, red⟩, .circle, 5/2⟩ (projection f) seriesB,
+        rings 3 blue (5/2) (projection f) seriesC,
+        compileLine ⟨⟨2, orange⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesD) ++
+          compileIsolated ⟨⟨3, orange⟩, .circle, 5/2⟩ (projection f) (Segmented.single seriesD)] := rfl
 
 /-- A walk of 180 samples, drawn with a marker at every sample. -/
 def single : Panel := .sized 1920 300 (1, 180) (40, 65)
@@ -114,16 +105,15 @@ def singleDense : Panel := .sized 1920 300 (-400, 180) (40, 65)
 
 def singleSeries : Series Rat Rat := walk 5 180 50
 
-def singleChart (off : Array Bool) (f : Frame) (measure : String → Float × Float) (markers : Bool) : DisplayList :=
-  axisDisplay f measure ++
-    shown off 0 (compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single singleSeries) ++
-      if markers then rings 3 green (5/2) (projection f) singleSeries else #[])
+/-- The walk's line, with a ring at each sample if `markers`. -/
+def singleParts (markers : Bool) (f : Frame) : Array DisplayList :=
+  #[compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single singleSeries) ++
+    if markers then rings 3 green (5/2) (projection f) singleSeries else #[]]
 
-theorem singleChart_eq (off : Array Bool) (f : Frame) (measure : String → Float × Float) (markers : Bool) :
-    singleChart off f measure markers =
-      axisDisplay f measure ++
-        shown off 0 (compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single singleSeries) ++
-          if markers then rings 3 green (5/2) (projection f) singleSeries else #[]) := rfl
+theorem singleParts_eq (markers : Bool) (f : Frame) :
+    singleParts markers f =
+      #[compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single singleSeries) ++
+        if markers then rings 3 green (5/2) (projection f) singleSeries else #[]] := rfl
 
 /-- The sparse series: 96 samples among 2761, each drawn as a marker because the samples around it are missing. -/
 def sparseFrame : Panel := .sized 1200 300 (1, 2761) (50, 65)
@@ -131,12 +121,10 @@ def sparseFrame : Panel := .sized 1200 300 (1, 2761) (50, 65)
 def sparseSeries : Series Rat Rat :=
   Series.ofUnsorted (sparse.map fun (i, v) => ((i : Rat), some (v : Rat)))
 
-def sparseChart (off : Array Bool) (f : Frame) (measure : String → Float × Float) : DisplayList :=
-  axisDisplay f measure ++
-    shown off 0 (compileScatter ⟨⟨3, magenta⟩, .circle, 5/2⟩ (projection f) sparseSeries)
+def sparseParts (f : Frame) : Array DisplayList :=
+  #[compileScatter ⟨⟨3, magenta⟩, .circle, 5/2⟩ (projection f) sparseSeries]
 
-theorem sparseChart_eq (off : Array Bool) (f : Frame) (measure : String → Float × Float) :
-    sparseChart off f measure =
-      axisDisplay f measure ++ shown off 0 (compileScatter ⟨⟨3, magenta⟩, .circle, 5/2⟩ (projection f) sparseSeries) := rfl
+theorem sparseParts_eq (f : Frame) :
+    sparseParts f = #[compileScatter ⟨⟨3, magenta⟩, .circle, 5/2⟩ (projection f) sparseSeries] := rfl
 
 end Inkproof.Demos.Points
