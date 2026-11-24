@@ -151,6 +151,8 @@ private def axisControlTest : Except String Unit := do
 private def linesTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
   let charts := MissingData.charts ++ HighLowBands.charts ++ PathGapClip.charts
+  let (_, dates, _) := HighLowBands.temps.frame.spacedTimeTicks Axes.numericDates
+  check (dates.all (·.contains '/') && dates.any (· == "4/1")) "numeric dates read month/day, the first of a month included"
   for c in charts do
     let f := c.frame
     check (c.layers.all fun l => l.data.xs.all fun x => c.xs.1 ≤ x && x ≤ c.xs.2) s!"{c.name}: points lie within the x range"

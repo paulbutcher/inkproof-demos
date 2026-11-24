@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.33.1
+
+- Numeric dates on the Axis 0.16 ticks read month/day in High-Low Bands and Timezones, the first of a month as 4/1 (inkproof-axis#64).
+
 ## v0.33.0
 
 - Pages tick by the pixels between ticks, with numeric dates, 12-hour clocks and unpadded labels, and Arcsinh Scales ticks start at the linear threshold (the first of a month reads 4/1) (inkproof-axis#55, #57, #64).

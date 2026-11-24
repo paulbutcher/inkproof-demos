@@ -106,7 +106,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 ## Timezones and DST (`timezones-dst.html`)
 
 - Data: a spike once a day over the range, the same twelve charts (four ranges, UTC, the zone with the change and the other zone), with the same titles. Matches.
-- Ticks: uPlot labels every day as `3/29`, `3/30`; the site's step is a day, chosen by the pixels between ticks, with the same labels. The first of a month reads `4` against uPlot's `4/1`. Open: inkproof-axis#64.
+- Ticks: uPlot labels every day as `3/29`, `3/30`; the site's step is a day, chosen by the pixels between ticks, with the same labels, the first of a month reading `4/1` as in uPlot. Fixed.
 - Context line: the date under the first tick of a day, as uPlot's. Matches.
 - Series name: `2019` in uPlot; the site read `Value`. Fixed; a browser test checks it.
 - Section headings: uPlot centres each range's heading in a pale blue band (`#E1F5FE`, 25 pixels of padding); the site's do the same. Fixed.
@@ -161,7 +161,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Only the first of uPlot's twelve charts is recreated: the year of daily lows, highs and means. The others (differing paths, bars, inverted bands, the unaligned and thin bar cases, the minute-resolution temperatures) have no counterpart. Open.
 - Temperatures: the same shape, bands and gaps, with a dashed blue mean. Matches.
-- Ticks: uPlot labels every twenty days as `1/11`; the site labels numerically too, every ten days (the step comes from the pixels between ticks), and the first of a month reads `4` (inkproof-axis#64). Open.
+- Ticks: uPlot labels every twenty days as `1/11`; the site labels numerically too, every ten days (the step comes from the pixels between ticks), the first of a month reading `4/1`. Open.
 - Series names: `Low`, `High` and `Avg` in uPlot; the site reads `Value`. Fixed.
 
 ## Latency Heatmap and Heatmap Cells (`latency-heatmap.html`)
