@@ -19,7 +19,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 ## Line Paths (`line-paths.html`)
 
 - Data: the four charts draw the bar series of the stacked page with a gap of four points; same ranges. Matches.
-- Colours and fills: strokes match; uPlot fills each area to the baseline at 10% (`stroke + "1A"`); the site draws no fill. Open.
+- Colours and fills: strokes match; uPlot fills each area to the baseline at 10% (`stroke + "1A"`), as the site now does. Fixed; the chart definition carries the fill.
 - Line widths: uPlot draws series and axes at `1 / devicePixelRatio` CSS pixels, one device pixel on any screen; the site draws one CSS pixel. A display list is in CSS pixels, so the same scene is the same size on every screen. Explained.
 - Theme: uPlot's page is dark (`#2c3235` gridlines, `#c7d0d9` labels). Open.
 - Axes: ticks and gridlines drawn as uPlot's; label format matches. Fixed.

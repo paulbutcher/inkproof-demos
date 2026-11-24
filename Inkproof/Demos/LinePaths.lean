@@ -20,11 +20,11 @@ def xs : Array Rat := (Array.range Stacked.base.length).map fun (i : Nat) => (i 
 
 /-- The same data drawn with `join`. -/
 def chart (name : String) (join : Join) (color : Color) : Chart :=
-  let layers : List Layer := [{ data := series xs values, color, join }]
+  let layers : List Layer := [{ data := series xs values, color, join, fill := some { color with a := 26 } }]
   { name, width := 800, height := 300, xs := (0, 100), time := false, left := autoYAxis layers, layers }
 
 theorem chart_eq (name : String) (join : Join) (color : Color) : chart name join color =
-    let layers : List Layer := [{ data := series xs values, color, join }]
+    let layers : List Layer := [{ data := series xs values, color, join, fill := some { color with a := 26 } }]
     { name, width := 800, height := 300, xs := (0, 100), time := false, left := autoYAxis layers, layers } := rfl
 
 def charts : List Chart :=
