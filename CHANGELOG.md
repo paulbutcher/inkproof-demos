@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.28.0
+
+- Line Paths draws a dot at each point.
+
 ## v0.27.0
 
 - Multi-Bars draws the random line in the horizontal layout.
