@@ -159,7 +159,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 ## High-Low Bands (`high-low-bands.html`)
 
-- The page recreates the first of uPlot's twelve charts (the year of daily lows, highs and means) and the two small band charts (inverted and crossing lines). The others (differing paths, bars, the unaligned and thin bar cases, the minute-resolution temperatures) have no counterpart. Open.
+- The page recreates the first of uPlot's twelve charts (the year of daily lows, highs and means) and the two small band charts (inverted and crossing lines), and the differing paths chart with a fixed hash for uPlot's random spread. The others (bars, the unaligned and thin bar cases, the minute-resolution temperatures) have no counterpart. Open.
 - Temperatures: the same shape, bands and gaps, with a dashed blue mean. Matches.
 - Ticks: uPlot labels every twenty days as `1/11`; the site labels numerically too, every ten days (the step comes from the pixels between ticks), the first of a month reading `4/1`. Open.
 - Series names: `Low`, `High` and `Avg` in uPlot; the site reads `Value`. Fixed.

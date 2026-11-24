@@ -53,6 +53,28 @@ def crossing : Chart :=
   { name := "crossing", width := 1920, height := 600, xs := (0, 3), time := false,
     left := autoYAxis layers, layers, bands := [⟨1, 0, ⟨255, 0, 0, 18⟩⟩] }
 
-def charts : List Chart := [temps, inverted, crossing]
+/-- The values of uPlot's first differing series, falling from 109 to -5. -/
+def differingBase : Array Int :=
+  #[109, 117, 122, 104, 105, 117, 119, 121, 117, 121, 122, 129, 119, 113, 113, 121, 108, 108, 100, 103, 113, 110, 107, 105, 99, 93, 87, 83, 91, 85, 81, 69, 76, 61, 63, 74, 76, 68, 55, 61, 48, 39, 54, 44, 37, 30, 22, 33, 29, 21, 22, 43, 47, 33, 47, 28, 29, 31, 32, 35, 37, 25, -5, -14, -7, -14, -7, -18, -18, -18, -16, -41, -22, -30, -27, -30, -47, -49, -47, -42, -55, -34, -27, -22, -23, -34, -23, -32, -36, -47, -33, -32, -18, -23, -21, -33, -39, -21, -18, -27, -5]
+
+/-- Four series over the same x, each 100 plus the one before it plus a spread of up to 100 (a fixed hash where uPlot's is random), joined straight, stepped before, as a spline and stepped after, and filled between neighbours. -/
+def differing : Chart :=
+  let xs : Array Rat := (Array.range 101).map fun (i : Nat) => (i : Rat)
+  let next (salt : Nat) (prev : Array Int) : Array Int :=
+    prev.mapIdx fun i v => 100 + v + (((i * 37 + salt * 61) % 101 : Nat) : Int)
+  let second := next 1 differingBase
+  let third := next 2 second
+  let fourth := next 3 third
+  let vals (a : Array Int) : Array (Option Rat) := a.map fun (v : Int) => some ((v : Rat))
+  let linearVals := (List.range' 22 4).foldl (fun a i => a.setIfInBounds i none) (vals differingBase)
+  let layers : List Layer :=
+    [{ data := series xs linearVals, label := "linear", color := ⟨0, 128, 0, 255⟩, fill := some ⟨0, 255, 0, 26⟩ },
+     { data := series xs (vals second), label := "stepBefore", color := ⟨255, 0, 255, 255⟩, fill := some ⟨255, 0, 255, 13⟩, join := .stepBefore },
+     { data := series xs (vals third), label := "spline", color := ⟨0, 0, 255, 255⟩, fill := some ⟨0, 0, 255, 13⟩, join := .spline 16 },
+     { data := series xs (vals fourth), label := "stepAfter", color := ⟨255, 0, 0, 255⟩, fill := some ⟨255, 0, 0, 13⟩, join := .stepAfter, dash := some ⟨5, 5⟩ }]
+  { name := "differing", width := 1920, height := 600, xs := (0, 100), time := false,
+    left := autoYAxis layers, layers, bands := [⟨2, 3, ⟨255, 0, 0, 26⟩⟩, ⟨1, 2, ⟨255, 0, 0, 26⟩⟩, ⟨0, 1, ⟨255, 0, 0, 26⟩⟩] }
+
+def charts : List Chart := [temps, inverted, crossing, differing]
 
 end Inkproof.Demos.HighLowBands

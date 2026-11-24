@@ -453,6 +453,8 @@ theorem Inkproof.Demos.HeatmapCells.yRange_eq : Inkproof.Demos.HeatmapCells.yRan
 def Inkproof.Demos.HighLowBands.charts : List Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.HighLowBands.crossing : Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.HighLowBands.days : Array Rat
+def Inkproof.Demos.HighLowBands.differing : Inkproof.Demos.Lines.Chart
+def Inkproof.Demos.HighLowBands.differingBase : Array Int
 def Inkproof.Demos.HighLowBands.highSeries : Inkproof.Core.Series Rat Rat
 def Inkproof.Demos.HighLowBands.inverted : Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.HighLowBands.lowSeries : Inkproof.Core.Series Rat Rat
