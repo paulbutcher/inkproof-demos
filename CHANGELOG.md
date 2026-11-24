@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.29.0
+
+- Months draws a ring at each sample.
+
 ## v0.28.0
 
 - Line Paths draws a dot at each point.

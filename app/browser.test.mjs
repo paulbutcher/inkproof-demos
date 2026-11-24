@@ -702,7 +702,7 @@ for (const [path, counts] of Object.entries({ 'candlestick/': [5], 'box-whisker/
   test(`${path.slice(0, -1)}: each chart's legend reads its group of values at the cursor`, async () => {
     const { page, problems } = await open(path);
     const rows = () => page.evaluate(() => [...document.querySelectorAll('inkproof-chart')].map(e => [...e.shadowRoot.querySelectorAll('.legend .entry')].map(b => b.textContent)));
-    await page.waitForFunction(n => [...document.querySelectorAll('inkproof-chart')].every(e => e.shadowRoot.querySelector('.legend .entry')) && document.querySelectorAll('inkproof-chart').length === n, counts.length);
+    await page.waitForFunction(n => [...document.querySelectorAll('inkproof-chart')].every(e => e.shadowRoot?.querySelector('.legend .entry')) && document.querySelectorAll('inkproof-chart').length === n, counts.length);
     assert.deepEqual((await rows()).map(r => r.length), counts);
     assert.ok((await rows()).flat().every(t => !t.includes('NaN')), 'no entry reads NaN');
     const read = async fraction => {
