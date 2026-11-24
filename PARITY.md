@@ -23,7 +23,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Line widths: uPlot draws series and axes at `1 / devicePixelRatio` CSS pixels, one device pixel on any screen; the site draws one CSS pixel. A display list is in CSS pixels, so the same scene is the same size on every screen. Explained.
 - Theme: uPlot's page is dark (`#2c3235` gridlines, `#c7d0d9` labels). Open.
 - Axes: ticks and gridlines drawn as uPlot's; label format matches. Fixed.
-- Point markers (`drawStyles.points` shows a 5 pixel dot at each point), cursor and legend: open for the markers; legend and cursor as under Shared differences.
+- Point markers: a 5 pixel dot at each point, as uPlot's `drawStyles.points` draws. Fixed. Legend and cursor as under Shared differences.
 
 ## Area Fill (`area-fill.html`)
 

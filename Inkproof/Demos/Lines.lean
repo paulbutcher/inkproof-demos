@@ -97,6 +97,8 @@ structure Layer where
   join : Join := .straight
   strokeGradient : Option Gradient := none
   fillGradient : Option Gradient := none
+  /-- The radius of a dot drawn at each present sample. -/
+  dots : Option Rat := none
 
 /-- The filled space between two layers, where both have a value. -/
 structure Band where
@@ -252,13 +254,19 @@ def Chart.layerDisplay (c : Chart) (l : Layer) : DisplayList :=
   (match l.fillShading (c.projection l) with
     | some f => compileArea ⟨0, f⟩ (if l.onRight then (c.right.getD c.left).range.1 else c.left.range.1) (c.projection l) l.segments l.join
     | none => #[]) ++
-  compileLine ⟨⟨1, l.strokeShading (c.projection l)⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments
+  compileLine ⟨⟨1, l.strokeShading (c.projection l)⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments ++
+  (match l.dots with
+    | some r => compileScatter ⟨⟨1, l.color⟩, .circle, r⟩ (c.projection l) l.data
+    | none => #[])
 
 theorem Chart.layerDisplay_eq (c : Chart) (l : Layer) : c.layerDisplay l =
     (match l.fillShading (c.projection l) with
       | some f => compileArea ⟨0, f⟩ (if l.onRight then (c.right.getD c.left).range.1 else c.left.range.1) (c.projection l) l.segments l.join
       | none => #[]) ++
-    compileLine ⟨⟨1, l.strokeShading (c.projection l)⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments := rfl
+    compileLine ⟨⟨1, l.strokeShading (c.projection l)⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments ++
+    (match l.dots with
+      | some r => compileScatter ⟨⟨1, l.color⟩, .circle, r⟩ (c.projection l) l.data
+      | none => #[]) := rfl
 
 /-- The chart without the data of the layers `off` marks, so that they draw nothing and leave the others where they were. -/
 def Chart.hide (c : Chart) (off : Array Bool) : Chart :=

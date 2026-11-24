@@ -50,6 +50,8 @@ private def linePathsTest : Except String Unit := do
     let proj := c.projection l
     let data := (l.data.xs.zip l.data.values).toList.filterMap fun (x, y) => y.map fun y => (proj.x x, proj.y y)
     check (data.all fun (x, y) => pts.any fun p => p.x == x && p.y == y) s!"{c.name}: the line passes through every point"
+    let dots := (c.layerDisplay l).toList.filterMap fun cmd => match cmd.shape with | .marker _ p _ => some p | _ => none
+    check (dots.length == data.length && data.all fun (x, y) => dots.any fun p => p.x == x && p.y == y) s!"{c.name}: a dot at every present sample"
     if c.name.startsWith "step" then
       check (runs.all fun r => (r.zip r.tail).all fun (a, b) => a.x == b.x || a.y == b.y) s!"{c.name}: every stroke is horizontal or vertical"
     if c.name == "step-after" then
