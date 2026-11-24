@@ -17,7 +17,7 @@ def scene (seed : Nat) (hidden : Array Bool) (px : Browser.Pixels) : IO Scene :=
   let labels := Browser.tickLabels (axes f measure)
   let traces := (AreaFill.colors.zipIdx.map fun ((stroke, _), i) =>
     let s := AreaFill.pageSeries seed i
-    { name := s!"Series {i + 1}", color := s!"rgb({stroke.r},{stroke.g},{stroke.b})", hidden := hidden.getD i false,
+    { name := "Value", color := s!"rgb({stroke.r},{stroke.g},{stroke.b})", hidden := hidden.getD i false,
       xs := s.xs.map Rat.toFloat, ys := s.values.map fun y => (y.getD 0).toFloat : Trace }).toArray
   pure { commands := px.frameBytes (AreaFill.chart seed hidden f measure) background, labels,
          access := { name := "Area Fill", series := traces.map fun _ => "line", points := 30, view := some (AreaFill.config f),

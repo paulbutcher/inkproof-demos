@@ -80,7 +80,7 @@ def seriesD : Series Rat Rat := walk 4 200 75 [1, 100, 102, 130, 133, 198]
 /-- The shapes of each of the four series of the first chart, in series order; the legend hides a series by leaving its shapes out. -/
 def multiParts (f : Frame) : Array DisplayList :=
   let proj := projection f
-  let line (c : Color) (s : Series Rat Rat) := compileLine ⟨⟨2, c⟩, 1, false, none, .straight⟩ proj (Segmented.single s)
+  let line (c : Color) (s : Series Rat Rat) := compileLine ⟨⟨2, c⟩, Axes.strokeHalfWidth, false, none, .straight⟩ proj (Segmented.single s)
   #[line green seriesA,
     compileArea ⟨0, .flat ⟨255, 0, 0, 26⟩⟩ f.ys.1 proj (Segmented.single seriesB) ++ line red seriesB ++
       compileScatter ⟨⟨3, red⟩, .circle, 5/2⟩ proj seriesB,
@@ -89,12 +89,12 @@ def multiParts (f : Frame) : Array DisplayList :=
 
 theorem multiParts_eq (f : Frame) :
     multiParts f =
-      #[compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesA),
+      #[compileLine ⟨⟨2, green⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection f) (Segmented.single seriesA),
         compileArea ⟨0, .flat ⟨255, 0, 0, 26⟩⟩ f.ys.1 (projection f) (Segmented.single seriesB) ++
-          compileLine ⟨⟨2, red⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesB) ++
+          compileLine ⟨⟨2, red⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection f) (Segmented.single seriesB) ++
           compileScatter ⟨⟨3, red⟩, .circle, 5/2⟩ (projection f) seriesB,
         rings 3 blue (5/2) (projection f) seriesC,
-        compileLine ⟨⟨2, orange⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single seriesD) ++
+        compileLine ⟨⟨2, orange⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection f) (Segmented.single seriesD) ++
           compileIsolated ⟨⟨3, orange⟩, .circle, 5/2⟩ (projection f) (Segmented.single seriesD)] := rfl
 
 /-- A walk of 180 samples, drawn with a marker at every sample. -/
@@ -107,12 +107,12 @@ def singleSeries : Series Rat Rat := walk 5 180 50
 
 /-- The walk's line, with a ring at each sample if `markers`. -/
 def singleParts (markers : Bool) (f : Frame) : Array DisplayList :=
-  #[compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single singleSeries) ++
+  #[compileLine ⟨⟨2, green⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection f) (Segmented.single singleSeries) ++
     if markers then rings 3 green (5/2) (projection f) singleSeries else #[]]
 
 theorem singleParts_eq (markers : Bool) (f : Frame) :
     singleParts markers f =
-      #[compileLine ⟨⟨2, green⟩, 1, false, none, .straight⟩ (projection f) (Segmented.single singleSeries) ++
+      #[compileLine ⟨⟨2, green⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection f) (Segmented.single singleSeries) ++
         if markers then rings 3 green (5/2) (projection f) singleSeries else #[]] := rfl
 
 /-- The sparse series: 96 samples among 2761, each drawn as a marker because the samples around it are missing. -/

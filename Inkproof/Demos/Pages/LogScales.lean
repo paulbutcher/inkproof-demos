@@ -16,6 +16,6 @@ def run : IO Unit :=
     px.drawing cache
       { base := axes.foldl (· ++ ·.display) #[], labels := Browser.tickLabels axes
         parts := Browser.Part.indexed (LogScales.layers.toArray.map s.layerDisplay)
-        access := fun off => Browser.accessOf "Log Scales" s.frame (Browser.seriesTraces off (LogScales.layers.map fun l => (l.color, l.data))) }
+        access := fun off => Browser.accessOf "Log Scales" s.frame (Browser.seriesTraces off (LogScales.layers.map fun l => (l.color, l.data)) (LogScales.layers.map (·.label))) }
 
 end Page.LogScales

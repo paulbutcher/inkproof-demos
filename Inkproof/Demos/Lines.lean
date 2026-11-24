@@ -85,6 +85,8 @@ theorem Gradient.shading_eq (g : Gradient) (p : Projection Rat Rat) : g.shading 
 /-- One drawn series. A gradient replaces the colour of the stroke or fill it names. -/
 structure Layer where
   data : Series Rat Rat
+  /-- The name the legend gives the series. -/
+  label : String := "Value"
   color : Color
   fill : Option Color := none
   halfWidth : Rat := Axes.strokeHalfWidth

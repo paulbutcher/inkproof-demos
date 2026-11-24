@@ -23,6 +23,6 @@ def run : IO Unit :=
     let xTitle : Label := { text := "X Axis Label", x := Rat.toFloat ((f.left + f.right) / 2) - w / 2, y := Rat.toFloat f.bottom + 45 }
     let yTitle : Label := { text := "Y Axis Label", x := Rat.toFloat f.right + 50, y := Rat.toFloat ((f.top + f.bottom) / 2) - h / 2, rotation := 1.5707963267948966, color := axisRed }
     pure { commands := px.frameBytes (AxisControl.chart measure) background, labels := ticks ++ #[xTitle, yTitle],
-           access := Browser.accessOf "Axis Control" f (Browser.seriesTraces #[] [(AxisControl.red, AxisControl.series)]) }
+           access := Browser.accessOf "Axis Control" f (Browser.seriesTraces #[] [(AxisControl.red, AxisControl.series)] ["sin(x)"]) }
 
 end Page.AxisControl

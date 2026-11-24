@@ -41,6 +41,13 @@ structure Chart where
   bounds : Option ((Rat × Rat) × (Rat × Rat))
   marks : List Mark
 
+/-- The names uPlot's wheel and touch zoom pages give their series; the other pages leave theirs unnamed. -/
+def legendNames (page : String) : List String :=
+  if page == "zoom-wheel" || page == "zoom-touch" then ["One", "Two"] else []
+
+theorem legendNames_eq (page : String) :
+    legendNames page = if page == "zoom-wheel" || page == "zoom-touch" then ["One", "Two"] else [] := rfl
+
 /-- The two series of uPlot's wheel and touch zoom pages. -/
 def basic : Chart :=
   let xs : Array Rat := #[1, 2, 3, 4, 5, 6, 7]

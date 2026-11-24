@@ -24,8 +24,8 @@ def times : Array Rat := scaled 1 LogScalesSource.times
 
 /-- One layer per server; the samples a server did not report are missing, not bridged. -/
 def layers : List Layer :=
-  LogScalesSource.players.toList.zip LogScalesSource.servers |>.map fun (ys, _, rgb) =>
-    { data := series times (ys.map fun (y : Int) => if y == 0 then none else some (y : Rat)), color := colour rgb }
+  LogScalesSource.players.toList.zip LogScalesSource.servers |>.map fun (ys, name, rgb) =>
+    { label := name, data := series times (ys.map fun (y : Int) => if y == 0 then none else some (y : Rat)), color := colour rgb }
 
 /-- The largest sample of any server. -/
 def peak : Nat := LogScalesSource.players.foldl (fun m ys => ys.foldl (fun m y => max m y.toNat) m) 1

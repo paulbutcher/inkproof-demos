@@ -393,7 +393,9 @@ private def parityTest : Except String Unit := do
   let ticks := (Axes.linearLabels 0 100).length
   check (axes.length == 4 * ticks) "each tick of each axis has a tick mark and a gridline, and nothing else is drawn"
   for (name, d) in [("axis control", AxisControl.chart measure),
-      ("log scales 2", (LogScales2.specs.head?.map (·.chart #[] measure)).getD #[])] do
+      ("log scales 2", (LogScales2.specs.head?.map (·.chart #[] measure)).getD #[]),
+      ("points", (Points.multiParts Points.multi.frame).foldl (· ++ ·) #[]),
+      ("points, single", (Points.singleParts true Points.single.frame).foldl (· ++ ·) #[])] do
     let strokes := positive d |>.filter fun (_, c) => !faint c
     check (!strokes.isEmpty && strokes.all fun (hw, _) => hw == 1 / 2) s!"{name}: the series is one pixel wide, uPlot's default"
 

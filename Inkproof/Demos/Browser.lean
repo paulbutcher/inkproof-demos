@@ -69,14 +69,14 @@ theorem accessOf_eq (name : String) (f : Frame) (traces : Array Trace) : accessO
     { name, series := traces.map fun _ => "line", points := (traces.map (·.xs.size)).foldl max 0, view := some f.viewConfig,
       plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), traces } := rfl
 
-/-- The coloured series as the legend's, named `Series 1`, `Series 2` and so on, those `off` marks hidden. -/
-def seriesTraces (off : Array Bool) (ss : List (Color × Core.Series Rat Rat)) : Array Trace :=
-  (ss.zipIdx.map fun ((c, s), i) => traceOf s!"Series {i + 1}" c (off.getD i false) s).toArray
+/-- The coloured series as the legend's, those `off` marks hidden, each named as `names` says and `Value` where it doesn't, as uPlot names a series without a label. -/
+def seriesTraces (off : Array Bool) (ss : List (Color × Core.Series Rat Rat)) (names : List String := []) : Array Trace :=
+  (ss.zipIdx.map fun ((c, s), i) => traceOf (names.getD i "Value") c (off.getD i false) s).toArray
 
-theorem seriesTraces_eq (off : Array Bool) (ss : List (Color × Core.Series Rat Rat)) : seriesTraces off ss =
-    (ss.zipIdx.map fun ((c, s), i) => traceOf s!"Series {i + 1}" c (off.getD i false) s).toArray := rfl
+theorem seriesTraces_eq (off : Array Bool) (ss : List (Color × Core.Series Rat Rat)) (names : List String) : seriesTraces off ss names =
+    (ss.zipIdx.map fun ((c, s), i) => traceOf (names.getD i "Value") c (off.getD i false) s).toArray := rfl
 
-theorem seriesTraces_size (off : Array Bool) (ss : List (Color × Core.Series Rat Rat)) : (seriesTraces off ss).size = ss.length := by
+theorem seriesTraces_size (off : Array Bool) (ss : List (Color × Core.Series Rat Rat)) (names : List String) : (seriesTraces off ss names).size = ss.length := by
   simp [seriesTraces]
 
 /-- The sizes of a chart's canvas: in CSS pixels, and in the device pixels of its backing store. -/
@@ -211,7 +211,7 @@ def lineDrawing (c : Lines.Chart) : IO Drawing := do
   pure { base := (c.axes measure).foldl (· ++ ·.display) #[], labels
          parts := (c.bands.map fun b => ⟨c.bandDisplay b, fun h => off b.lower h || off b.upper h⟩).toArray ++
            (c.layers.zipIdx.map fun (l, i) => ⟨c.layerDisplay l, off i⟩).toArray
-         access := fun h => accessOf c.name c.frame (seriesTraces h (c.layers.map fun l => (l.color, l.data))) }
+         access := fun h => accessOf c.name c.frame (seriesTraces h (c.layers.map fun l => (l.color, l.data)) (c.layers.map (·.label))) }
 
 /-- Draw the chart of `charts` that each element's `src` names, its legend hiding its layers. -/
 def registerLines (charts : List Lines.Chart) : IO Unit :=

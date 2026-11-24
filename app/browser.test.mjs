@@ -640,12 +640,13 @@ test('tooltip and legend: the tooltip names the nearest point, the legend reads 
   const at = await page.evaluate(() => window.pointers.at(-1));
   await page.waitForFunction(() => document.querySelector('inkproof-chart').shadowRoot.querySelector('.tip')?.textContent);
   const [tip] = await shadow('.tip');
-  const [series, x, y] = [Number(tip.match(/Series (\d)/)[1]), ...numbers(tip.replace(/Series \d/, ''))];
+  assert.ok(tip.startsWith('Value'), `the tooltip names the series as uPlot's default does: ${tip}`);
+  const [x, y] = numbers(tip.replace(/^Value/, ''));
   assert.ok(Math.abs(x - at.x) <= 0.5 + 1e-6, `tooltip names x = ${x}, the pointer is at ${at.x}`);
   const rows = await shadow('.legend button');
   assert.equal(rows.length, 3);
-  const values = rows.map(r => numbers(r.replace(/Series \d/, ''))[0]);
-  assert.equal(values[series - 1], y, 'the legend row of the tooltip series shows the tooltip value, which is its value at the nearest x');
+  const values = rows.map(r => numbers(r.replace(/^Value/, ''))[0]);
+  assert.ok(values.includes(y), 'the legend row of the tooltip series shows the tooltip value, which is its value at the nearest x');
   const before = await page.evaluate(() => window.draws.length);
   await page.locator('inkproof-chart button[data-series="1"]').click();
   await page.waitForFunction(() => window.toggles?.length, null, { timeout: 3000 });
@@ -656,7 +657,7 @@ test('tooltip and legend: the tooltip names the nearest point, the legend reads 
     await pointerAt(page, 'chart', 'pointermove', px, 150);
     await page.waitForTimeout(100);
     const [t] = await shadow('.tip');
-    assert.ok(!t.startsWith('Series 2'), `a hidden series is not named: ${t}`);
+    assert.ok(t?.startsWith('Value'), `the tooltip still names a series: ${t}`);
   }
   assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
   await page.close();
@@ -678,6 +679,19 @@ for (const [path, chart, expected] of [['grouped-bars/', 0, ['Metric 1', 'Metric
     const afterFirst = await page.evaluate(() => window.draws.length);
     await page.evaluate(i => [...document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelectorAll('.legend button')].at(-1).click(), chart);
     await page.waitForFunction(n => window.draws.length > n, afterFirst);
+    assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+    await page.close();
+  });
+}
+
+// Legends that read values: each entry starts with the name uPlot gives the series, `Value` where the demo gives none.
+for (const [path, chart, expected] of [['missing-data/', 0, ['CPU', 'RAM', 'TCP Out']], ['missing-data/', 1, ['Value']], ['points/', 0, ['Value', 'Value', 'Value', 'Value']], ['axis-control/', 0, ['sin(x)']], ['zoom-wheel/', 0, ['One', 'Two']], ['area-fill/', 0, ['Value', 'Value', 'Value']]]) {
+  test(`${path.slice(0, -1)} chart ${chart}: the legend names the series ${expected.join(', ')}`, async () => {
+    const { page, problems } = await open(path);
+    await page.waitForFunction(i => document.querySelectorAll('inkproof-chart')[i]?.shadowRoot.querySelector('.legend button'), chart);
+    const names = await page.evaluate(i => [...document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelectorAll('.legend button')].map(b => b.textContent), chart);
+    assert.equal(names.length, expected.length);
+    names.forEach((n, i) => assert.ok(n.startsWith(expected[i]), `${n} starts with ${expected[i]}`));
     assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
     await page.close();
   });

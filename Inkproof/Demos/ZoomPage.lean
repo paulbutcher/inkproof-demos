@@ -29,7 +29,7 @@ def sceneOf (full : Zoom.Chart) (name : String) (cache : SceneCache) (px : Brows
   let cmds ← cache.build fun old first => pure (c.commands old first v measure px.backing px.ratio layers off)
   let points := ((c.lines.zipIdx.filter fun (_, i) => !off.getD i false).map (·.1.xs.size)).foldl max 0
   let traces := (full.lines.zipIdx.map fun (l, i) =>
-    { name := s!"Series {i + 1}", color := s!"rgb({l.color.r},{l.color.g},{l.color.b})",
+    { name := (Zoom.legendNames name).getD i "Value", color := s!"rgb({l.color.r},{l.color.g},{l.color.b})",
       xs := l.xs.map Rat.toFloat, ys := l.ys.map Rat.toFloat, hidden := off.getD i false : Trace }).toArray
   pure { commands := ⟨(encode cmds).toArray⟩, labels := Browser.tickLabels (axes f measure) ++
            (c.markTexts f measure).toArray.map fun (text, x, y) => { text, x := Rat.toFloat x, y := Rat.toFloat y, baseline := .top },

@@ -19,9 +19,9 @@ def tcpSeries : Series Rat Rat := series times (scaled 100 tcp |>.map some)
 /-- The chart of the three series, the first two against the left axis in percent and the third against the right in megabytes. -/
 def usage : Chart :=
   let layers : List Layer :=
-    [{ data := cpuSeries, color := ⟨255, 0, 0, 255⟩, fill := some ⟨255, 0, 0, 13⟩ },
-     { data := ramSeries, color := ⟨0, 0, 255, 255⟩, fill := some ⟨0, 0, 255, 13⟩ },
-     { data := tcpSeries, color := ⟨0, 255, 0, 255⟩, fill := some ⟨0, 255, 0, 13⟩, onRight := true }]
+    [{ label := "CPU", data := cpuSeries, color := ⟨255, 0, 0, 255⟩, fill := some ⟨255, 0, 0, 13⟩ },
+     { label := "RAM", data := ramSeries, color := ⟨0, 0, 255, 255⟩, fill := some ⟨0, 0, 255, 13⟩ },
+     { label := "TCP Out", data := tcpSeries, color := ⟨0, 255, 0, 255⟩, fill := some ⟨0, 255, 0, 13⟩, onRight := true }]
   { name := "usage", width := 1920, height := 600, xs := (times.getD 0 0, times.getD 199 0), time := true,
     left := autoYAxis (layers.take 2) "%", right := some { autoYAxis (layers.drop 2) " MB" with grid := false },
     layers }

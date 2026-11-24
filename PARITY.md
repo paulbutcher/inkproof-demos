@@ -2,7 +2,7 @@
 
 Each page is compared with the uPlot demo it recreates, run locally from a clone of https://github.com/leeoniya/uPlot at commit `e995b061e9fc5476a6d862cd2fb2ebc7452ca012` (v1.6.32), in headless Chromium at the same viewport and device pixel ratio. Differences that come only from random data are not listed. A difference is `fixed` (with the pull request), `requested` (with the issue on the library that must change), `explained` (with the reason), or `open` (found, not yet resolved; none may remain when the comparison is finished).
 
-Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars.
+Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch.
 
 ## Shared differences
 
@@ -13,7 +13,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Wheel, touch and drag pass-through to the page: requested, [inkproof-web#113](http://localhost:3000/tentenths/inkproof-web/issues/113).
 - Cursor markers (a dot on each series at the cursor, hollow markers filled under it): requested, [inkproof-web#115](http://localhost:3000/tentenths/inkproof-web/issues/115). Applies to every page whose uPlot original shows cursor points.
 - Circle markers drawn as octagons: requested, [inkproof-gpu#68](http://localhost:3000/tentenths/inkproof-gpu/issues/68). Applies to every page with circle markers.
-- Series without a label are named `Value` in uPlot's legend; most line pages name them `Series N` (see each page). Open.
+- Series without a label are named `Value` in uPlot's legend. Fixed: `Browser.seriesTraces` names a series `Value` unless its page gives a name (`Lines.Layer.label`), and a browser test checks the legends of Missing Data, Points, Axis Control, Zoom Wheel and Area Fill.
 - uPlot draws the chart title inside the chart, above the plot; the pages put it in a heading above the chart. Open.
 
 ## Line Paths (`line-paths.html`)
@@ -67,3 +67,20 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Legend names: `Metric 1` to `Metric 3`. Fixed (same browser test).
 - Horizontal exception: the grouped and stacked horizontal charts draw no lines because they have none. Matches.
 - Numbers on each bar are too small, and stacked segments carry no numbers of their own, only a total on the top bar. Open.
+
+## Points (`points.html`)
+
+- Series: green line, red line with a 10% fill and markers at every sample, blue markers over a 10% fill, orange line with a marker only where the samples around it are missing. Matches.
+- Line width: one pixel; the page drew two. Fixed; the parity test checks both charts.
+- Legend: four series named `Value`. Fixed.
+- Markers: circles drawn as octagons, as under Shared differences.
+
+## Missing Data (`missing-data.html`)
+
+- Series: `CPU`, `RAM` and `TCP Out`, strokes red, blue and green with 5% fills, nulls left as gaps. Matches.
+- Legend: the names were `Series N`; fixed. The second chart's single series is `Value`.
+
+## Zoom Wheel and Zoom Touch (`zoom-wheel.html`, `zoom-touch.html`)
+
+- Legend: the series are `One` and `Two`; the pages named them `Series N`. Fixed (`Zoom.legendNames`). The other zoom pages leave their series unnamed and read `Value`.
+- Wheel and touch pass-through: requested, see Shared differences.
