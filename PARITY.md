@@ -100,7 +100,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: one value per month start from 2017 to 2019, random but for the first. Ticks fall on month starts, labelled with month names. Matches.
 - Year line: the year under the first January tick, as uPlot's. Matches.
-- Markers: uPlot draws a small circle at every point; the site draws none. Open.
+- Markers: a hollow circle at every point, as uPlot's. Fixed.
 - Legend: `Value` with the cursor's readout under the plot; see Shared differences.
 
 ## Timezones and DST (`timezones-dst.html`)

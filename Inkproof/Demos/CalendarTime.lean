@@ -13,6 +13,7 @@ import Inkproof.Scale
 import Inkproof.Demos.Axes
 import Inkproof.Demos.Frame
 import Inkproof.Demos.Lines
+import Inkproof.Demos.Points
 
 namespace Inkproof.Demos.CalendarTime
 
@@ -130,16 +131,18 @@ theorem Spec.data_eq (s : Spec) : s.data = Lines.series s.times (s.values.map so
 
 def red : Color := ⟨255, 0, 0, 255⟩
 
-/-- The axes, then the line unless the legend has hidden it. -/
+/-- The axes, then the line unless the legend has hidden it, with a ring at each sample on the months chart, where samples are far enough apart to show. -/
 def Spec.chart (off : Array Bool) (s : Spec) (measure : String → Float × Float) : DisplayList :=
   (s.axes measure).foldl (· ++ ·.display) #[] ++
     (if off.getD 0 false then #[]
-     else compileLine ⟨⟨1, red⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection s.frame) (Segmented.single s.data))
+     else compileLine ⟨⟨1, red⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection s.frame) (Segmented.single s.data) ++
+       (if s.name == "months" then Points.rings 1 red (5 / 2) (projection s.frame) s.data else #[]))
 
 theorem Spec.chart_eq (off : Array Bool) (s : Spec) (measure : String → Float × Float) : s.chart off measure =
     (s.axes measure).foldl (· ++ ·.display) #[] ++
       (if off.getD 0 false then #[]
-       else compileLine ⟨⟨1, red⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection s.frame) (Segmented.single s.data)) := rfl
+       else compileLine ⟨⟨1, red⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection s.frame) (Segmented.single s.data) ++
+         (if s.name == "months" then Points.rings 1 red (5 / 2) (projection s.frame) s.data else #[])) := rfl
 
 /-- 2019-01-01T00:00:00Z. -/
 def start2019 : Int := 1546300800

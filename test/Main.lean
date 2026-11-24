@@ -352,6 +352,8 @@ private def calendarTimeTest : Except String Unit := do
   let days := m.tickTimes.map fun t => (Core.Calendar.civilFromDays ((t.toInt64.toInt + m.zone.offset t.toInt64.toInt) / 86400)).2.2
   check (days.length == 36 && days.all (· == 1)) "month ticks fall on the first of each month"
   check (m.values.size == 36 && m.values.getD 0 0 == 5 && m.values.all fun v => 0 ≤ v && v ≤ 10) "the levels are 0 to 10 with a first of 5"
+  let ringDiscs := (m.chart #[false] fun _ => (0, 0)).toList.filter fun cmd => match cmd.shape with | .marker .. => true | _ => false
+  check (ringDiscs.length == 2 * m.values.size) "months: a ring at every sample"
 
 private def arcsinhTest : Except String Unit := do
   let vs := ArcsinhScales.values
