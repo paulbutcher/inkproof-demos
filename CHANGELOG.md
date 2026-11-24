@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.25.0
+
+- Time-axis labels draw their context line (the year or the day) under the label.
+- Cursor Bind draws at uPlot's size with its 10% fills.
+- Depends on inkproof-web v0.25.1, inkproof-axis v0.14.0 and inkproof-scene v0.30.0.
+
 ## v0.24.2
 
 - The Timezones and DST series are named 2019.

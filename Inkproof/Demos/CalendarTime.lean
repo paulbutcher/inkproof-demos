@@ -108,13 +108,19 @@ def Spec.labelTexts (s : Spec) : List String :=
 theorem Spec.labelTexts_eq (s : Spec) : s.labelTexts =
     s.tickLabels ++ Axes.linearLabels (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) := rfl
 
+/-- The year or day each tick begins, for a second line under its label. -/
+def Spec.tickContexts (s : Spec) : List (Option String) :=
+  timeTickContextsAt s.zone.offset Axes.months s.step s.tickTimes
+
+theorem Spec.tickContexts_eq (s : Spec) : s.tickContexts = timeTickContextsAt s.zone.offset Axes.months s.step s.tickTimes := rfl
+
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame
-  [compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (s.tickTimes.map f.xScale.map) s.tickLabels,
+  [compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (s.tickTimes.map f.xScale.map) s.tickLabels s.tickContexts,
    compileLinearAxis .left (plot f) f.yScale Axes.spec measure Axes.style]
 
 theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) : s.axes measure =
-    [compilePixelAxis .bottom (plot s.frame) Axes.style measure Axes.spec.labelGap (s.tickTimes.map s.frame.xScale.map) s.tickLabels,
+    [compilePixelAxis .bottom (plot s.frame) Axes.style measure Axes.spec.labelGap (s.tickTimes.map s.frame.xScale.map) s.tickLabels s.tickContexts,
      compileLinearAxis .left (plot s.frame) s.frame.yScale Axes.spec measure Axes.style] := rfl
 
 def Spec.data (s : Spec) : Core.Series Rat Rat :=

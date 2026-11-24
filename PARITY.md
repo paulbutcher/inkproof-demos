@@ -99,7 +99,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 ## Months (`months.html`)
 
 - Data: one value per month start from 2017 to 2019, random but for the first. Ticks fall on month starts, labelled with month names. Matches.
-- Year line: uPlot writes the year under the first January tick; the site does not. Requested, [inkproof-axis#52](http://localhost:3000/tentenths/inkproof-axis/issues/52).
+- Year line: the year under the first January tick, as uPlot's. Matches.
 - Markers: uPlot draws a small circle at every point; the site draws none. Open.
 - Legend: `Value` with the cursor's readout under the plot; see Shared differences.
 
@@ -107,7 +107,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: a spike once a day over the range, the same twelve charts (four ranges, UTC, the zone with the change and the other zone), with the same titles. Matches.
 - Ticks: uPlot labels every day as `3/29`, `3/30`; the site's step is two days and its labels read `Mar 29`. Open: the step comes from the library's tick choice for the width, and the label format from the library's date label.
-- Year line: uPlot writes the year under the first tick. Requested, [inkproof-axis#52](http://localhost:3000/tentenths/inkproof-axis/issues/52).
+- Context line: the date under the first tick of a day, as uPlot's. Matches.
 - Series name: `2019` in uPlot; the site read `Value`. Fixed; a browser test checks it.
 - Section headings: uPlot puts each range's heading in a pale blue band; the site's are plain. Open.
 
