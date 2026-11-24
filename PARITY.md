@@ -109,7 +109,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Ticks: uPlot labels every day as `3/29`, `3/30`; the site's step is two days and its labels read `Mar 29`. Open: the step comes from the library's tick choice for the width, and the label format from the library's date label.
 - Context line: the date under the first tick of a day, as uPlot's. Matches.
 - Series name: `2019` in uPlot; the site read `Value`. Fixed; a browser test checks it.
-- Section headings: uPlot puts each range's heading in a pale blue band; the site's are plain. Open.
+- Section headings: uPlot centres each range's heading in a pale blue band (`#E1F5FE`, 25 pixels of padding); the site's do the same. Fixed.
 
 ## Annotations (`annotations.html`)
 
