@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.25.4
+
+- PARITY.md compares Zoom Fetch, Zoom Ranger, Zoom with Reset and Zoom Variations with uPlot.
+
 ## v0.25.3
 
 - PARITY.md compares A Million Points, Server Events, Sync Cursor, Timeline / Discrete and Tooltip and Legend with uPlot.
