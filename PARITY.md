@@ -58,7 +58,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 ## Multi-Bars (`multi-bars.html`)
 
 - Legend names: `Lib Size (KB)`, `Render Time (ms)`, `Peak Heap (MB)`, `Final Heap (MB)`, `Interact 10s (ms)`, `Toggle 6x (ms)` and `Random line`, the line hidden by a click as the bars are. Fixed; a browser test checks the names and that clicking the last entry redraws.
-- Random line in the horizontal layout: uPlot draws it; `Bars.lineDisplay` returns none when `horizontal`. Open: the points are computed in screen coordinates from the same `along` and category centres the horizontal bars use.
+- Random line in the horizontal layout: uPlot draws it; `Bars.lineDisplay` returns none when `horizontal`. Fixed: the points are computed in screen coordinates from the same `along` and category centres the horizontal bars use.
 - Numbers on the bars: `Browser.barLabels` writes 10 pixel sans-serif; uPlot fits the size to each bar. Open.
 - Line width: two pixels, as uPlot. Matches.
 

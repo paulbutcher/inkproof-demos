@@ -210,7 +210,7 @@ private def barsTest : Except String Unit := do
   let bench := MultiBars.benchmark 1 false
   let missing := MultiBars.libs.filter (·.interact.isNone) |>.size
   check (bench.bars.size == bench.series.size * MultiBars.libs.size - missing - (MultiBars.libs.filter (·.toggle.isNone)).size) "a library with no measurement has no bar"
-  check (bench.lineDisplay.size > 0 && (MultiBars.benchmark 1 true).lineDisplay.isEmpty) "the random line is drawn across, not down"
+  check (bench.lineDisplay.size > 0 && (MultiBars.benchmark 1 true).lineDisplay.size == bench.lineDisplay.size) "the random line is drawn in both layouts"
 
 private def latencyTest : Except String Unit := do
   check (LatencyHistogram.counts.foldl (· + ·) 0 == LatencyHistogram.samples.size) "every latency is counted in a bucket"

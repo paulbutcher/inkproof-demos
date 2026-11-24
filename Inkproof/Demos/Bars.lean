@@ -197,24 +197,30 @@ theorem Bar.commands_eq (b : Bar) : b.commands =
       let (x0, x1, y0, y1) := (min r.x0 r.x1, max r.x0 r.x1, min r.y0 r.y1, max r.y0 r.y1)
       #[⟨1, o, .rect ⟨x0, y0, x1, y1⟩⟩, ⟨1, b.fill, .rect ⟨x0 + b.outlineWidth, y0 + b.outlineWidth, x1 - b.outlineWidth, y1 - b.outlineWidth⟩⟩] := rfl
 
-/-- The strokes of the lines, through the centre of each group. A projection cannot swap the axes, so a horizontal chart draws none. -/
+/-- The strokes of the lines, through the centre of each group. A horizontal chart keys each point by its group's index, so that the projection can place the value along the plot and the centre across it. -/
 def Chart.lineDisplay (c : Chart) : DisplayList :=
-  if c.horizontal then #[] else
   c.lines.flatMap fun l =>
-    let pts := (l.values.toList.zipIdx.map fun (v, g) =>
-      let (s, len) := c.block g
-      (s + len / 2, some v)).toArray
-    let proj : Projection Rat Rat := ⟨fun x => x, c.along l.range⟩
-    compileLine ⟨⟨2, l.color⟩, 1, false, none, .straight⟩ proj (Segmented.single (Series.ofUnsorted pts))
+    let centre (g : Nat) : Rat := let (s, len) := c.block g; s + len / 2
+    let line : Projection Rat Rat × Array (Rat × Option Rat) :=
+      if c.horizontal then
+        (⟨fun k => c.along l.range (l.values.getD k.floor.toNat 0), id⟩,
+         (List.range l.values.size).toArray.map fun (g : Nat) => ((g : Rat), some (centre g)))
+      else
+        (⟨fun x => x, c.along l.range⟩,
+         l.values.toList.zipIdx.map (fun (v, g) => (centre g, some v)) |>.toArray)
+    compileLine ⟨⟨2, l.color⟩, 1, false, none, .straight⟩ line.1 (Segmented.single (Series.ofUnsorted line.2))
 
 theorem Chart.lineDisplay_eq (c : Chart) : c.lineDisplay =
-  if c.horizontal then #[] else
   c.lines.flatMap fun l =>
-    let pts := (l.values.toList.zipIdx.map fun (v, g) =>
-      let (s, len) := c.block g
-      (s + len / 2, some v)).toArray
-    let proj : Projection Rat Rat := ⟨fun x => x, c.along l.range⟩
-    compileLine ⟨⟨2, l.color⟩, 1, false, none, .straight⟩ proj (Segmented.single (Series.ofUnsorted pts)) := rfl
+    let centre (g : Nat) : Rat := let (s, len) := c.block g; s + len / 2
+    let line : Projection Rat Rat × Array (Rat × Option Rat) :=
+      if c.horizontal then
+        (⟨fun k => c.along l.range (l.values.getD k.floor.toNat 0), id⟩,
+         (List.range l.values.size).toArray.map fun (g : Nat) => ((g : Rat), some (centre g)))
+      else
+        (⟨fun x => x, c.along l.range⟩,
+         l.values.toList.zipIdx.map (fun (v, g) => (centre g, some v)) |>.toArray)
+    compileLine ⟨⟨2, l.color⟩, 1, false, none, .straight⟩ line.1 (Segmented.single (Series.ofUnsorted line.2)) := rfl
 
 /-- The axes, then the bars and the lines, cut off at the plot's edge. -/
 def Chart.display (c : Chart) (measure : String → Float × Float) : DisplayList :=
