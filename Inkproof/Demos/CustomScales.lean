@@ -160,25 +160,45 @@ def weibullLabels : List String :=
   ["1e-5", "1e-4", "1e-3", "1e-2", "1e-1", "2e-1", "3e-1", "5e-1", "6e-1", "7e-1", "8e-1", "9e-1", "9.5e-1", "9.9e-1",
    "9.99e-1", "9.999e-1", "9.9999e-1", "9.99999e-1"]
 
-def Spec.xLabels (s : Spec) : List String :=
-  if s.xLog then tickLabels Axes.spec.locale (logTicks (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) Axes.spec.target)
-  else Axes.linearLabels (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2)
+/-- The x axis's ticks and labels: 1, 2 and 5 of each power of ten on a logarithmic axis, otherwise at least `Axes.xSpacing` pixels apart. -/
+def Spec.xTicks (s : Spec) : List Float × List String :=
+  let (lo, hi) := (Rat.toFloat s.frame.xs.1, Rat.toFloat s.frame.xs.2)
+  if s.xLog then
+    let ts := logTicksAt .oneTwoFive lo hi Axes.spec.target
+    (ts, Axes.trimmed.formatAll ts)
+  else Axes.spacedTicks lo hi s.frame.xExtent Axes.xSpacing
 
-theorem Spec.xLabels_eq (s : Spec) : s.xLabels =
-    if s.xLog then tickLabels Axes.spec.locale (logTicks (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) Axes.spec.target)
-    else Axes.linearLabels (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) := rfl
+theorem Spec.xTicks_eq (s : Spec) : s.xTicks =
+    if s.xLog then
+      (logTicksAt .oneTwoFive (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) Axes.spec.target,
+       Axes.trimmed.formatAll (logTicksAt .oneTwoFive (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) Axes.spec.target))
+    else Axes.spacedTicks (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) s.frame.xExtent Axes.xSpacing := rfl
 
-def Spec.yLabels (s : Spec) : List String :=
+/-- The y axis's ticks and labels. -/
+def Spec.yTicks (s : Spec) : List Float × List String :=
+  let (lo, hi) := (Rat.toFloat s.frame.ys.1, Rat.toFloat s.frame.ys.2)
   match s.y with
-  | .linear => Axes.linearLabels (Rat.toFloat s.frame.ys.1) (Rat.toFloat s.frame.ys.2)
-  | .log => tickLabels Axes.spec.locale (logTicks (Rat.toFloat s.frame.ys.1) (Rat.toFloat s.frame.ys.2) Axes.spec.target)
-  | .weibull => weibullLabels
+  | .linear => Axes.spacedTicks lo hi s.frame.yExtent Axes.ySpacing
+  | .log =>
+    let ts := logTicksAt .oneTwoFive lo hi Axes.spec.target
+    (ts, Axes.trimmed.formatAll ts)
+  | .weibull => (weibullTicks, weibullLabels)
 
-theorem Spec.yLabels_eq (s : Spec) : s.yLabels =
+theorem Spec.yTicks_eq (s : Spec) : s.yTicks =
     match s.y with
-    | .linear => Axes.linearLabels (Rat.toFloat s.frame.ys.1) (Rat.toFloat s.frame.ys.2)
-    | .log => tickLabels Axes.spec.locale (logTicks (Rat.toFloat s.frame.ys.1) (Rat.toFloat s.frame.ys.2) Axes.spec.target)
-    | .weibull => weibullLabels := rfl
+    | .linear => Axes.spacedTicks (Rat.toFloat s.frame.ys.1) (Rat.toFloat s.frame.ys.2) s.frame.yExtent Axes.ySpacing
+    | .log =>
+      (logTicksAt .oneTwoFive (Rat.toFloat s.frame.ys.1) (Rat.toFloat s.frame.ys.2) Axes.spec.target,
+       Axes.trimmed.formatAll (logTicksAt .oneTwoFive (Rat.toFloat s.frame.ys.1) (Rat.toFloat s.frame.ys.2) Axes.spec.target))
+    | .weibull => (weibullTicks, weibullLabels) := rfl
+
+def Spec.xLabels (s : Spec) : List String := s.xTicks.2
+
+theorem Spec.xLabels_eq (s : Spec) : s.xLabels = s.xTicks.2 := rfl
+
+def Spec.yLabels (s : Spec) : List String := s.yTicks.2
+
+theorem Spec.yLabels_eq (s : Spec) : s.yLabels = s.yTicks.2 := rfl
 
 /-- Every label the axes may show. -/
 def Spec.labelTexts (s : Spec) : List String := s.xLabels ++ s.yLabels
@@ -187,21 +207,13 @@ theorem Spec.labelTexts_eq (s : Spec) : s.labelTexts = s.xLabels ++ s.yLabels :=
 
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame
-  [if s.xLog then compileLogAxis .bottom (plot f) s.xScale Axes.spec measure Axes.style
-   else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-   match s.y with
-   | .linear => compileLinearAxis .left (plot f) f.yScale Axes.spec measure Axes.style
-   | .log => compileLogAxis .left (plot f) ⟨s.yScale.domainStart, s.yScale.domainEnd, s.yScale.rangeStart, s.yScale.rangeEnd⟩ Axes.spec measure Axes.style
-   | .weibull => compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (weibullTicks.map s.yPixel) weibullLabels]
+  [compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (s.xTicks.1.map s.xPixel) s.xLabels,
+   compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yLabels]
 
 theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) : s.axes measure =
     (let f := s.frame
-     [if s.xLog then compileLogAxis .bottom (plot f) s.xScale Axes.spec measure Axes.style
-      else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-      match s.y with
-      | .linear => compileLinearAxis .left (plot f) f.yScale Axes.spec measure Axes.style
-      | .log => compileLogAxis .left (plot f) ⟨s.yScale.domainStart, s.yScale.domainEnd, s.yScale.rangeStart, s.yScale.rangeEnd⟩ Axes.spec measure Axes.style
-      | .weibull => compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (weibullTicks.map s.yPixel) weibullLabels]) := rfl
+     [compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (s.xTicks.1.map s.xPixel) s.xLabels,
+      compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yLabels]) := rfl
 
 def Spec.px (s : Spec) (v : Rat) : Rat := Inkproof.Float.Float.onRat s.xPixel v
 def Spec.py (s : Spec) (v : Rat) : Rat := Inkproof.Float.Float.onRat s.yPixel v

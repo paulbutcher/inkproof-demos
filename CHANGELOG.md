@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.33.0
+
+- Pages tick by the pixels between ticks, with numeric dates, 12-hour clocks and unpadded labels, and Arcsinh Scales ticks start at the linear threshold (the first of a month reads 4/1) (inkproof-axis#55, #57, #64).
+
 ## v0.32.0
 
 - Log Scales and Log Scales 2 draw faint minor gridlines and title each chart inside the chart.

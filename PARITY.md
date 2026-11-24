@@ -106,7 +106,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 ## Timezones and DST (`timezones-dst.html`)
 
 - Data: a spike once a day over the range, the same twelve charts (four ranges, UTC, the zone with the change and the other zone), with the same titles. Matches.
-- Ticks: uPlot labels every day as `3/29`, `3/30`; the site's step is two days and its labels read `Mar 29`. Open: the step comes from the library's tick choice for the width, and the label format from the library's date label.
+- Ticks: uPlot labels every day as `3/29`, `3/30`; the site's step is a day, chosen by the pixels between ticks, with the same labels. The first of a month reads `4` against uPlot's `4/1`. Open: inkproof-axis#64.
 - Context line: the date under the first tick of a day, as uPlot's. Matches.
 - Series name: `2019` in uPlot; the site read `Value`. Fixed; a browser test checks it.
 - Section headings: uPlot centres each range's heading in a pale blue band (`#E1F5FE`, 25 pixels of padding); the site's do the same. Fixed.
@@ -121,7 +121,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: the same 109 values, a thousandth to a thousand either side of zero, and the same slider from 0.001 to 1000 in decades. Matches.
 - Scale and fill: arcsinh y axis, blue line over a 10% fill. Matches.
-- Ticks: uPlot places them at the arcsinh scale's own steps; the site puts them at powers of ten and zero. Open.
+- Ticks: uPlot labels the powers of ten from the linear threshold up either side of zero, and zero, as the site does (read from the page's canvas, `-1,000, -100, -10, -1, 0, 1, 10, 100, 1,000` at the default threshold). Matches; the site's ticks follow the slider.
 
 ## Box and Whisker (`box-whisker.html`)
 
@@ -146,7 +146,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Data: the same fitted curve, bounds and twenty observations in the same three charts (linear, both logarithmic, and a Weibull y axis). The curves match.
 - Series names: `upper_ci`, `lower_ci` and `weibull_fitted` in uPlot; the site reads `Value`. Fixed.
 - X range: uPlot's logarithmic x axis starts at the first sample, about 0.4; the site's starts at 0.1. Open.
-- Ticks: uPlot labels the linear y axis every 0.05 and the logarithmic ones at 1, 0.5, 0.2, 0.1 and so on; the site labels every 0.1 and at decades with six decimals. Open: the library's tick choice.
+- Ticks: uPlot labels the linear y axis every 0.05 and the logarithmic ones at 1, 0.5, 0.2, 0.1 and so on; the site does the same, with no padding. The Weibull axis already used uPlot's own splits. Fixed.
 - Chart titles inside the chart: see Shared differences.
 
 ## Gradients (`gradients.html`)
@@ -155,13 +155,13 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Series names: `Trends`, `Over/Under`, `Tank 1 (red = high pressure)`, `Tank 2 (red = low pressure)` and `Tank 1`; the site read `Value`. Fixed; a browser test checks them.
 - Banded: uPlot's third chart has a symmetric logarithmic y axis from -100 to 100 and three colours by band; the site's is linear from -30 to 30. Open.
 - Markers: uPlot draws a hollow circle at every point; the site draws none. Open.
-- X ticks of the fills: uPlot labels `0`, `0.5`, `1`; the site `0.0`, `0.5`, `1.0`. Open: the library's number label.
+- X ticks of the fills: uPlot labels `0`, `0.5`, `1`; the site's labels drop their trailing zeros too. Fixed.
 
 ## High-Low Bands (`high-low-bands.html`)
 
 - Only the first of uPlot's twelve charts is recreated: the year of daily lows, highs and means. The others (differing paths, bars, inverted bands, the unaligned and thin bar cases, the minute-resolution temperatures) have no counterpart. Open.
 - Temperatures: the same shape, bands and gaps, with a dashed blue mean. Matches.
-- Ticks: uPlot labels every twenty days as `1/11`; the site `Jan 11`. Open: the library's date label.
+- Ticks: uPlot labels every twenty days as `1/11`; the site labels numerically too, every ten days (the step comes from the pixels between ticks), and the first of a month reads `4` (inkproof-axis#64). Open.
 - Series names: `Low`, `High` and `Avg` in uPlot; the site reads `Value`. Fixed.
 
 ## Latency Heatmap and Heatmap Cells (`latency-heatmap.html`)
@@ -176,8 +176,8 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: the same twelve servers and samples, a log and a linear chart at 1600 by 600. Matches.
 - Gaps: uPlot sets `spanGaps`, so a server's line carries on across samples it did not report (Hypixel's drop to 53 thousand is drawn); the site broke the line there. Fixed; a native test checks that no layer has a missing sample.
-- Y ticks: uPlot's log axis labels 1, 2, 5, 10 and so on with minor gridlines, and the linear one every 5,000 to 120,000; the site labels decades and every 10,000 to 110,000. Open: the library's tick choice.
-- X ticks: uPlot labels every hour (`3am`, context `7/17/20`); the site every two hours (`04:00`, context `Jul 17`). Open: the library's time labels.
+- Y ticks: uPlot's log axis labels 1, 2, 5, 10 and so on with minor gridlines, and the linear one every 5,000; the site's do the same, the linear axis ticked at least 15 pixels apart as uPlot's `space`. Fixed.
+- X ticks: uPlot labels every hour (`3am`, context `7/17/20`); the site's do too. Fixed.
 - Legend: see Shared differences; the chart title is inside the chart in uPlot (see Shared differences).
 
 ## Log Scales 2 (`log-scales2.html`)

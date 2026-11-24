@@ -40,8 +40,41 @@ def linearLabels (lo hi : Float) : List String := tickLabels spec.locale (linear
 theorem linearLabels_eq (lo hi : Float) :
     linearLabels lo hi = tickLabels spec.locale (linearTicks lo hi spec.target) := rfl
 
+/-- Labels without padding: 0, 0.5 and 1 read as written. -/
+def trimmed : NumberFormat := { trim := true }
+
+/-- The pixels uPlot keeps between ticks: 50 along an x axis and 30 along a value axis. -/
+def xSpacing : Float := 50
+
+def ySpacing : Float := 30
+
+/-- Ticks of a linear axis `extent` pixels long over `lo` to `hi`, at least `spacing` pixels apart at a step of 1, 2, 2.5 or 5 times a power of ten, with their labels. -/
+def spacedTicks (lo hi extent spacing : Float) : List Float × List String :=
+  let ts := spacedLinearTicks stepMultiples lo hi extent spacing
+  (ts, trimmed.formatAll ts)
+
+theorem spacedTicks_eq (lo hi extent spacing : Float) : spacedTicks lo hi extent spacing =
+    (spacedLinearTicks stepMultiples lo hi extent spacing, trimmed.formatAll (spacedLinearTicks stepMultiples lo hi extent spacing)) := rfl
+
 /-- Month names for time axes. -/
 def months : List String := ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+/-- Dates as 3/29 and 7/17/20, with the 24-hour clock. -/
+def numericDates : TimeStyle := { date := .numeric '/' false, contextDate := .numeric '/' false }
+
+/-- Dates as 3/29 and 7/17/20, with the 12-hour clock: 3am, 3:30pm. -/
+def twelveHour : TimeStyle := { numericDates with clock := .h12 "am" "pm" }
+
+/-- The ticks of a time axis `extent` pixels long over `lo` to `hi` Unix seconds in the zone whose offsets are `off`, at least `xSpacing` pixels apart at clock intervals, with their labels and the context line of each. -/
+def spacedTimeTicks (style : TimeStyle) (off : Int → Int) (lo hi extent : Float) :
+    List Float × List String × List (Option String) :=
+  let (step, ts) := durationTicksAtSpaced off lo hi extent xSpacing
+  (ts, timeTickLabelsAtWith style off months step ts, timeTickContextsAtWith style off months step ts)
+
+theorem spacedTimeTicks_eq (style : TimeStyle) (off : Int → Int) (lo hi extent : Float) : spacedTimeTicks style off lo hi extent =
+    ((durationTicksAtSpaced off lo hi extent xSpacing).2,
+     timeTickLabelsAtWith style off months (durationTicksAtSpaced off lo hi extent xSpacing).1 (durationTicksAtSpaced off lo hi extent xSpacing).2,
+     timeTickContextsAtWith style off months (durationTicksAtSpaced off lo hi extent xSpacing).1 (durationTicksAtSpaced off lo hi extent xSpacing).2) := rfl
 
 /-- The ticks of a time axis over `lo` to `hi` seconds, at clock intervals, about `target` of them, with their labels. -/
 def timeTicks (lo hi : Float) (target : Nat) : List Float × List String :=

@@ -2,6 +2,7 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
+import Inkproof.Demos.Axes
 import Inkproof.Demos.Lines
 import Inkproof.Demos.HighLowSource
 
@@ -26,7 +27,7 @@ def temps : Chart :=
     [{ data := lowSeries, label := "Low", color := ⟨0, 128, 0, 255⟩ },
      { data := highSeries, label := "High", color := ⟨255, 0, 0, 255⟩ },
      { data := meanSeries, label := "Avg", color := ⟨0, 0, 255, 255⟩, halfWidth := 1, dash := some ⟨10, 10⟩ }]
-  { name := "temps", width := 1920, height := 600, xs := (days.getD 0 0, days.getD 364 0), time := true,
+  { name := "temps", width := 1920, height := 600, xs := (days.getD 0 0, days.getD 364 0), time := true, timeStyle := some Axes.numericDates,
     left := autoYAxis layers "°F", layers,
     bands := [⟨1, 2, ⟨255, 0, 0, 26⟩⟩, ⟨0, 2, ⟨0, 255, 0, 26⟩⟩] }
 

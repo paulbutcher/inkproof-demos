@@ -17,7 +17,7 @@ require «inkproof-export» from git "https://github.com/paulbutcher/inkproof-ex
 require «inkproof-viewport» from git "https://github.com/paulbutcher/inkproof-viewport" @ "v0.10.0"
 require «inkproof-scene» from git "https://github.com/paulbutcher/inkproof-scene" @ "v0.30.0"
 require «inkproof-scale» from git "https://github.com/paulbutcher/inkproof-scale" @ "v0.11.0"
-require «inkproof-axis» from git "https://github.com/paulbutcher/inkproof-axis" @ "v0.15.0"
+require «inkproof-axis» from git "https://github.com/paulbutcher/inkproof-axis" @ "v0.16.0"
 require «inkproof-core» from git "https://github.com/paulbutcher/inkproof-core" @ "v0.15.0"
 require «inkproof-float» from git "https://github.com/paulbutcher/inkproof-float" @ "v0.8.0"
 require «inkproof-gpu» from git "https://github.com/paulbutcher/inkproof-gpu" @ "v0.22.1"

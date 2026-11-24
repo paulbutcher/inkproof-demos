@@ -59,14 +59,18 @@ def Spec.frame (s : Spec) : Frame := ⟨80, width - 20, 20, height - 40, (times.
 theorem Spec.frame_eq (s : Spec) :
     s.frame = ⟨80, width - 20, 20, height - 40, (times.getD 0 0, times.getD (times.size - 1) 0), s.ys⟩ := rfl
 
-/-- The y axis's tick values: 1, 2 and 5 of each power of ten on a log scale. -/
+/-- The pixels uPlot keeps between ticks of this page's y axes. -/
+def ySpacing : Float := 15
+
+/-- The y axis's tick values: 1, 2 and 5 of each power of ten on a log scale, and on a linear one at steps of 1, 2, 2.5 or 5 times a power of ten. -/
 def Spec.yTicks (s : Spec) : List Float :=
   let (lo, hi) := (Rat.toFloat s.ys.1, Rat.toFloat s.ys.2)
-  if s.log then logTicksAt .oneTwoFive lo hi Axes.spec.target else linearTicks lo hi Axes.spec.target
+  if s.log then logTicksAt .oneTwoFive lo hi Axes.spec.target
+  else (Axes.spacedTicks lo hi (Rat.toFloat (s.frame.bottom - s.frame.top)) ySpacing).1
 
 theorem Spec.yTicks_eq (s : Spec) : s.yTicks =
     if s.log then logTicksAt .oneTwoFive (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) Axes.spec.target
-    else linearTicks (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) Axes.spec.target := rfl
+    else (Axes.spacedTicks (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) (Rat.toFloat (s.frame.bottom - s.frame.top)) ySpacing).1 := rfl
 
 /-- The y axis's minor gridlines: the other multiples of each power of ten. -/
 def Spec.yMinor (s : Spec) : List Float :=
@@ -76,9 +80,11 @@ theorem Spec.yMinor_eq (s : Spec) : s.yMinor =
     if s.log then logMinorTicks .oneTwoFive (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) Axes.spec.target else [] := rfl
 
 /-- The labels of the y axis's ticks. -/
-def Spec.yLabels (s : Spec) : List String := tickLabels Axes.spec.locale s.yTicks
+def Spec.yLabels (s : Spec) : List String :=
+  if s.log then tickLabels Axes.spec.locale s.yTicks else Axes.trimmed.formatAll s.yTicks
 
-theorem Spec.yLabels_eq (s : Spec) : s.yLabels = tickLabels Axes.spec.locale s.yTicks := rfl
+theorem Spec.yLabels_eq (s : Spec) : s.yLabels =
+    if s.log then tickLabels Axes.spec.locale s.yTicks else Axes.trimmed.formatAll s.yTicks := rfl
 
 /-- Data to pixels along the y axis. -/
 def Spec.yPixel (s : Spec) : Float → Float :=
@@ -89,24 +95,20 @@ theorem Spec.yPixel_eq (s : Spec) : s.yPixel =
     if s.log then Log.map Float.log ⟨Rat.toFloat s.ys.1, Rat.toFloat s.ys.2, Rat.toFloat s.frame.bottom, Rat.toFloat s.frame.top⟩
     else (Linear.mk (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) (Rat.toFloat s.frame.bottom) (Rat.toFloat s.frame.top)).map := rfl
 
-/-- About one tick every 120 pixels along the time axis. -/
-def timeTarget : Nat := width / 120
-
 /-- Every label either axis may show: the browser measures these before the axes choose among them. -/
 def Spec.labelTexts (s : Spec) : List String :=
-  (Axes.timeTicks (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) timeTarget).2 ++ s.yLabels
+  (s.frame.spacedTimeTicks Axes.twelveHour).2.1 ++ s.yLabels
 
-theorem Spec.labelTexts_eq (s : Spec) : s.labelTexts =
-    (Axes.timeTicks (Rat.toFloat s.frame.xs.1) (Rat.toFloat s.frame.xs.2) timeTarget).2 ++ s.yLabels := rfl
+theorem Spec.labelTexts_eq (s : Spec) : s.labelTexts = (s.frame.spacedTimeTicks Axes.twelveHour).2.1 ++ s.yLabels := rfl
 
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame
-  [f.timeAxis timeTarget measure,
+  [f.spacedTimeAxis Axes.twelveHour measure,
    compilePixelAxisMinor .left (plot f) Axes.style measure Axes.spec.labelGap (s.yTicks.map s.yPixel) s.yLabels
      (Axes.minorGrid (s.yMinor.map s.yPixel))]
 
 theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) : s.axes measure =
-    [s.frame.timeAxis timeTarget measure,
+    [s.frame.spacedTimeAxis Axes.twelveHour measure,
      compilePixelAxisMinor .left (plot s.frame) Axes.style measure Axes.spec.labelGap (s.yTicks.map s.yPixel) s.yLabels
        (Axes.minorGrid (s.yMinor.map s.yPixel))] := rfl
 

@@ -113,6 +113,10 @@ structure Chart where
   height : Nat
   xs : Rat × Rat
   time : Bool
+  /-- How a time axis's labels read; without it the axis is ticked about every 120 pixels. -/
+  timeStyle : Option TimeStyle := none
+  /-- Whether value axes are ticked by the pixels between ticks, with labels that drop trailing zeros. -/
+  spaced : Bool := false
   left : YAxis
   right : Option YAxis := none
   layers : List Layer
@@ -165,41 +169,97 @@ theorem YAxis.ticks_eq (a : YAxis) : a.ticks =
     (linearTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) 10,
      (tickLabels .en (linearTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) 10)).map (· ++ a.suffix)) := rfl
 
+/-- The tick values and labels of a y axis `extent` pixels long, at least `Axes.ySpacing` pixels apart. -/
+def YAxis.spacedTicks (a : YAxis) (extent : Float) : List Float × List String :=
+  let (ts, ls) := Axes.spacedTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) extent Axes.ySpacing
+  (ts, ls.map (· ++ a.suffix))
+
+theorem YAxis.spacedTicks_eq (a : YAxis) (extent : Float) : a.spacedTicks extent =
+    ((Axes.spacedTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) extent Axes.ySpacing).1,
+     (Axes.spacedTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) extent Axes.ySpacing).2.map (· ++ a.suffix)) := rfl
+
 /-- About one tick every 120 pixels along a time axis. -/
 def Chart.timeTarget (c : Chart) : Nat := c.width / 120
 
 theorem Chart.timeTarget_eq (c : Chart) : c.timeTarget = c.width / 120 := rfl
 
+/-- The tick values and labels of a y axis of the chart. -/
+def Chart.yTicks (c : Chart) (a : YAxis) : List Float × List String :=
+  if c.spaced then a.spacedTicks c.frame.yExtent else a.ticks
+
+theorem Chart.yTicks_eq (c : Chart) (a : YAxis) : c.yTicks a = if c.spaced then a.spacedTicks c.frame.yExtent else a.ticks := rfl
+
+/-- The tick values and labels of the x axis of a chart that is not over times, at least `Axes.xSpacing` pixels apart. -/
+def Chart.xTicks (c : Chart) : List Float × List String :=
+  Axes.spacedTicks (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2) c.frame.xExtent Axes.xSpacing
+
+theorem Chart.xTicks_eq (c : Chart) : c.xTicks =
+    Axes.spacedTicks (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2) c.frame.xExtent Axes.xSpacing := rfl
+
+/-- The labels of the x axis. -/
+def Chart.xLabels (c : Chart) : List String :=
+  if c.time then
+    match c.timeStyle with
+    | some style => (c.frame.spacedTimeTicks style).2.1
+    | none => (Axes.timeTicks (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2) c.timeTarget).2
+  else if c.spaced then c.xTicks.2
+  else Axes.linearLabels (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2)
+
+theorem Chart.xLabels_eq (c : Chart) : c.xLabels =
+    if c.time then
+      match c.timeStyle with
+      | some style => (c.frame.spacedTimeTicks style).2.1
+      | none => (Axes.timeTicks (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2) c.timeTarget).2
+    else if c.spaced then c.xTicks.2
+    else Axes.linearLabels (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2) := rfl
+
+/-- The bottom axis. -/
+def Chart.xAxis (c : Chart) (measure : String → Float × Float) : AxisDrawing :=
+  let f := c.frame
+  if c.time then
+    match c.timeStyle with
+    | some style => f.spacedTimeAxis style measure
+    | none => f.timeAxis c.timeTarget measure
+  else if c.spaced then
+    let (ts, labels) := c.xTicks
+    compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (ts.map f.xScale.map) labels
+  else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style
+
+theorem Chart.xAxis_eq (c : Chart) (measure : String → Float × Float) : c.xAxis measure =
+    let f := c.frame
+    if c.time then
+      match c.timeStyle with
+      | some style => f.spacedTimeAxis style measure
+      | none => f.timeAxis c.timeTarget measure
+    else if c.spaced then
+      let (ts, labels) := c.xTicks
+      compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (ts.map f.xScale.map) labels
+    else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style := rfl
+
 /-- Every label an axis may show: the browser measures these before the axes choose among them. -/
 def Chart.labelTexts (c : Chart) : List String :=
-  (if c.time then (Axes.timeTicks (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2) c.timeTarget).2
-   else Axes.linearLabels (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2)) ++
-  c.left.ticks.2 ++ (c.right.map (·.ticks.2)).getD []
+  c.xLabels ++ (c.yTicks c.left).2 ++ (c.right.map (fun a => (c.yTicks a).2)).getD []
 
 theorem Chart.labelTexts_eq (c : Chart) : c.labelTexts =
-    (if c.time then (Axes.timeTicks (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2) c.timeTarget).2
-     else Axes.linearLabels (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2)) ++
-    c.left.ticks.2 ++ (c.right.map (·.ticks.2)).getD [] := rfl
+    c.xLabels ++ (c.yTicks c.left).2 ++ (c.right.map (fun a => (c.yTicks a).2)).getD [] := rfl
 
 def Chart.axes (c : Chart) (measure : String → Float × Float) : List AxisDrawing :=
   let f := c.frame
   let yAxis (side : Side) (a : YAxis) :=
-    let (ts, ls) := a.ticks
+    let (ts, ls) := c.yTicks a
     let scale : Linear Float := ⟨Rat.toFloat a.range.1, Rat.toFloat a.range.2, Rat.toFloat f.bottom, Rat.toFloat f.top⟩
     compilePixelAxis side (plot f) (if a.grid then Axes.style else { Axes.style with grid := none }) measure
       Axes.spec.labelGap (ts.map scale.map) ls
-  [if c.time then f.timeAxis c.timeTarget measure else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-   yAxis .left c.left] ++ (c.right.map (yAxis .right)).toList
+  [c.xAxis measure, yAxis .left c.left] ++ (c.right.map (yAxis .right)).toList
 
 theorem Chart.axes_eq (c : Chart) (measure : String → Float × Float) : c.axes measure =
     let f := c.frame
     let yAxis (side : Side) (a : YAxis) :=
-      let (ts, ls) := a.ticks
+      let (ts, ls) := c.yTicks a
       let scale : Linear Float := ⟨Rat.toFloat a.range.1, Rat.toFloat a.range.2, Rat.toFloat f.bottom, Rat.toFloat f.top⟩
       compilePixelAxis side (plot f) (if a.grid then Axes.style else { Axes.style with grid := none }) measure
         Axes.spec.labelGap (ts.map scale.map) ls
-    [if c.time then f.timeAxis c.timeTarget measure else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-     yAxis .left c.left] ++ (c.right.map (yAxis .right)).toList := rfl
+    [c.xAxis measure, yAxis .left c.left] ++ (c.right.map (yAxis .right)).toList := rfl
 
 /-- The layer's strokes, split where its `maxStep` says the data has a gap. -/
 def Layer.segments (l : Layer) : Segmented Rat Rat :=

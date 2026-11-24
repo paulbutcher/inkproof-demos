@@ -54,11 +54,6 @@ structure Spec where
   times : Array Rat
   values : Array Rat
 
-/-- The ticks of this axis are about 120 pixels apart. -/
-def Spec.target (s : Spec) : Nat := s.width / 120
-
-theorem Spec.target_eq (s : Spec) : s.target = s.width / 120 := rfl
-
 def Spec.xs (s : Spec) : Rat × Rat := (s.times.getD 0 0, s.times.getD (s.times.size - 1) 0)
 
 theorem Spec.xs_eq (s : Spec) : s.xs = (s.times.getD 0 0, s.times.getD (s.times.size - 1) 0) := rfl
@@ -74,33 +69,56 @@ def Spec.frame (s : Spec) : Frame := Frame.sized s.width s.height s.xs s.ys
 
 theorem Spec.frame_eq (s : Spec) : s.frame = Frame.sized s.width s.height s.xs s.ys := rfl
 
+/-- The width of the plot in pixels. -/
+def Spec.extent (s : Spec) : Float := Rat.toFloat (s.frame.right - s.frame.left)
+
+theorem Spec.extent_eq (s : Spec) : s.extent = Rat.toFloat (s.frame.right - s.frame.left) := rfl
+
+/-- The clock step and instants of the ticks, at least `Axes.xSpacing` pixels apart. -/
+def Spec.clockTicks (s : Spec) : Float × List Float :=
+  durationTicksAtSpaced s.zone.offset (Rat.toFloat s.xs.1) (Rat.toFloat s.xs.2) s.extent Axes.xSpacing
+
+theorem Spec.clockTicks_eq (s : Spec) : s.clockTicks =
+    durationTicksAtSpaced s.zone.offset (Rat.toFloat s.xs.1) (Rat.toFloat s.xs.2) s.extent Axes.xSpacing := rfl
+
 /-- The distance between labelled ticks that decides what a label shows: the clock step of the ticks, or a month's length for month ticks, so they read as month names. -/
 def Spec.step (s : Spec) : Float :=
   match s.ticks with
-  | .clock => (durationTicksAt s.zone.offset (Rat.toFloat s.xs.1) (Rat.toFloat s.xs.2) s.target).1
+  | .clock => s.clockTicks.1
   | .months _ => 31 * 86400
 
 theorem Spec.step_eq (s : Spec) : s.step =
     match s.ticks with
-    | .clock => (durationTicksAt s.zone.offset (Rat.toFloat s.xs.1) (Rat.toFloat s.xs.2) s.target).1
+    | .clock => s.clockTicks.1
     | .months _ => 31 * 86400 := rfl
 
 /-- The instants of the time axis's ticks. -/
 def Spec.tickTimes (s : Spec) : List Float :=
   match s.ticks with
-  | .clock => (durationTicksAt s.zone.offset (Rat.toFloat s.xs.1) (Rat.toFloat s.xs.2) s.target).2
+  | .clock => s.clockTicks.2
   | .months n => (monthTicks s.zone.offset n s.xs.1.floor s.xs.2.floor).map Float.ofInt
 
 theorem Spec.tickTimes_eq (s : Spec) : s.tickTimes =
     match s.ticks with
-    | .clock => (durationTicksAt s.zone.offset (Rat.toFloat s.xs.1) (Rat.toFloat s.xs.2) s.target).2
+    | .clock => s.clockTicks.2
     | .months n => (monthTicks s.zone.offset n s.xs.1.floor s.xs.2.floor).map Float.ofInt := rfl
+
+/-- How the labels read: dates as digits on a clock axis, month names on a month axis. -/
+def Spec.style (s : Spec) : TimeStyle :=
+  match s.ticks with
+  | .clock => Axes.numericDates
+  | .months _ => {}
+
+theorem Spec.style_eq (s : Spec) : s.style =
+    match s.ticks with
+    | .clock => Axes.numericDates
+    | .months _ => {} := rfl
 
 /-- The labels of the ticks, as the zone's clocks read at each. -/
 def Spec.tickLabels (s : Spec) : List String :=
-  timeTickLabelsAt s.zone.offset Axes.months s.step s.tickTimes
+  timeTickLabelsAtWith s.style s.zone.offset Axes.months s.step s.tickTimes
 
-theorem Spec.tickLabels_eq (s : Spec) : s.tickLabels = timeTickLabelsAt s.zone.offset Axes.months s.step s.tickTimes := rfl
+theorem Spec.tickLabels_eq (s : Spec) : s.tickLabels = timeTickLabelsAtWith s.style s.zone.offset Axes.months s.step s.tickTimes := rfl
 
 /-- Every label an axis may show: the browser measures these before the axes choose among them. -/
 def Spec.labelTexts (s : Spec) : List String :=
@@ -111,9 +129,9 @@ theorem Spec.labelTexts_eq (s : Spec) : s.labelTexts =
 
 /-- The year or day each tick begins, for a second line under its label. -/
 def Spec.tickContexts (s : Spec) : List (Option String) :=
-  timeTickContextsAt s.zone.offset Axes.months s.step s.tickTimes
+  timeTickContextsAtWith s.style s.zone.offset Axes.months s.step s.tickTimes
 
-theorem Spec.tickContexts_eq (s : Spec) : s.tickContexts = timeTickContextsAt s.zone.offset Axes.months s.step s.tickTimes := rfl
+theorem Spec.tickContexts_eq (s : Spec) : s.tickContexts = timeTickContextsAtWith s.style s.zone.offset Axes.months s.step s.tickTimes := rfl
 
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame

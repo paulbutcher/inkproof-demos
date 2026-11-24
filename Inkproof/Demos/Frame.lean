@@ -11,7 +11,7 @@ import Inkproof.Demos.Axes
 
 namespace Inkproof.Demos
 
-open Inkproof.Scene Inkproof.Scale Inkproof.Viewport
+open Inkproof.Axis Inkproof.Scene Inkproof.Scale Inkproof.Viewport
 
 /-- The page's colour, which every chart is drawn on. -/
 def background : Color := ⟨255, 255, 255, 255⟩
@@ -90,6 +90,33 @@ def Frame.timeAxis (f : Frame) (target : Nat) (measure : String → Float × Flo
 theorem Frame.timeAxis_eq (f : Frame) (target : Nat) (measure : String → Float × Float) :
     f.timeAxis target measure =
       compileTimeAxis .bottom (plot f) f.xScale { Axes.spec with target } Axes.months measure Axes.style := rfl
+
+/-- The width of the plot in pixels. -/
+def Frame.xExtent (f : Frame) : Float := Rat.toFloat (f.right - f.left)
+
+theorem Frame.xExtent_eq (f : Frame) : f.xExtent = Rat.toFloat (f.right - f.left) := rfl
+
+/-- The height of the plot in pixels. -/
+def Frame.yExtent (f : Frame) : Float := Rat.toFloat (f.bottom - f.top)
+
+theorem Frame.yExtent_eq (f : Frame) : f.yExtent = Rat.toFloat (f.bottom - f.top) := rfl
+
+/-- The ticks of the bottom axis over Unix times in UTC, at least `Axes.xSpacing` pixels apart, with their labels and contexts. -/
+def Frame.spacedTimeTicks (f : Frame) (style : TimeStyle) : List Float × List String × List (Option String) :=
+  Axes.spacedTimeTicks style (fun _ => 0) (Rat.toFloat f.xs.1) (Rat.toFloat f.xs.2) f.xExtent
+
+theorem Frame.spacedTimeTicks_eq (f : Frame) (style : TimeStyle) : f.spacedTimeTicks style =
+    Axes.spacedTimeTicks style (fun _ => 0) (Rat.toFloat f.xs.1) (Rat.toFloat f.xs.2) f.xExtent := rfl
+
+/-- The bottom axis of `f` over Unix times, labelled in `style`. -/
+def Frame.spacedTimeAxis (f : Frame) (style : TimeStyle) (measure : String → Float × Float) : AxisDrawing :=
+  let (ts, labels, contexts) := f.spacedTimeTicks style
+  compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (ts.map f.xScale.map) labels contexts
+
+theorem Frame.spacedTimeAxis_eq (f : Frame) (style : TimeStyle) (measure : String → Float × Float) :
+    f.spacedTimeAxis style measure =
+      compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap
+        ((f.spacedTimeTicks style).1.map f.xScale.map) (f.spacedTimeTicks style).2.1 (f.spacedTimeTicks style).2.2 := rfl
 
 /-- The axes' commands, drawn under the data. -/
 def axisDisplay (f : Frame) (measure : String → Float × Float) : DisplayList :=

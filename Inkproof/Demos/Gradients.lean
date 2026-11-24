@@ -13,7 +13,7 @@ private def line (xs ys : Array Rat) (color : Color) : Layer :=
   { data := series xs (ys.map some), color, halfWidth := 2 }
 
 private def chart (name : String) (xs : Array Rat) (layers : List Layer) : Chart :=
-  { name, width := 800, height := 400, xs := (xs.getD 0 0, xs.getD (xs.size - 1) 0), time := false, left := autoYAxis layers, layers }
+  { name, width := 800, height := 400, xs := (xs.getD 0 0, xs.getD (xs.size - 1) 0), time := false, spaced := true, left := autoYAxis layers, layers }
 
 private def red : Color := ⟨255, 0, 0, 255⟩
 private def orange : Color := ⟨255, 165, 0, 255⟩

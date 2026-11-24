@@ -64,31 +64,32 @@ def yValue (k : Int) : Float → Float := Asinh.unmap Float.asinh Float.sinh (yS
 
 theorem yValue_eq (k : Int) : yValue k = Asinh.unmap Float.asinh Float.sinh (yScale k) := rfl
 
-/-- Ticks at the powers of ten either side of zero, and at zero. -/
-def yTicks : List Float :=
-  let decades := logTicks 1e-3 1e3 Axes.spec.target
+/-- Ticks at the powers of ten from the linear threshold up to a thousand, either side of zero, and at zero. -/
+def yTicks (k : Int) : List Float :=
+  let decades := logTicks (Rat.toFloat (threshold k)) 1e3 Axes.spec.target
   decades.reverse.map (- ·) ++ [0] ++ decades
 
-theorem yTicks_eq : yTicks =
-    (logTicks 1e-3 1e3 Axes.spec.target).reverse.map (- ·) ++ [0] ++ logTicks 1e-3 1e3 Axes.spec.target := rfl
+theorem yTicks_eq (k : Int) : yTicks k =
+    (logTicks (Rat.toFloat (threshold k)) 1e3 Axes.spec.target).reverse.map (- ·) ++ [0] ++
+      logTicks (Rat.toFloat (threshold k)) 1e3 Axes.spec.target := rfl
 
 /-- Each tick is written alone, with only the digits it needs, since the ticks span a million-fold range. -/
-def yLabels : List String := yTicks.map fun t => (tickLabels Axes.spec.locale [t]).headD ""
+def yLabels (k : Int) : List String := (yTicks k).map fun t => (tickLabels Axes.spec.locale [t]).headD ""
 
-theorem yLabels_eq : yLabels = yTicks.map fun t => (tickLabels Axes.spec.locale [t]).headD "" := rfl
+theorem yLabels_eq (k : Int) : yLabels k = (yTicks k).map fun t => (tickLabels Axes.spec.locale [t]).headD "" := rfl
 
-/-- Every label the axes may show. -/
-def labelTexts : List String := Axes.linearLabels 1 values.size.toFloat ++ yLabels
+/-- Every label the axes may show, for the widest range of ticks, the threshold of a thousandth. -/
+def labelTexts : List String := Axes.linearLabels 1 values.size.toFloat ++ yLabels (-3)
 
-theorem labelTexts_eq : labelTexts = Axes.linearLabels 1 values.size.toFloat ++ yLabels := rfl
+theorem labelTexts_eq : labelTexts = Axes.linearLabels 1 values.size.toFloat ++ yLabels (-3) := rfl
 
 def axes (k : Int) (measure : String → Float × Float) : List AxisDrawing :=
   [compileLinearAxis .bottom (plot frame) frame.xScale Axes.spec measure Axes.style,
-   compilePixelAxis .left (plot frame) Axes.style measure Axes.spec.labelGap (yTicks.map (yPixel k)) yLabels]
+   compilePixelAxis .left (plot frame) Axes.style measure Axes.spec.labelGap ((yTicks k).map (yPixel k)) (yLabels k)]
 
 theorem axes_eq (k : Int) (measure : String → Float × Float) : axes k measure =
     [compileLinearAxis .bottom (plot frame) frame.xScale Axes.spec measure Axes.style,
-     compilePixelAxis .left (plot frame) Axes.style measure Axes.spec.labelGap (yTicks.map (yPixel k)) yLabels] := rfl
+     compilePixelAxis .left (plot frame) Axes.style measure Axes.spec.labelGap ((yTicks k).map (yPixel k)) (yLabels k)] := rfl
 
 /-- Data to pixels: the y axis is the arcsinh scale. -/
 def projection (k : Int) : Projection Rat Rat :=

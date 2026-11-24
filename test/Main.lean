@@ -121,6 +121,11 @@ private def logScalesTest : Except String Unit := do
     let [bottom, left] := spec.axes measure | throw s!"{spec.name}: expected two axes"
     check (!bottom.labels.isEmpty && !left.labels.isEmpty) s!"{spec.name}: both axes keep labels"
     check (left.labels.all fun l => l.anchor.y ≥ f.top && l.anchor.y ≤ f.bottom) s!"{spec.name}: y labels lie within the plot"
+    if !spec.log then
+      let ts := spec.yTicks
+      check (ts.length ≥ 2 && (ts.zip ts.tail).all fun (a, b) => (b - a) * Rat.toFloat (f.bottom - f.top) / Rat.toFloat (spec.ys.2 - spec.ys.1) ≥ LogScales.ySpacing - 1e-6) s!"{spec.name}: y ticks are at least the spacing apart"
+    let (_, labels, _) := f.spacedTimeTicks Axes.twelveHour
+    check (labels.any (· == "3am") && labels.any (· == "12pm")) s!"{spec.name}: hourly ticks read on a 12-hour clock"
 
 private def millionTest : Except String Unit := do
   let exts := Million.columnExtents Million.pyramid
@@ -348,6 +353,7 @@ private def calendarTimeTest : Except String Unit := do
     check (!ts.isEmpty && ts.length == s.tickLabels.length) s!"{s.name}: every tick has a label"
     check ((ts.zip ts.tail).all fun (a, b) => a < b) s!"{s.name}: ticks and labels run in increasing order of instant"
     check (ts.all fun t => Rat.toFloat s.xs.1 ≤ t && t ≤ Rat.toFloat s.xs.2) s!"{s.name}: ticks lie within the range"
+    check (ts.length == 1 || ((ts.zip ts.tail).all fun (a, b) => (b - a) * s.extent / Rat.toFloat (s.xs.2 - s.xs.1) ≥ Axes.xSpacing - 1e-6)) s!"{s.name}: ticks are at least the spacing apart"
     if s.step ≥ 3600 then
       check (ts.all fun t => (t.toInt64.toInt + s.zone.offset t.toInt64.toInt) % 3600 == 0) s!"{s.name}: hourly ticks sit on the zone's local hours"
     if s.step ≥ 86400 then
@@ -371,6 +377,9 @@ private def arcsinhTest : Except String Unit := do
       check ((back - Rat.toFloat v).abs ≤ 1e-6 * (1 + (Rat.toFloat v).abs)) s!"position {k}: the pixel of {Rat.toFloat v} maps back to {back}"
       check (ArcsinhScales.frame.top.toFloat ≤ y && y ≤ ArcsinhScales.frame.bottom.toFloat) s!"position {k}: {Rat.toFloat v} lies within the plot"
     check ((vs.toList.zip vs.toList.tail).all fun (a, b) => ArcsinhScales.yPixel k (Rat.toFloat a) > ArcsinhScales.yPixel k (Rat.toFloat b)) s!"position {k}: larger values are higher on the page"
+    let ticks := ArcsinhScales.yTicks k
+    check (ticks.contains 0 && ticks.all fun t => t == 0 || (ArcsinhScales.threshold k |> Rat.toFloat) ≤ t.abs * (1 + 1e-9)) s!"position {k}: no tick lies between zero and the linear threshold"
+    check ((ArcsinhScales.yLabels k).all (ArcsinhScales.labelTexts.contains ·)) s!"position {k}: every label is among those measured"
 
 private def customScalesTest : Except String Unit := do
   let xs := CustomScales.times
