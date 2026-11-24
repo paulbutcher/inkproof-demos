@@ -1018,6 +1018,9 @@ def Inkproof.Demos.Stacked.areaSeries : Array (Inkproof.Core.Series Rat Rat)
 def Inkproof.Demos.Stacked.barChart : Array Bool → Nat → Inkproof.Demos.Frame → (String → Float × Float) → Inkproof.Scene.DisplayList
 theorem Inkproof.Demos.Stacked.barChart_eq : ∀ (off : Array Bool) (seed : Nat) (f : Inkproof.Demos.Frame) (measure : String → Float × Float), Inkproof.Demos.Stacked.barChart off seed f measure = Inkproof.Demos.axisDisplay f measure ++ Inkproof.Scene.compileStackedBars Inkproof.Demos.Stacked.paint✝ (Inkproof.Demos.Stacked.barWidth f) (Inkproof.Demos.projection f) (Inkproof.Demos.Stacked.hide off (Inkproof.Demos.Stacked.barSeries seed))
 def Inkproof.Demos.Stacked.barFrame : Inkproof.Demos.Frame
+def Inkproof.Demos.Stacked.barNames : List String
+theorem Inkproof.Demos.Stacked.barNames_eq : Inkproof.Demos.Stacked.barNames = ["bars 1", "bars 2", "bars 3", "bars 4"]
+theorem Inkproof.Demos.Stacked.barNames_length : Inkproof.Demos.Stacked.barNames.length = (Inkproof.Demos.Stacked.barSeries 0).size
 def Inkproof.Demos.Stacked.barSeries : Nat → Array (Inkproof.Core.Series Rat Rat)
 theorem Inkproof.Demos.Stacked.barSeries_eq : ∀ (seed : Nat), Inkproof.Demos.Stacked.barSeries seed = Array.map (fun x => Inkproof.Demos.Stacked.mkSeries✝ x Inkproof.Demos.Stacked.barXs✝) (Inkproof.Demos.Stacked.barLevels✝ seed).toArray
 def Inkproof.Demos.Stacked.barWidth : Inkproof.Demos.Frame → Rat

@@ -50,6 +50,15 @@ def barSeries (seed : Nat) : Array (Series Rat Rat) := (barLevels seed).toArray.
 
 theorem barSeries_eq (seed : Nat) : barSeries seed = (barLevels seed).toArray.map (mkSeries · barXs) := rfl
 
+/-- The names uPlot gives the four bar series. -/
+def barNames : List String := (List.range 4).map fun i => s!"bars {i + 1}"
+
+theorem barNames_eq : barNames = ["bars 1", "bars 2", "bars 3", "bars 4"] := by
+  decide
+
+theorem barNames_length : barNames.length = (barSeries 0).size := by
+  simp [barNames, barSeries, barLevels]
+
 def areaFrame : Frame := Frame.sized 800 400 (1, 30) (0, 70)
 
 def barFrame : Frame := Frame.sized 800 400 (-1, 101) (-100, 1200)

@@ -45,7 +45,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Stacked areas: uPlot strokes each series' top edge in its colour and draws a point at every sample; the site draws the fills only. Open.
 - Stacked bars: the bar width is a fraction of the spacing, as uPlot's builder gives it (fixed in #111, issue [#108](http://localhost:3000/tentenths/inkproof-demos/issues/108)). uPlot's bars also carry a two pixel stroke in the series colour (`width: 2`); whether the site's match is not yet checked. Open.
-- Legend: uPlot names the series `bars 1` to `bars 4` (and `A`, `B` on a further chart) and lists the x entry first; the page names them `Series N`. Open.
+- Legend: uPlot names the series `bars 1` to `bars 4` (and `A`, `B` on a further chart) and lists the x entry first; the page names the bars `bars 1` to `bars 4`; the x entry is under Shared differences. Fixed.
 - Charts below the first two (`Stacked 2` and the bar charts' variants): not yet compared.
 
 ## Scatter and Bubble (`scatter.html`)
