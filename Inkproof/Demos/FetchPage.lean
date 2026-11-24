@@ -27,7 +27,7 @@ private def fetchFor (view : View Float) : Async (Option Zoom.Chart) := do
 
 /-- Draw the `zoom-fetch` chart from data fetched for the range it shows, and fetch again whenever the pointer or keys change the range. -/
 def mount : IO Unit := do
-  let cache ← SceneCache.new
+  let cache ← Browser.Retention.new
   let current ← IO.mkRef (Linked.fetched #[])
   let latest ← IO.mkRef 0
   let off ← IO.mkRef #[false]

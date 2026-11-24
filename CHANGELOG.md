@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.24.0
+
+- A legend click on the Zoom Wheel and Touch and Zoom Fetch pages, and on every page that draws retained layers, replays the draws recorded for the layers drawn before, so a click costs time in the number of layers, not their commands.
+- Depends on inkproof-gpu v0.22.1 and inkproof-scene v0.29.0.
+
 ## v0.23.0
 
 - A legend click on the Points and Sync Cursor pages draws again from retained layers, uploading and tessellating nothing again.

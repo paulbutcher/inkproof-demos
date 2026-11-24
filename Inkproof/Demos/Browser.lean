@@ -146,6 +146,23 @@ structure Drawing where
   labels : Array Label
   access : Array Bool → Access
 
+/-- A chart's buffers on the GPU and the draws recorded for the layers in them, kept across frames. -/
+structure Retention where
+  cache : SceneCache
+  streams : IO.Ref (List Gpu.Stream)
+
+def Retention.new : IO Retention := do pure { cache := ← SceneCache.new, streams := ← IO.mkRef [] }
+
+/-- Forget the buffers, as when the chart's data changed. -/
+def Retention.invalidate (r : Retention) : IO Unit := r.cache.invalidate
+
+/-- Build a frame with `f`, given what the chart holds, and keep what `f` leaves. -/
+def Retention.build {α : Type} (r : Retention) (f : Gpu.Retained → Bool → IO (Gpu.Retained × α)) : IO α :=
+  r.cache.build fun old first => do
+    let (kept, a) ← f ⟨old, ← r.streams.get⟩ first
+    r.streams.set kept.streams
+    pure (kept.cache, a)
+
 /-- A drawing's display lists cut into the pieces of each paint layer and tessellated once, in the pixels of `p`: piece `j` of a layer is the base's (`j = 0`) or part `j - 1`'s commands on it. Drawing the pieces layer by layer paints what the concatenated lists paint. -/
 def Pixels.retain (p : Pixels) (d : Drawing) : Array (Array Gpu.Layer) :=
   let lists := #[d.base] ++ d.parts.map (·.display)
@@ -159,28 +176,26 @@ theorem Pixels.retain_eq (p : Pixels) (d : Drawing) : p.retain d =
     numbers.toArray.map fun n => scaled.map fun l => Gpu.Layer.stroke (l.filter (·.layer == n)) := rfl
 
 /-- The scene of `d` with its hidden parts left out, from pieces `retained` by `p.retain d` and the buffers `cache` keeps on the GPU: no piece is tessellated or uploaded again. -/
-def Pixels.drawRetained (p : Pixels) (cache : SceneCache) (d : Drawing) (retained : Array (Array Gpu.Layer)) (off : Array Bool) : IO Scene := do
+def Pixels.drawRetained (p : Pixels) (cache : Retention) (d : Drawing) (retained : Array (Array Gpu.Layer)) (off : Array Bool) : IO Scene := do
   let shown (j : Nat) := j == 0 || !(d.parts[j - 1]?.elim false (·.hidden off))
   let pick (keep : Bool) := retained.toList.flatMap fun pieces => (pieces.toList.zipIdx.filter fun (_, j) => shown j == keep).map (·.1)
-  let bytes ← cache.build fun old first =>
-    let (cache', cmds) := Gpu.strokeLayersFrame (Gpu.tessellateStroke ⟨0, 0⟩) old first p.backing.1 p.backing.2 (pick true) (pick false) background
-    pure (cache', ByteArray.mk (Gpu.encode cmds).toArray)
+  let bytes ← cache.build fun old first => pure (Gpu.strokeLayersBytes old first p.backing.1 p.backing.2 (pick true) (pick false) background)
   pure { commands := bytes, labels := d.labels, access := d.access off }
 
 /-- The scene of a chart drawn once for each size of its canvas, and again for each set of hidden series without making or tessellating anything again. -/
-def Pixels.drawing (p : Pixels) (cache : SceneCache) (d : Drawing) : IO (Array Bool → IO Scene) := do
+def Pixels.drawing (p : Pixels) (cache : Retention) (d : Drawing) : IO (Array Bool → IO Scene) := do
   let retained := p.retain d
   pure (p.drawRetained cache d retained)
 
 /-- Define the chart element, and draw each chart `build` makes of its `src` for its canvas's size and the series its legend has hidden. A click on a legend entry hides or shows a series by calling what `build` returned again, and only a change of size calls `build` again. `build` is given the cache of the chart's buffers on the GPU. -/
-def registerRetained (build : String → Pixels → SceneCache → IO (Array Bool → IO Scene)) : IO Unit := do
+def registerRetained (build : String → Pixels → Retention → IO (Array Bool → IO Scene)) : IO Unit := do
   let hidden ← IO.mkRef (({} : Std.HashMap String (Array Bool)))
   let draws ← IO.mkRef (({} : Std.HashMap String (Array Bool → IO Scene)))
-  let caches ← IO.mkRef (({} : Std.HashMap String SceneCache))
+  let caches ← IO.mkRef (({} : Std.HashMap String Retention))
   registerPixels fun src px => do
     let cache ← match (← caches.get).get? src with
       | some c => pure c
-      | none => do let c ← SceneCache.new; caches.modify (·.insert src c); pure c
+      | none => do let c ← Retention.new; caches.modify (·.insert src c); pure c
     let draw ← build src px cache
     draws.modify (·.insert src draw)
     draw ((← hidden.get).getD src #[])

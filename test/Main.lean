@@ -241,7 +241,7 @@ private def zoomTest : Except String Unit := do
     let (cache, second) := c.commands cache false zoomed measure (c.width, c.height) 1 layers #[]
     let (_, hidden) := c.commands cache false zoomed measure (c.width, c.height) 1 layers #[true]
     let (_, shownAgain) := c.commands cache false zoomed measure (c.width, c.height) 1 layers #[]
-    let uploads (cmds : List Gpu.Cmd) := cmds.filterMap fun cmd => match cmd.args with
+    let uploads (bytes : ByteArray) := ((Gpu.decode bytes.data.toList).getD []).filterMap fun cmd => match cmd.args with
       | [_, .words ws] => if cmd.op == 1 then some ws else none
       | _ => none
     let lines := layers.toList.flatMap (·.words)
