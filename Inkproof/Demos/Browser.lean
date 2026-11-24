@@ -149,19 +149,15 @@ structure Drawing where
 /-- A chart's buffers on the GPU and the draws recorded for the layers in them, kept across frames. -/
 structure Retention where
   cache : SceneCache
-  streams : IO.Ref (List Gpu.Stream)
 
-def Retention.new : IO Retention := do pure { cache := ← SceneCache.new, streams := ← IO.mkRef [] }
+def Retention.new : IO Retention := do pure { cache := ← SceneCache.new }
 
 /-- Forget the buffers, as when the chart's data changed. -/
 def Retention.invalidate (r : Retention) : IO Unit := r.cache.invalidate
 
 /-- Build a frame with `f`, given what the chart holds, and keep what `f` leaves. -/
 def Retention.build {α : Type} (r : Retention) (f : Gpu.Retained → Bool → IO (Gpu.Retained × α)) : IO α :=
-  r.cache.build fun old first => do
-    let (kept, a) ← f ⟨old, ← r.streams.get⟩ first
-    r.streams.set kept.streams
-    pure (kept.cache, a)
+  r.cache.buildRetained f
 
 /-- A drawing's display lists cut into the pieces of each paint layer and tessellated once, in the pixels of `p`: piece `j` of a layer is the base's (`j = 0`) or part `j - 1`'s commands on it. Drawing the pieces layer by layer paints what the concatenated lists paint. -/
 def Pixels.retain (p : Pixels) (d : Drawing) : Array (Array Gpu.Layer) :=

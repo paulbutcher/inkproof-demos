@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.24.1
+
+- Retained layers' recorded draws are kept by Web's `SceneCache.buildRetained`, not in a ref beside it.
+- Depends on inkproof-web v0.25.0.
+
 ## v0.24.0
 
 - A legend click on the Zoom Wheel and Touch and Zoom Fetch pages, and on every page that draws retained layers, replays the draws recorded for the layers drawn before, so a click costs time in the number of layers, not their commands.
