@@ -14,29 +14,21 @@ Released under Apache 2.0 license as described in the file LICENSE.
   <body>
     <h1>Log Scales 2</h1>
     <p><a href="../">All demos</a></p>
-    <h2>Linear Scale (0.000001 -> 100,000,000)</h2>
     <p>Nine values in each power of ten from a millionth to a hundred million. On an ordinary scale all but the top power of ten crowd along the bottom.</p>
-    <inkproof-chart src="linear" legend="below-center" style="width: 1200px; height: 450px"></inkproof-chart>
-    <h2>Log10 Y Scale (0.000001 -> 100,000,000)</h2>
+    <inkproof-chart chart-title="Linear Scale (0.000001 -> 100,000,000)" src="linear" legend="below-center" style="width: 1200px; height: 450px"></inkproof-chart>
     <p>The same values on a logarithmic scale, with a tick at each power of ten: every power of ten gets the same height.</p>
-    <inkproof-chart src="log10" legend="below-center" style="width: 1200px; height: 450px"></inkproof-chart>
-    <h2>Log2 Y Scale (0.000001 -> 100,000,000)</h2>
+    <inkproof-chart chart-title="Log10 Y Scale (0.000001 -> 100,000,000)" src="log10" legend="below-center" style="width: 1200px; height: 450px"></inkproof-chart>
     <p>The same values on a logarithmic scale whose ticks are powers of two.</p>
-    <inkproof-chart src="log2" legend="below-center" style="width: 1200px; height: 450px"></inkproof-chart>
-    <h2>Log10 Y Scale (-100 -> 100): zero and negative values are not on a log scale, so they are gaps</h2>
+    <inkproof-chart chart-title="Log2 Y Scale (0.000001 -> 100,000,000)" src="log2" legend="below-center" style="width: 1200px; height: 450px"></inkproof-chart>
     <p>Values from -100 to 100 through zero. A logarithmic scale has no place for zero or negative numbers, so those samples are left out and the line breaks.</p>
-    <inkproof-chart src="signed" legend="below-center" style="width: 1200px; height: 450px"></inkproof-chart>
-    <h2>Skip ticks log10</h2>
+    <inkproof-chart chart-title="Log10 Y Scale (-100 -> 100): zero and negative values are not on a log scale, so they are gaps" src="signed" legend="below-center" style="width: 1200px; height: 450px"></inkproof-chart>
     <p>Two values fourteen powers of ten either side of one. There are too many powers to label, so the axis labels only every few.</p>
-    <inkproof-chart src="skip10" legend="below-center" style="width: 800px; height: 300px"></inkproof-chart>
-    <h2>Skip ticks log2</h2>
+    <inkproof-chart chart-title="Skip ticks log10" src="skip10" legend="below-center" style="width: 800px; height: 300px"></inkproof-chart>
     <p>The same on a base-2 scale: the axis labels only some of the powers of two.</p>
-    <inkproof-chart src="skip2" legend="below-center" style="width: 800px; height: 300px"></inkproof-chart>
-    <h2>Proper range with an all-missing series</h2>
+    <inkproof-chart chart-title="Skip ticks log2" src="skip2" legend="below-center" style="width: 800px; height: 300px"></inkproof-chart>
     <p>Three values from 100 to 1000, with the axis range set by hand in this demo to 100 to 1000. uPlot's original adds a series with no values to check that the range ignores it; this page has no such series.</p>
-    <inkproof-chart src="nulls" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
-    <h2>Handle 3e-16 y values</h2>
+    <inkproof-chart chart-title="Proper range with an all-missing series" src="nulls" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
     <p>Two values of order 1e-16 and 1e-13, to show the axis still labels sensibly at such tiny sizes.</p>
-    <inkproof-chart src="tiny" legend="below-center" style="width: 800px; height: 600px"></inkproof-chart>
+    <inkproof-chart chart-title="Handle 3e-16 y values" src="tiny" legend="below-center" style="width: 800px; height: 600px"></inkproof-chart>
   </body>
 </html>

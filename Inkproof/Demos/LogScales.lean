@@ -68,6 +68,13 @@ theorem Spec.yTicks_eq (s : Spec) : s.yTicks =
     if s.log then logTicksAt .oneTwoFive (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) Axes.spec.target
     else linearTicks (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) Axes.spec.target := rfl
 
+/-- The y axis's minor gridlines: the other multiples of each power of ten. -/
+def Spec.yMinor (s : Spec) : List Float :=
+  if s.log then logMinorTicks .oneTwoFive (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) Axes.spec.target else []
+
+theorem Spec.yMinor_eq (s : Spec) : s.yMinor =
+    if s.log then logMinorTicks .oneTwoFive (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) Axes.spec.target else [] := rfl
+
 /-- The labels of the y axis's ticks. -/
 def Spec.yLabels (s : Spec) : List String := tickLabels Axes.spec.locale s.yTicks
 
@@ -95,11 +102,13 @@ theorem Spec.labelTexts_eq (s : Spec) : s.labelTexts =
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame
   [f.timeAxis timeTarget measure,
-   compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (s.yTicks.map s.yPixel) s.yLabels]
+   compilePixelAxisMinor .left (plot f) Axes.style measure Axes.spec.labelGap (s.yTicks.map s.yPixel) s.yLabels
+     (Axes.minorGrid (s.yMinor.map s.yPixel))]
 
 theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) : s.axes measure =
     [s.frame.timeAxis timeTarget measure,
-     compilePixelAxis .left (plot s.frame) Axes.style measure Axes.spec.labelGap (s.yTicks.map s.yPixel) s.yLabels] := rfl
+     compilePixelAxisMinor .left (plot s.frame) Axes.style measure Axes.spec.labelGap (s.yTicks.map s.yPixel) s.yLabels
+       (Axes.minorGrid (s.yMinor.map s.yPixel))] := rfl
 
 /-- Data to pixels: the y axis is the chart's own scale. -/
 def Spec.projection (s : Spec) : Projection Rat Rat :=

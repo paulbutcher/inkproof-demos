@@ -81,6 +81,21 @@ theorem Spec.yTicks_eq (s : Spec) : s.yTicks =
         powerLabels .en 2 (logTicksIn 2 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) 12)) := by
   unfold Spec.yTicks; cases s.kind <;> rfl
 
+/-- The y axis's minor gridlines: the other multiples of each power of the base. -/
+def Spec.yMinor (s : Spec) : List Float :=
+  let (lo, hi) := (Rat.toFloat s.ys.1, Rat.toFloat s.ys.2)
+  match s.kind with
+  | .linear => []
+  | .log10 => logMinorTicksIn 10 .integers lo hi 12
+  | .log2 => []
+
+theorem Spec.yMinor_eq (s : Spec) : s.yMinor =
+    match s.kind with
+    | .linear => []
+    | .log10 => logMinorTicksIn 10 .integers (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) 12
+    | .log2 => [] := by
+  unfold Spec.yMinor; cases s.kind <;> rfl
+
 /-- Data to pixels along the y axis. -/
 def Spec.yPixel (s : Spec) : Float → Float :=
   let (lo, hi, start, stop) := (Rat.toFloat s.ys.1, Rat.toFloat s.ys.2, Rat.toFloat s.frame.bottom, Rat.toFloat s.frame.top)
@@ -106,12 +121,14 @@ theorem Spec.labelTexts_eq (s : Spec) :
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame
   [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-   compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yTicks.2]
+   compilePixelAxisMinor .left (plot f) Axes.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yTicks.2
+     (Axes.minorGrid (s.yMinor.map s.yPixel))]
 
 theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) :
     s.axes measure =
       [compileLinearAxis .bottom (plot s.frame) s.frame.xScale Axes.spec measure Axes.style,
-       compilePixelAxis .left (plot s.frame) Axes.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yTicks.2] := rfl
+       compilePixelAxisMinor .left (plot s.frame) Axes.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yTicks.2
+       (Axes.minorGrid (s.yMinor.map s.yPixel))] := rfl
 
 /-- Data to pixels: the y axis is the chart's own scale. -/
 def Spec.projection (s : Spec) : Projection Rat Rat :=

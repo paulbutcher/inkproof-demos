@@ -240,6 +240,21 @@ test('the time series pages draw every chart in their series colours', async () 
   }
 });
 
+test('the log scale pages put each chart title inside the chart, above the plot', async () => {
+  const { page, problems } = await open('log-scales/');
+  await page.waitForFunction(() => window.draws.length >= 2);
+  assert.deepEqual(problems, []);
+  const found = await page.evaluate(() => [...document.querySelectorAll('inkproof-chart')].map(chart => {
+    const title = chart.shadowRoot.querySelector('[part=title]').getBoundingClientRect();
+    const plot = chart.shadowRoot.querySelector('canvas').getBoundingClientRect();
+    const box = chart.getBoundingClientRect();
+    return { text: chart.shadowRoot.querySelector('[part=title]').textContent, top: title.top - box.top, bottom: title.bottom, plotTop: plot.top, inside: title.bottom <= box.bottom };
+  }));
+  assert.deepEqual(found.map(f => f.text), ['Log Y Scale', 'Linear Y Scale']);
+  for (const f of found) assert.ok(f.top >= 0 && f.bottom <= f.plotTop + 1 && f.inside, JSON.stringify(f));
+  await page.close();
+});
+
 test('the gradient page colours each stroke along its gradient', async () => {
   const { page, problems } = await open('gradients/');
   await page.waitForFunction(() => window.draws.length >= 5);
