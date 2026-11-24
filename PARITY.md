@@ -2,7 +2,7 @@
 
 Each page is compared with the uPlot demo it recreates, run locally from a clone of https://github.com/leeoniya/uPlot at commit `e995b061e9fc5476a6d862cd2fb2ebc7452ca012` (v1.6.32), in headless Chromium at the same viewport and device pixel ratio. Differences that come only from random data are not listed. A difference is `fixed` (with the pull request), `requested` (with the issue on the library that must change), `explained` (with the reason), or `open` (found, not yet resolved; none may remain when the comparison is finished).
 
-Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch, Sparklines, Sparklines Bars, Months, Timezones and DST.
+Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch, Sparklines, Sparklines Bars, Months, Timezones and DST, Annotations, Arcsinh Scales, Box and Whisker, Candlestick, Cursor Bind.
 
 ## Shared differences
 
@@ -110,3 +110,33 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Year line: uPlot writes the year under the first tick. Requested, [inkproof-axis#52](http://localhost:3000/tentenths/inkproof-axis/issues/52).
 - Series name: `2019` in uPlot; the site read `Value`. Fixed; a browser test checks it.
 - Section headings: uPlot puts each range's heading in a pale blue band; the site's are plain. Open.
+
+## Annotations (`annotations.html`)
+
+- Data: thirty integers from -10 to 10 over 1..30 in two filled series, red and blue with 10% fills. Matches.
+- Notes: an earthquake line at 4 and a tornado band from 9.3 to 18.5, dashed two pixel borders in green and amber over a 20% fill, labelled `eqk_01` on the bottom edge and `tor_20` on the top. Matches in position and colour; they follow zoom and pan as uPlot's do.
+- Note labels: uPlot's carry a description as a tooltip and fill with a solid border on hover; the site's do not. Open.
+
+## Arcsinh Scales (`arcsinh-scales.html`)
+
+- Data: the same 109 values, a thousandth to a thousand either side of zero, and the same slider from 0.001 to 1000 in decades. Matches.
+- Scale and fill: arcsinh y axis, blue line over a 10% fill. Matches.
+- Ticks: uPlot places them at the arcsinh scale's own steps; the site puts them at powers of ten and zero. Open.
+
+## Box and Whisker (`box-whisker.html`)
+
+- Data: uPlot draws recorded benchmark timings of its frameworks from `data/results.json`; the site generates twelve runs for each of twenty-four frameworks. Open: the shapes agree, the numbers do not.
+- Drawing: boxes of the middle half with a median bar, dashed whiskers within one and a half interquartile ranges, and squares for the runs beyond. Matches.
+- Hover: uPlot highlights the column and shows the legend as a tooltip with every statistic; the site's cursor is a line. Open.
+
+## Candlestick (`candlestick-ohlc.html`)
+
+- Data: the gold year's open, high, low and close, evenly spaced days, volume on a right scale of 0 to 2000; the volumes are random in uPlot and a fixed hash here. Matches.
+- Colours: `#e54245` for falls and `#4ab650` for rises. Matches.
+- Hover: as for Box and Whisker. Open.
+
+## Cursor Bind (`cursor-bind.html`)
+
+- Data: three series of thirty integers over 1..30. Matches.
+- Size and fills: uPlot is 1920 by 600 with 10% fills (red, bright green, blue); the page was 900 by 400 with no fills. Fixed; the chart is `Linked.cursorBindChart`, with a theorem for its fills.
+- Ctrl-drag annotation: no counterpart, as the page says. Explained: it is a prompt for text that uPlot's demo discards.

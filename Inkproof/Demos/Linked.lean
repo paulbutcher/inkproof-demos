@@ -49,6 +49,15 @@ theorem bindChart_eq (seed : Nat) : bindChart seed =
       ⟨xs, (Data.ints (3 * seed + k) 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), colour, none⟩
     ⟨900, 400, [line 0 ⟨255, 0, 0, 255⟩, line 1 ⟨0, 128, 0, 255⟩, line 2 ⟨0, 0, 255, 255⟩], none, []⟩ := rfl
 
+/-- The cursor-bind chart: `bindChart`'s three series at uPlot's page size, each over a fill of 10% alpha (the green line over a brighter green fill, as there). -/
+def cursorBindChart (seed : Nat) : Zoom.Chart :=
+  let b := bindChart seed
+  let fills : List Color := [⟨255, 0, 0, 26⟩, ⟨0, 255, 0, 26⟩, ⟨0, 0, 255, 26⟩]
+  { b with width := 1920, height := 600, lines := (b.lines.zip fills).map fun (l, f) => { l with fill := some f } }
+
+theorem cursorBindChart_lines (seed : Nat) : (cursorBindChart seed).lines =
+    ((bindChart seed).lines.zip [⟨255, 0, 0, 26⟩, ⟨0, 255, 0, 26⟩, ⟨0, 0, 255, 26⟩]).map fun (l, f) => { l with fill := some f } := rfl
+
 /-- The samples a data server holds, one byte each, so that a byte range of its file is a range of samples. -/
 def samples : Nat := 5000
 

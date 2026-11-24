@@ -9,6 +9,6 @@ namespace Page.CursorBind
 
 def run : IO Unit := do
   let seed ← Inkproof.Demos.Browser.seed
-  Inkproof.Demos.ZoomPage.mount [("cursor-bind", Inkproof.Demos.Linked.bindChart seed)]
+  Inkproof.Demos.ZoomPage.mount [("cursor-bind", Inkproof.Demos.Linked.cursorBindChart seed)]
 
 end Page.CursorBind

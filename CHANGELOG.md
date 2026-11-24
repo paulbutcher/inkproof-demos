@@ -3,6 +3,7 @@
 ## v0.24.2
 
 - The Timezones and DST series are named 2019.
+- Cursor Bind draws at uPlot's size with its 10% fills.
 
 ## v0.24.1
 
