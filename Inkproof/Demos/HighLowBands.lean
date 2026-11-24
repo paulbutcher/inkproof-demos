@@ -31,6 +31,28 @@ def temps : Chart :=
     left := autoYAxis layers "°F", layers,
     bands := [⟨1, 2, ⟨255, 0, 0, 26⟩⟩, ⟨0, 2, ⟨0, 255, 0, 26⟩⟩] }
 
-def charts : List Chart := [temps]
+/-- A line falling from 5 to -4 over a flat one at -5, with the space between them filled, drawn over integer x. -/
+def inverted : Chart :=
+  let xs : Array Rat := (Array.range 10).map fun (i : Nat) => (i : Rat)
+  let line (ys : Array Rat) (label : String) (c : Color) : Layer :=
+    { data := series xs (ys.map some), label, color := c }
+  let layers : List Layer :=
+    [line #[5, 4, 3, 2, 1, 0, -1, -2, -3, -4] "High" ⟨255, 0, 0, 255⟩,
+     line #[-5, -5, -5, -5, -5, -5, -5, -5, -5, -5] "Low" ⟨0, 0, 255, 255⟩]
+  { name := "inverted", width := 1920, height := 600, xs := (0, 9), time := false,
+    left := autoYAxis layers, layers, bands := [⟨1, 0, ⟨255, 0, 0, 18⟩⟩] }
+
+/-- Two lines that cross at every sample, with the space between them filled. -/
+def crossing : Chart :=
+  let xs : Array Rat := (Array.range 4).map fun (i : Nat) => (i : Rat)
+  let line (ys : Array Rat) (label : String) (c : Color) : Layer :=
+    { data := series xs (ys.map some), label, color := c }
+  let layers : List Layer :=
+    [line #[10, 0, 10, 0] "High" ⟨255, 0, 0, 255⟩,
+     line #[0, 10, 0, 10] "Low" ⟨0, 0, 255, 255⟩]
+  { name := "crossing", width := 1920, height := 600, xs := (0, 3), time := false,
+    left := autoYAxis layers, layers, bands := [⟨1, 0, ⟨255, 0, 0, 18⟩⟩] }
+
+def charts : List Chart := [temps, inverted, crossing]
 
 end Inkproof.Demos.HighLowBands

@@ -451,8 +451,10 @@ theorem Inkproof.Demos.HeatmapCells.yIndex_eq : ∀ (v : Float), Inkproof.Demos.
 def Inkproof.Demos.HeatmapCells.yRange : Int × Int
 theorem Inkproof.Demos.HeatmapCells.yRange_eq : Inkproof.Demos.HeatmapCells.yRange = (Array.foldl Min.min ((Array.map Inkproof.Demos.HeatmapCells.yIndex Inkproof.Demos.HeatmapCells.latencies).getD 0 0) (Array.map Inkproof.Demos.HeatmapCells.yIndex Inkproof.Demos.HeatmapCells.latencies), Array.foldl Max.max ((Array.map Inkproof.Demos.HeatmapCells.yIndex Inkproof.Demos.HeatmapCells.latencies).getD 0 0) (Array.map Inkproof.Demos.HeatmapCells.yIndex Inkproof.Demos.HeatmapCells.latencies))
 def Inkproof.Demos.HighLowBands.charts : List Inkproof.Demos.Lines.Chart
+def Inkproof.Demos.HighLowBands.crossing : Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.HighLowBands.days : Array Rat
 def Inkproof.Demos.HighLowBands.highSeries : Inkproof.Core.Series Rat Rat
+def Inkproof.Demos.HighLowBands.inverted : Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.HighLowBands.lowSeries : Inkproof.Core.Series Rat Rat
 def Inkproof.Demos.HighLowBands.meanSeries : Inkproof.Core.Series Rat Rat
 def Inkproof.Demos.HighLowBands.means : Array Rat

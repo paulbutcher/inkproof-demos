@@ -230,7 +230,7 @@ test('axis control: the legend follows the cursor over half a million points', a
 });
 
 test('the time series pages draw every chart in their series colours', async () => {
-  for (const [path, charts, wanted] of [['missing-data/', 2, ['red', 'blue']], ['log-scales/', 2, []], ['high-low-bands/', 1, ['red', 'blue', 'green']], ['path-gap-clip/', 2, ['green']], ['line-paths/', 4, []]]) {
+  for (const [path, charts, wanted] of [['missing-data/', 2, ['red', 'blue']], ['log-scales/', 2, []], ['high-low-bands/', 3, ['red', 'blue', 'green']], ['path-gap-clip/', 2, ['green']], ['line-paths/', 4, []]]) {
     const { page, problems } = await open(path);
     await page.waitForFunction(n => window.draws.length >= n, charts);
     assert.deepEqual(problems, [], path);
@@ -738,7 +738,7 @@ for (const [path, counts] of Object.entries({ 'candlestick/': [5], 'box-whisker/
 
 // The pages whose charts carry a legend: the number of entries of each chart, in page order.
 const legends = {
-  'annotations/': [2], 'arcsinh-scales/': [1], 'months/': [1], 'timezones-dst/': Array(12).fill(1), 'cursor-bind/': [3], 'custom-scales/': [3, 3, 3], 'gradients/': [1, 1, 1, 2, 1], 'high-low-bands/': [3],
+  'annotations/': [2], 'arcsinh-scales/': [1], 'months/': [1], 'timezones-dst/': Array(12).fill(1), 'cursor-bind/': [3], 'custom-scales/': [3, 3, 3], 'gradients/': [1, 1, 1, 2, 1], 'high-low-bands/': [3, 2, 2],
   'line-paths/': [1, 1, 1, 1], 'log-scales/': [12, 12], 'log-scales2/': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 'missing-data/': [3, 1],
   'path-gap-clip/': [2, 3, 1, 1, 1], 'points/': [4, 1, 1, 1], 'stacked/': [5, 4], 'sync-cursor/': [3, 3, 3],
   'zoom-fetch/': [1], 'zoom-touch/': [2], 'zoom-variations/': Array(10).fill(1), 'zoom-wheel/': [2],
