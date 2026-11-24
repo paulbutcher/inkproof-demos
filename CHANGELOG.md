@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.26.0
+
+- Line Paths fills each area at 10%, and Custom Scales, High-Low Bands and Stacked Series name their series as uPlot does.
+- Timezones and DST uses pale blue section headings.
+
 ## v0.25.4
 
 - PARITY.md compares Zoom Fetch, Zoom Ranger, Zoom with Reset and Zoom Variations with uPlot.
