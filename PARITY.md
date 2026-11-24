@@ -31,7 +31,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Colours and fills: red, green and blue strokes with fills of 10% alpha, a circle at every point. Matches.
 - Line widths: one pixel. Matches.
 - Axes: fixed as above.
-- Legend: uPlot names the series `Value`; the page names them `Series 1` to `Series 3`. Open.
+- Legend: uPlot names the series `Value`; the page does too. Fixed with the shared series names; a browser test checks the legend.
 - Title: see Shared differences.
 
 ## Axis Control (`axis-control.html`)
@@ -39,7 +39,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Data: sine over half a million points, y fixed to -50..50. Matches.
 - Series width: uPlot one pixel; the page drew two. Fixed.
 - Right axis: labels and title red, ticks faint; the page drew red ticks. Fixed. Its title sits 8 pixels from the labels in uPlot; open.
-- Legend: `x` and `sin(x)` entries in uPlot; the page names the series `Series 1`. Open.
+- Legend: the page names its series `sin(x)` as uPlot does; the x entry and readouts are under Shared differences. Fixed; a browser test checks the name.
 
 ## Stacked Series (`stacked-series.html`)
 
