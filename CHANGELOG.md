@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.30.0
+
+- Latency Histogram floors latencies at 5 as uPlot does.
+
 ## v0.29.0
 
 - Months draws a ring at each sample.
