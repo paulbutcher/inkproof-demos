@@ -2,7 +2,7 @@
 
 Each page is compared with the uPlot demo it recreates, run locally from a clone of https://github.com/leeoniya/uPlot at commit `e995b061e9fc5476a6d862cd2fb2ebc7452ca012` (v1.6.32), in headless Chromium at the same viewport and device pixel ratio. Differences that come only from random data are not listed. A difference is `fixed` (with the pull request), `requested` (with the issue on the library that must change), `explained` (with the reason), or `open` (found, not yet resolved; none may remain when the comparison is finished).
 
-Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch, Sparklines, Sparklines Bars, Months, Timezones and DST, Annotations, Arcsinh Scales, Box and Whisker, Candlestick, Cursor Bind, Custom Scales, Gradients, High-Low Bands, Latency Heatmap and Heatmap Cells.
+Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch, Sparklines, Sparklines Bars, Months, Timezones and DST, Annotations, Arcsinh Scales, Box and Whisker, Candlestick, Cursor Bind, Custom Scales, Gradients, High-Low Bands, Latency Heatmap, Heatmap Cells, Log Scales, Log Scales 2 and Path Gap Clip.
 
 ## Shared differences
 
@@ -171,3 +171,27 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Histograms: uPlot's start at 5 with the tail to 155; the site's x axis starts at 25 and its first bar is the 25 to 30 bucket. Open.
 - Bucket sliders: uPlot has size and offset above the histograms; the site has none. Open.
 - Legends read `Time`, `Value`; the site's name its columns. Explained.
+
+## Log Scales (`log-scales.html`)
+
+- Data: the same twelve servers and samples, a log and a linear chart at 1600 by 600. Matches.
+- Gaps: uPlot sets `spanGaps`, so a server's line carries on across samples it did not report (Hypixel's drop to 53 thousand is drawn); the site broke the line there. Fixed; a native test checks that no layer has a missing sample.
+- Y ticks: uPlot's log axis labels 1, 2, 5, 10 and so on with minor gridlines, and the linear one every 5,000 to 120,000; the site labels decades and every 10,000 to 110,000. Open: the library's tick choice.
+- X ticks: uPlot labels every hour (`3am`, context `7/17/20`); the site every two hours (`04:00`, context `Jul 17`). Open: the library's time labels.
+- Legend: see Shared differences; the chart title is inside the chart in uPlot (see Shared differences).
+
+## Log Scales 2 (`log-scales2.html`)
+
+- Data: the same 127 values, in the linear, log10 and log2 charts, and the same signed, skip ticks and tiny cases. Matches.
+- Inverted log scale: uPlot's fourth chart (two series on opposed log axes over time) has no counterpart. Open.
+- Ticks: uPlot's log axes label every power plus minor gridlines at 2 to 9 times each; the site labels powers only. The log2 labels read `2^24` in uPlot and use superscripts on the site. Open: the library's tick choice.
+- Ranges: skip ticks log10 spans 1e-14 to 1e+14 in uPlot, the site 1e-12 to 1e+12; the tiny chart shows 5e-16 to 1e-12 (3e-24 in uPlot's title) against the site's 1e-15 to 1e-13. Open.
+- Proper range: uPlot's third small chart carries an all-missing second series; the page says it has none. Explained.
+- Markers: uPlot draws a dot at every point; the site draws none. Open: see Shared differences.
+
+## Path Gap Clip (`path-gap-clip.html`)
+
+- Charts: uPlot has fifteen charts; the page recreates the first two (zoom-out range with a band, and gaps in a band) and three stepped and spline variants, whose data differ from uPlot's stepped, null-fill, align and pixel-bug cases. Open: the others have no counterpart.
+- Data: temperature series and the band with its gaps match.
+- Theme: uPlot's charts here have a grey plot background; the site's are white. Open.
+- X range of the gaps chart: uPlot's axis is in seconds since an offset; the site's is the clock time. Explained.

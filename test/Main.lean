@@ -106,8 +106,9 @@ private def logScalesTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
   check (!LogScalesSource.times.isEmpty && LogScalesSource.players.all (·.size == LogScalesSource.times.size)) "every literal of the Log Scales data parses and has a sample per time"
   check (LogScales.layers.length == 12) "one line per server"
-  check (LogScales.layers.all fun l => l.data.xs.size == LogScales.times.size) "every server has every time"
-  check (LogScales.layers.any fun l => l.data.values.any (·.isNone)) "samples a server did not report are gaps"
+  check (LogScales.layers.all fun l => l.data.xs.size ≤ LogScales.times.size) "no server has more samples than times"
+  check (LogScales.layers.any fun l => l.data.xs.size < LogScales.times.size) "samples a server did not report are left out"
+  check (LogScales.layers.all fun l => l.data.values.all (·.isSome)) "a server's line is bridged across the samples it did not report"
   for spec in LogScales.specs do
     let f := spec.frame
     check (LogScales.layers.all fun l => l.data.values.all fun v => v.all fun y => spec.ys.1 ≤ y && y ≤ spec.ys.2) s!"{spec.name}: every sample lies within the y range"

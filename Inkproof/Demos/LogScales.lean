@@ -22,10 +22,11 @@ theorem colour_eq (rgb : Nat) : colour rgb = ⟨(rgb / 65536 % 256).toUInt8, (rg
 
 def times : Array Rat := scaled 1 LogScalesSource.times
 
-/-- One layer per server; the samples a server did not report are missing, not bridged. -/
+/-- One layer per server; the samples a server did not report are left out, so its line carries on across them. -/
 def layers : List Layer :=
   LogScalesSource.players.toList.zip LogScalesSource.servers |>.map fun (ys, name, rgb) =>
-    { label := name, data := series times (ys.map fun (y : Int) => if y == 0 then none else some (y : Rat)), color := colour rgb }
+    let known := (times.zip ys).filter fun (_, y) => y != 0
+    { label := name, data := series (known.map (·.1)) (known.map fun (_, y) => some (y : Rat)), color := colour rgb }
 
 /-- The largest sample of any server. -/
 def peak : Nat := LogScalesSource.players.foldl (fun m ys => ys.foldl (fun m y => max m y.toNat) m) 1
