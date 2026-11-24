@@ -2,7 +2,7 @@
 
 Each page is compared with the uPlot demo it recreates, run locally from a clone of https://github.com/leeoniya/uPlot at commit `e995b061e9fc5476a6d862cd2fb2ebc7452ca012` (v1.6.32), in headless Chromium at the same viewport and device pixel ratio. Differences that come only from random data are not listed. A difference is `fixed` (with the pull request), `requested` (with the issue on the library that must change), `explained` (with the reason), or `open` (found, not yet resolved; none may remain when the comparison is finished).
 
-Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch, Sparklines, Sparklines Bars, Months, Timezones and DST, Annotations, Arcsinh Scales, Box and Whisker, Candlestick, Cursor Bind, Custom Scales, Gradients, High-Low Bands, Latency Heatmap, Heatmap Cells, Log Scales, Log Scales 2, Path Gap Clip, A Million Points, Server Events, Sync Cursor, Timeline / Discrete and Tooltip and Legend.
+Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch, Sparklines, Sparklines Bars, Months, Timezones and DST, Annotations, Arcsinh Scales, Box and Whisker, Candlestick, Cursor Bind, Custom Scales, Gradients, High-Low Bands, Latency Heatmap, Heatmap Cells, Log Scales, Log Scales 2, Path Gap Clip, A Million Points, Server Events, Sync Cursor, Timeline / Discrete, Tooltip and Legend, Zoom Fetch, Zoom Ranger, Zoom with Reset and Zoom Variations.
 
 ## Shared differences
 
@@ -233,3 +233,30 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Tooltip: uPlot shows the value and commit in a box beside the nearest point, with its border in the series colour; the page names the series and values of the nearest point. Matches in kind.
 - Focus: uPlot dims series other than the one nearest the cursor (`alpha: 0.3`, `prox: 5`); the page does not. Open: [inkproof-web#110](http://localhost:3000/tentenths/inkproof-web/issues/110) concerns the legend.
 - Legend: see Shared differences.
+
+## Zoom Fetch (`zoom-fetch.html`)
+
+- Data: uPlot draws one red series of four points (3 to 6) after a zoom and the full nine points of four series at the start; the site serves 5000 one byte samples from a file, a coarse one (one in twenty) for the full range and a fine one for a zoomed range, a red line. Explained: the demo is about fetching, which the site does for real.
+- Zoom: uPlot's x drag zooms on release and fetches then; the site's wheel, drag and keys all fetch again for the range shown, and discard an answer that a later request has overtaken. Matches in kind.
+- Reset: uPlot's double click restores the full data; the site's key resets to the full range and fetches the coarse file. Open: no double click.
+- Axis: uPlot's x is plain numbers; so is the site's. Matches.
+
+## Zoom Ranger (`zoom-ranger.html`)
+
+- Data: uPlot draws one hundred points of sin(x) over 0 to 2π; the site draws two thousand minutes of the server events busy series. Explained.
+- Layout: uPlot's 100 pixel overview is above the 400 pixel zoomed chart, both 800 wide; the site's are 120 and 300 high, in the same order. Explained.
+- Selection: the overview opens with a band over 1 to 4.5 and the zoomed chart shows that range; the site's opens with 600 to 1200. Dragging in the overview sets the other's range and the overview keeps its own, as uPlot's does. Matches.
+- Overview cursor: uPlot hides its points and its y drag; the site's overview drags in x only. Matches.
+- Grips and y selection (`zoom-ranger-grips.html`, `zoom-ranger-xy.html`): no counterpart. Open.
+- Legend and cursor sync (`key: "moo"`): the zoomed chart's legend is `x` and `sin(x)` in uPlot; the site has none for the overview and the unnamed `Value` for the other. Open: see Shared differences.
+
+## Zoom with Reset (`zoom-reset-range`)
+
+- No uPlot demo of this name: its pages have only the double click of Zoom Fetch. The page recreates the zoom pages' series with a button that returns the chart to its full range exactly. Explained.
+
+## Zoom Variations (`zoom-variations.html`)
+
+- Data: thirty points over -10 to 10 in purple, 600 by 400; the values are drawn from a fixed hash rather than at random. Matches.
+- Charts: uPlot's are the five drag variants and the same five with `dist: 10`, titled by variant; the site has ten with the titles in captions, and a drag shorter than 10 pixels does nothing. Matches.
+- Variants: X only, Y only, adaptive (the longer axis) and omni (both) match. uPlot's adaptive plus omni (`uni: 50`) has no mode of its own, so the site repeats the adaptive chart. Open.
+- Layout: uPlot shows the charts inline, the site one to a row. Explained.
