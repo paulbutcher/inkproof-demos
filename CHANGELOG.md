@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.25.1
+
+- PARITY.md compares Custom Scales, Gradients, High-Low Bands, Latency Heatmap and Heatmap Cells with uPlot.
+
 ## v0.25.0
 
 - Time-axis labels draw their context line (the year or the day) under the label.
