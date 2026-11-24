@@ -814,3 +814,30 @@ for (const [path, index, series, label] of [['scatter/', 1, [1, 2], 'scatter'], 
     await page.close();
   });
 }
+
+test('a chart that does not zoom lets the wheel scroll the page', async () => {
+  const { page, problems } = await open('points/');
+  await page.setViewportSize({ width: 900, height: 300 });
+  await page.waitForFunction(() => document.querySelector('inkproof-chart')?.shadowRoot?.querySelector('canvas'));
+  const box = await page.locator('inkproof-chart').first().boundingBox();
+  await page.mouse.move(box.x + box.width / 2, Math.min(box.y + 50, 250));
+  await page.mouse.wheel(0, 200);
+  await page.waitForFunction(() => scrollY > 0);
+  assert.deepEqual(problems, []);
+  await page.close();
+});
+
+test('legends sit centred under their plot', async () => {
+  const { page, problems } = await open('area-fill/');
+  await page.waitForFunction(() => document.querySelector('inkproof-chart')?.shadowRoot?.querySelector('.legend button'));
+  const centres = await page.evaluate(() => {
+    const root = document.querySelector('inkproof-chart').shadowRoot;
+    const c = root.querySelector('canvas').getBoundingClientRect();
+    const buttons = [...root.querySelectorAll('.legend button')].map(b => b.getBoundingClientRect());
+    return { canvas: (c.left + c.right) / 2, legend: (Math.min(...buttons.map(b => b.left)) + Math.max(...buttons.map(b => b.right))) / 2, below: Math.min(...buttons.map(b => b.top)) >= c.bottom - 1 };
+  });
+  assert.ok(Math.abs(centres.canvas - centres.legend) < 40, `legend centre ${centres.legend} plot centre ${centres.canvas}`);
+  assert.ok(centres.below, 'the legend is below the plot');
+  assert.deepEqual(problems, []);
+  await page.close();
+});

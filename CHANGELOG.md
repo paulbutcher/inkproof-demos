@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.30.1
+
+- Every chart's legend is a row centred under the plot, and charts with a cursor mark the series at it.
+
 ## v0.30.0
 
 - Latency Histogram floors latencies at 5 as uPlot does.

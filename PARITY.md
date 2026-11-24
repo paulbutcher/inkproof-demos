@@ -9,10 +9,10 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Axis lines, ticks and gridlines: uPlot's default draws no axis line, and ticks (10 long) and gridlines in the same 7% black, 2 CSS pixels wide, unless a demo sets otherwise. The site drew a black axis line, black 6 long ticks and a 1 pixel gridline. Fixed in `Axes.style`, which every page uses; a test checks that an axis draws no line and only faint two pixel ticks and gridlines.
 - Series stroke width: uPlot's default is one CSS pixel. Pages set it through `Axes.strokeHalfWidth` (Axis Control and Log Scales 2 drew two pixels). Fixed; a test checks the stroke of those two pages.
 - Axis `stroke` colours only the labels and title in uPlot, never the ticks. Axis Control drew red ticks; fixed.
-- Legend placement, a row centred under the plot, and readouts (`Value: --` at rest): requested, [inkproof-web#110](http://localhost:3000/tentenths/inkproof-web/issues/110).
-- Wheel, touch and drag pass-through to the page: requested, [inkproof-web#113](http://localhost:3000/tentenths/inkproof-web/issues/113).
-- Cursor markers (a dot on each series at the cursor, hollow markers filled under it): requested, [inkproof-web#115](http://localhost:3000/tentenths/inkproof-web/issues/115). Applies to every page whose uPlot original shows cursor points.
-- Circle markers drawn as octagons: requested, [inkproof-gpu#68](http://localhost:3000/tentenths/inkproof-gpu/issues/68). Applies to every page with circle markers.
+- Legend placement, a row centred under the plot, and readouts (`Value: --` at rest): fixed; every chart's `legend` attribute names `below-center`, and a browser test checks the Area Fill legend sits below the plot, centred on it.
+- Wheel, touch and drag pass-through to the page: fixed by Web 0.21.0, with no change to the pages; a browser test checks that the wheel over the Points page scrolls it, and the zoom tests that the zoom pages still zoom.
+- Cursor markers (a dot on each series at the cursor, hollow markers filled under it): fixed; every chart with a `cursor` attribute adds `markers`. Charts with no `cursor` attribute draw no cursor in either version.
+- Circle markers drawn as octagons: fixed by Gpu 0.19.0, with no change to the pages, which never tessellated markers themselves; they now draw as circles.
 - Series without a label are named `Value` in uPlot's legend. Fixed: `Browser.seriesTraces` names a series `Value` unless its page gives a name (`Lines.Layer.label`), and a browser test checks the legends of Missing Data, Points, Axis Control, Zoom Wheel and Area Fill.
 - uPlot draws the chart title inside the chart, above the plot; the pages put it in a heading above the chart. Open.
 
@@ -52,7 +52,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Series names: uPlot's scatter series have no label, so the legend reads `Value` four times; the page now does the same. Fixed.
 - Data: ten thousand points per series over 0..500, y range unpadded (`guardedRange`). Matches.
-- Markers: 5 pixel circles with a fill of 10% alpha and a stroke; drawn as octagons by Gpu ([inkproof-gpu#68](http://localhost:3000/tentenths/inkproof-gpu/issues/68)). Requested.
+- Markers: 5 pixel circles with a fill of 10% alpha and a stroke; drawn as circles. Fixed.
 - Bubble chart: the page draws the bubbles of `data2`; sizes and labels in the legend `GDP`, `Income 1`, `Income 2` and the region names are not yet compared. Open.
 
 ## Multi-Bars (`multi-bars.html`)
@@ -83,7 +83,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 ## Zoom Wheel and Zoom Touch (`zoom-wheel.html`, `zoom-touch.html`)
 
 - Legend: the series are `One` and `Two`; the pages named them `Series N`. Fixed (`Zoom.legendNames`). The other zoom pages leave their series unnamed and read `Value`.
-- Wheel and touch pass-through: requested, see Shared differences.
+- Wheel and touch pass-through: fixed, see Shared differences.
 
 ## Sparklines (`sparklines.html`)
 
