@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.27.0
+
+- Multi-Bars draws the random line in the horizontal layout.
+
 ## v0.26.0
 
 - Line Paths fills each area at 10%, and Custom Scales, High-Low Bands and Stacked Series name their series as uPlot does.
