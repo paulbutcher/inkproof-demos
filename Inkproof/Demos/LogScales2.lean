@@ -61,53 +61,24 @@ def Spec.frame (s : Spec) : Frame := ⟨90, s.width - 20, 20, s.height - 40, s.x
 
 theorem Spec.frame_eq (s : Spec) : s.frame = ⟨90, s.width - 20, 20, s.height - 40, s.xs, s.ys⟩ := rfl
 
-def floorInt (x : Float) : Int := x.floor.toInt64.toInt
-
-theorem floorInt_eq (x : Float) : floorInt x = x.floor.toInt64.toInt := rfl
-
-/-- `2` to the power `e`, written with superscript digits. -/
-def powerOfTwo (e : Int) : String :=
-  "2" ++ (if e < 0 then "⁻" else "") ++ e.natAbs.toSuperscriptString
-
-theorem powerOfTwo_eq (e : Int) : powerOfTwo e = "2" ++ (if e < 0 then "⁻" else "") ++ e.natAbs.toSuperscriptString := rfl
-
-/-- `1e+8` for `e = 8`, as JavaScript's `toExponential` writes it. -/
-def powerOfTen (e : Int) : String := "1e" ++ (if e < 0 then "" else "+") ++ toString e
-
-theorem powerOfTen_eq (e : Int) : powerOfTen e = "1e" ++ (if e < 0 then "" else "+") ++ toString e := rfl
-
-/-- The exponents to tick, every `stride`th when there would be more than 12. -/
-def exponents (lg : Float → Float) (lo hi : Float) : List Int :=
-  letI : IntCast Float := ⟨Float.ofInt⟩
-  letI : NatCast Float := ⟨Nat.toFloat⟩
-  let stride := max 1 (((lg hi - lg lo) / 12).ceil.toUInt64.toNat)
-  decadeExponents floorInt lg lo hi stride
-
-theorem exponents_eq (lg : Float → Float) (lo hi : Float) :
-    exponents lg lo hi =
-      letI : IntCast Float := ⟨Float.ofInt⟩
-      letI : NatCast Float := ⟨Nat.toFloat⟩
-      decadeExponents floorInt lg lo hi (max 1 (((lg hi - lg lo) / 12).ceil.toUInt64.toNat)) := rfl
-
-/-- The y axis's tick values and their labels. -/
+/-- The y axis's tick values and their labels: powers of the base, labelled as such. -/
 def Spec.yTicks (s : Spec) : List Float × List String :=
   let (lo, hi) := (Rat.toFloat s.ys.1, Rat.toFloat s.ys.2)
+  let power (base : Nat) :=
+    let ts := logTicksIn base lo hi 12
+    (ts, powerLabels .en base ts)
   match s.kind with
   | .linear => let ts := linearTicks lo hi 10; (ts, tickLabels .en ts)
-  | .log10 =>
-    let es := exponents Float.log10 lo hi
-    (es.map fun e => Float.pow 10 (Float.ofInt e), es.map powerOfTen)
-  | .log2 =>
-    let es := exponents Float.log2 lo hi
-    (es.map fun e => Float.pow 2 (Float.ofInt e), es.map powerOfTwo)
+  | .log10 => power 10
+  | .log2 => power 2
 
 theorem Spec.yTicks_eq (s : Spec) : s.yTicks =
     match s.kind with
     | .linear => (linearTicks (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) 10, tickLabels .en (linearTicks (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) 10))
-    | .log10 => ((exponents Float.log10 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2)).map (fun e => Float.pow 10 (Float.ofInt e)),
-        (exponents Float.log10 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2)).map powerOfTen)
-    | .log2 => ((exponents Float.log2 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2)).map (fun e => Float.pow 2 (Float.ofInt e)),
-        (exponents Float.log2 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2)).map powerOfTwo) := by
+    | .log10 => (logTicksIn 10 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) 12,
+        powerLabels .en 10 (logTicksIn 10 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) 12))
+    | .log2 => (logTicksIn 2 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) 12,
+        powerLabels .en 2 (logTicksIn 2 (Rat.toFloat s.ys.1) (Rat.toFloat s.ys.2) 12)) := by
   unfold Spec.yTicks; cases s.kind <;> rfl
 
 /-- Data to pixels along the y axis. -/

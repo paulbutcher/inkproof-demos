@@ -184,7 +184,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: the same 127 values, in the linear, log10 and log2 charts, and the same signed, skip ticks and tiny cases. Matches.
 - Inverted log scale: uPlot's fourth chart (two series on opposed log axes over time) has no counterpart. Open.
-- Ticks: uPlot's log axes label every power plus minor gridlines at 2 to 9 times each; the site labels powers only. The log2 labels read `2^24` in uPlot and use superscripts on the site. Open: the library's tick choice.
+- Ticks: uPlot's log axes label every power plus minor gridlines at 2 to 9 times each; the site labels powers only, as `10^8` and `2^24`; the minor gridlines wait on Web's element features.
 - Ranges: skip ticks log10 spans 1e-14 to 1e+14 in uPlot, the site 1e-12 to 1e+12; the tiny chart shows 5e-16 to 1e-12 (3e-24 in uPlot's title) against the site's 1e-15 to 1e-13. Open.
 - Proper range: uPlot's third small chart carries an all-missing second series; the page says it has none. Explained.
 - Markers: uPlot draws a dot at every point; the site draws none. Open: see Shared differences.

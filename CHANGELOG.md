@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.31.0
+
+- Log Scales labels 1, 2 and 5 of each power of ten, and Log Scales 2 ticks and labels its log axes as powers of the base.
+
 ## v0.30.1
 
 - Every chart's legend is a row centred under the plot, and charts with a cursor mark the series at it.
