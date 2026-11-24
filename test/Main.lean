@@ -98,11 +98,15 @@ private def logScales2Test : Except String Unit := do
     let f := spec.frame
     check (spec.data.xs.all fun x => spec.xs.1 ≤ x && x ≤ spec.xs.2) s!"{spec.name}: points lie within the x range"
     check (spec.data.values.all fun v => v.all fun y => spec.kind == .linear || (0 < y && spec.ys.1 ≤ y && y ≤ spec.ys.2)) s!"{spec.name}: a log chart holds only values its scale can place"
-    let [_, left] := spec.axes measure | throw s!"{spec.name}: expected two axes"
+    let some left := (spec.axes measure).getLast? | throw s!"{spec.name}: expected a y axis"
     check (!left.labels.isEmpty) s!"{spec.name}: the y axis keeps labels"
     check (left.labels.all fun l => l.anchor.y ≥ f.top && l.anchor.y ≤ f.bottom) s!"{spec.name}: y labels lie within the plot"
   let signed := LogScales2.specs.find? (·.name == "signed") |>.map (·.data.values)
   check (signed.any fun vs => vs.any (·.isNone) && vs.any (·.isSome)) "non-positive values are gaps, not bridged or dropped wholesale"
+  let out := LogScales2.specs.find? (·.name == "inverted-out")
+  check (out.any fun s => s.yPixel 100 > s.yPixel (1 / 10)) "the inverted scale puts the larger value lower down"
+  check (out.any fun s => s.yTicks.2.all (·.startsWith "-")) "the inverted scale labels each tick as a negative"
+  check ((LogScales2.specs.find? (·.name == "inverted-in")).any fun s => (s.axes measure).length == 1) "the upper inverted chart has no bottom axis"
 
 private def logScalesTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)

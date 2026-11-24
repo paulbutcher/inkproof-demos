@@ -653,6 +653,7 @@ def Inkproof.Demos.LogScales.timeTarget : Nat
 def Inkproof.Demos.LogScales.times : Array Rat
 def Inkproof.Demos.LogScales.width : Nat
 inductive Inkproof.Demos.LogScales2.Kind : Type
+constructor Inkproof.Demos.LogScales2.Kind.inverted : Inkproof.Demos.LogScales2.Kind
 constructor Inkproof.Demos.LogScales2.Kind.linear : Inkproof.Demos.LogScales2.Kind
 constructor Inkproof.Demos.LogScales2.Kind.log10 : Inkproof.Demos.LogScales2.Kind
 constructor Inkproof.Demos.LogScales2.Kind.log2 : Inkproof.Demos.LogScales2.Kind
@@ -660,36 +661,55 @@ def Inkproof.Demos.LogScales2.Kind.ofNat : Nat → Inkproof.Demos.LogScales2.Kin
 theorem Inkproof.Demos.LogScales2.Kind.ofNat_ctorIdx : ∀ (x : Inkproof.Demos.LogScales2.Kind), Inkproof.Demos.LogScales2.Kind.ofNat x.ctorIdx = x
 structure Inkproof.Demos.LogScales2.Spec : Type
 def Inkproof.Demos.LogScales2.Spec.axes : Inkproof.Demos.LogScales2.Spec → (String → Float × Float) → List Inkproof.Scene.AxisDrawing
-theorem Inkproof.Demos.LogScales2.Spec.axes_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec) (measure : String → Float × Float), s.axes measure = [Inkproof.Scene.compileLinearAxis Inkproof.Scene.Side.bottom (Inkproof.Demos.plot s.frame) s.frame.xScale Inkproof.Demos.Axes.spec measure Inkproof.Demos.Axes.style, Inkproof.Scene.compilePixelAxisMinor Inkproof.Scene.Side.left (Inkproof.Demos.plot s.frame) Inkproof.Demos.Axes.style measure Inkproof.Demos.Axes.spec.labelGap (List.map s.yPixel s.yTicks.fst) s.yTicks.snd (Inkproof.Demos.Axes.minorGrid (List.map s.yPixel s.yMinor))]
+theorem Inkproof.Demos.LogScales2.Spec.axes_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec) (measure : String → Float × Float), s.axes measure = s.xAxisDrawing measure ++ [Inkproof.Scene.compilePixelAxisMinor Inkproof.Scene.Side.left (Inkproof.Demos.plot s.frame) Inkproof.Demos.Axes.style measure Inkproof.Demos.Axes.spec.labelGap (List.map s.yPixel s.yTicks.fst) s.yTicks.snd (Inkproof.Demos.Axes.minorGrid (List.map s.yPixel s.yMinor))]
 def Inkproof.Demos.LogScales2.Spec.chart : Array Bool → Inkproof.Demos.LogScales2.Spec → (String → Float × Float) → Inkproof.Scene.DisplayList
 theorem Inkproof.Demos.LogScales2.Spec.chart_eq : ∀ (off : Array Bool) (s : Inkproof.Demos.LogScales2.Spec) (measure : String → Float × Float), Inkproof.Demos.LogScales2.Spec.chart off s measure = List.foldl (fun x1 x2 => x1 ++ x2.display) #[] (s.axes measure) ++ if off.getD 0 Bool.false = Bool.true then #[] else (match s.fill with | Option.some c => Inkproof.Scene.compileArea { color := Inkproof.Scene.Shading.flat c } s.ys.fst s.projection (Inkproof.Core.Segmented.single s.data) | Option.none => #[]) ++ Inkproof.Scene.compileLine { paint := { layer := 1, color := Inkproof.Scene.Shading.flat s.stroke }, halfWidth := Inkproof.Demos.Axes.strokeHalfWidth } s.projection (Inkproof.Core.Segmented.single s.data)
 field Inkproof.Demos.LogScales2.Spec.data : Inkproof.Demos.LogScales2.Spec → Inkproof.Core.Series Rat Rat
 field Inkproof.Demos.LogScales2.Spec.fill : Inkproof.Demos.LogScales2.Spec → Option Inkproof.Scene.Color
 def Inkproof.Demos.LogScales2.Spec.frame : Inkproof.Demos.LogScales2.Spec → Inkproof.Demos.Frame
-theorem Inkproof.Demos.LogScales2.Spec.frame_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.frame = { left := 90, right := ↑s.width - 20, top := 20, bottom := ↑s.height - 40, xs := s.xs, ys := s.ys }
+theorem Inkproof.Demos.LogScales2.Spec.frame_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.frame = { left := 90, right := ↑s.width - 20, top := 20, bottom := ↑s.height - ↑s.margin, xs := s.xs, ys := s.ys }
 field Inkproof.Demos.LogScales2.Spec.height : Inkproof.Demos.LogScales2.Spec → Nat
 field Inkproof.Demos.LogScales2.Spec.kind : Inkproof.Demos.LogScales2.Spec → Inkproof.Demos.LogScales2.Kind
 def Inkproof.Demos.LogScales2.Spec.labelTexts : Inkproof.Demos.LogScales2.Spec → List String
-theorem Inkproof.Demos.LogScales2.Spec.labelTexts_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.labelTexts = Inkproof.Demos.Axes.linearLabels s.xs.fst.toFloat s.xs.snd.toFloat ++ s.yTicks.snd
-constructor Inkproof.Demos.LogScales2.Spec.mk : String → Nat → Nat → Inkproof.Demos.LogScales2.Kind → Rat × Rat → Rat × Rat → Inkproof.Scene.Color → Option Inkproof.Scene.Color → Inkproof.Core.Series Rat Rat → Inkproof.Demos.LogScales2.Spec
+theorem Inkproof.Demos.LogScales2.Spec.labelTexts_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.labelTexts = s.xLabels ++ s.yTicks.snd
+def Inkproof.Demos.LogScales2.Spec.margin : Inkproof.Demos.LogScales2.Spec → Nat
+theorem Inkproof.Demos.LogScales2.Spec.margin_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.margin = if (s.xAxis == Inkproof.Demos.LogScales2.XAxis.none) = Bool.true then 10 else 40
+constructor Inkproof.Demos.LogScales2.Spec.mk : String → Nat → Nat → Inkproof.Demos.LogScales2.Kind → Rat × Rat → Rat × Rat → Inkproof.Scene.Color → Option Inkproof.Scene.Color → Inkproof.Core.Series Rat Rat → Inkproof.Demos.LogScales2.XAxis → Inkproof.Demos.LogScales2.Spec
 field Inkproof.Demos.LogScales2.Spec.name : Inkproof.Demos.LogScales2.Spec → String
 def Inkproof.Demos.LogScales2.Spec.projection : Inkproof.Demos.LogScales2.Spec → Inkproof.Scene.Projection Rat Rat
 theorem Inkproof.Demos.LogScales2.Spec.projection_x : ∀ (s : Inkproof.Demos.LogScales2.Spec) (x : Rat), s.projection.x x = { domainStart := s.frame.xs.fst, domainEnd := s.frame.xs.snd, rangeStart := s.frame.left, rangeEnd := s.frame.right }.map x
 theorem Inkproof.Demos.LogScales2.Spec.projection_y : ∀ (s : Inkproof.Demos.LogScales2.Spec) (v : Rat), s.projection.y v = Inkproof.Float.Float.onRat s.yPixel v
 field Inkproof.Demos.LogScales2.Spec.stroke : Inkproof.Demos.LogScales2.Spec → Inkproof.Scene.Color
+def Inkproof.Demos.LogScales2.Spec.timeTarget : Inkproof.Demos.LogScales2.Spec → Nat
+theorem Inkproof.Demos.LogScales2.Spec.timeTarget_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.timeTarget = s.width / 120
 field Inkproof.Demos.LogScales2.Spec.width : Inkproof.Demos.LogScales2.Spec → Nat
+field Inkproof.Demos.LogScales2.Spec.xAxis : Inkproof.Demos.LogScales2.Spec → Inkproof.Demos.LogScales2.XAxis
+def Inkproof.Demos.LogScales2.Spec.xAxisDrawing : Inkproof.Demos.LogScales2.Spec → (String → Float × Float) → List Inkproof.Scene.AxisDrawing
+theorem Inkproof.Demos.LogScales2.Spec.xAxisDrawing_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec) (measure : String → Float × Float), s.xAxisDrawing measure = match s.xAxis with | Inkproof.Demos.LogScales2.XAxis.linear => [Inkproof.Scene.compileLinearAxis Inkproof.Scene.Side.bottom (Inkproof.Demos.plot s.frame) s.frame.xScale Inkproof.Demos.Axes.spec measure Inkproof.Demos.Axes.style] | Inkproof.Demos.LogScales2.XAxis.time => [s.frame.timeAxis s.timeTarget measure] | Inkproof.Demos.LogScales2.XAxis.none => []
+def Inkproof.Demos.LogScales2.Spec.xLabels : Inkproof.Demos.LogScales2.Spec → List String
+theorem Inkproof.Demos.LogScales2.Spec.xLabels_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.xLabels = match s.xAxis with | Inkproof.Demos.LogScales2.XAxis.linear => Inkproof.Demos.Axes.linearLabels s.xs.fst.toFloat s.xs.snd.toFloat | Inkproof.Demos.LogScales2.XAxis.time => (Inkproof.Demos.Axes.timeTicks s.xs.fst.toFloat s.xs.snd.toFloat s.timeTarget).snd | Inkproof.Demos.LogScales2.XAxis.none => []
 field Inkproof.Demos.LogScales2.Spec.xs : Inkproof.Demos.LogScales2.Spec → Rat × Rat
 def Inkproof.Demos.LogScales2.Spec.yMinor : Inkproof.Demos.LogScales2.Spec → List Float
-theorem Inkproof.Demos.LogScales2.Spec.yMinor_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.yMinor = match s.kind with | Inkproof.Demos.LogScales2.Kind.linear => [] | Inkproof.Demos.LogScales2.Kind.log10 => Inkproof.Axis.logMinorTicksIn 10 Inkproof.Axis.LogMultiples.integers s.ys.fst.toFloat s.ys.snd.toFloat 12 | Inkproof.Demos.LogScales2.Kind.log2 => []
+theorem Inkproof.Demos.LogScales2.Spec.yMinor_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.yMinor = match s.kind with | Inkproof.Demos.LogScales2.Kind.linear => [] | Inkproof.Demos.LogScales2.Kind.log10 => Inkproof.Axis.logMinorTicksIn 10 Inkproof.Axis.LogMultiples.integers s.ys.fst.toFloat s.ys.snd.toFloat 12 | Inkproof.Demos.LogScales2.Kind.inverted => Inkproof.Axis.logMinorTicksIn 10 Inkproof.Axis.LogMultiples.integers s.ys.fst.toFloat s.ys.snd.toFloat 12 | Inkproof.Demos.LogScales2.Kind.log2 => []
 def Inkproof.Demos.LogScales2.Spec.yPixel : Inkproof.Demos.LogScales2.Spec → Float → Float
-theorem Inkproof.Demos.LogScales2.Spec.yPixel_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.yPixel = match (motive := Inkproof.Demos.LogScales2.Kind → Float → Float) s.kind with | Inkproof.Demos.LogScales2.Kind.linear => { domainStart := s.ys.fst.toFloat, domainEnd := s.ys.snd.toFloat, rangeStart := s.frame.bottom.toFloat, rangeEnd := s.frame.top.toFloat }.map | Inkproof.Demos.LogScales2.Kind.log10 => Inkproof.Scale.Log.map Float.log10 { domainStart := s.ys.fst.toFloat, domainEnd := s.ys.snd.toFloat, rangeStart := s.frame.bottom.toFloat, rangeEnd := s.frame.top.toFloat } | Inkproof.Demos.LogScales2.Kind.log2 => Inkproof.Scale.Log.map Float.log2 { domainStart := s.ys.fst.toFloat, domainEnd := s.ys.snd.toFloat, rangeStart := s.frame.bottom.toFloat, rangeEnd := s.frame.top.toFloat }
+theorem Inkproof.Demos.LogScales2.Spec.yPixel_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.yPixel = match (motive := Inkproof.Demos.LogScales2.Kind → Float → Float) s.kind with | Inkproof.Demos.LogScales2.Kind.linear => { domainStart := s.ys.fst.toFloat, domainEnd := s.ys.snd.toFloat, rangeStart := s.frame.bottom.toFloat, rangeEnd := s.frame.top.toFloat }.map | Inkproof.Demos.LogScales2.Kind.log10 => Inkproof.Scale.Log.map Float.log10 { domainStart := s.ys.fst.toFloat, domainEnd := s.ys.snd.toFloat, rangeStart := s.frame.bottom.toFloat, rangeEnd := s.frame.top.toFloat } | Inkproof.Demos.LogScales2.Kind.log2 => Inkproof.Scale.Log.map Float.log2 { domainStart := s.ys.fst.toFloat, domainEnd := s.ys.snd.toFloat, rangeStart := s.frame.bottom.toFloat, rangeEnd := s.frame.top.toFloat } | Inkproof.Demos.LogScales2.Kind.inverted => Inkproof.Scale.Log.map Float.log10 { domainStart := s.ys.fst.toFloat, domainEnd := s.ys.snd.toFloat, rangeStart := s.frame.top.toFloat, rangeEnd := s.frame.bottom.toFloat }
 def Inkproof.Demos.LogScales2.Spec.yTicks : Inkproof.Demos.LogScales2.Spec → List Float × List String
-theorem Inkproof.Demos.LogScales2.Spec.yTicks_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.yTicks = match s.kind with | Inkproof.Demos.LogScales2.Kind.linear => (Inkproof.Axis.linearTicks s.ys.fst.toFloat s.ys.snd.toFloat 10, Inkproof.Axis.tickLabels Inkproof.Axis.Locale.en (Inkproof.Axis.linearTicks s.ys.fst.toFloat s.ys.snd.toFloat 10)) | Inkproof.Demos.LogScales2.Kind.log10 => (Inkproof.Axis.logTicksIn 10 s.ys.fst.toFloat s.ys.snd.toFloat 12, Inkproof.Axis.powerLabels Inkproof.Axis.Locale.en 10 (Inkproof.Axis.logTicksIn 10 s.ys.fst.toFloat s.ys.snd.toFloat 12)) | Inkproof.Demos.LogScales2.Kind.log2 => (Inkproof.Axis.logTicksIn 2 s.ys.fst.toFloat s.ys.snd.toFloat 12, Inkproof.Axis.powerLabels Inkproof.Axis.Locale.en 2 (Inkproof.Axis.logTicksIn 2 s.ys.fst.toFloat s.ys.snd.toFloat 12))
+theorem Inkproof.Demos.LogScales2.Spec.yTicks_eq : ∀ (s : Inkproof.Demos.LogScales2.Spec), s.yTicks = match s.kind with | Inkproof.Demos.LogScales2.Kind.linear => (Inkproof.Axis.linearTicks s.ys.fst.toFloat s.ys.snd.toFloat 10, Inkproof.Axis.tickLabels Inkproof.Axis.Locale.en (Inkproof.Axis.linearTicks s.ys.fst.toFloat s.ys.snd.toFloat 10)) | Inkproof.Demos.LogScales2.Kind.log10 => (Inkproof.Axis.logTicksIn 10 s.ys.fst.toFloat s.ys.snd.toFloat 12, Inkproof.Axis.powerLabels Inkproof.Axis.Locale.en 10 (Inkproof.Axis.logTicksIn 10 s.ys.fst.toFloat s.ys.snd.toFloat 12)) | Inkproof.Demos.LogScales2.Kind.log2 => (Inkproof.Axis.logTicksIn 2 s.ys.fst.toFloat s.ys.snd.toFloat 12, Inkproof.Axis.powerLabels Inkproof.Axis.Locale.en 2 (Inkproof.Axis.logTicksIn 2 s.ys.fst.toFloat s.ys.snd.toFloat 12)) | Inkproof.Demos.LogScales2.Kind.inverted => (Inkproof.Axis.logTicksIn 10 s.ys.fst.toFloat s.ys.snd.toFloat 12, Inkproof.Axis.tickLabels Inkproof.Axis.Locale.en (List.map (fun x => -x) (Inkproof.Axis.logTicksIn 10 s.ys.fst.toFloat s.ys.snd.toFloat 12)))
 field Inkproof.Demos.LogScales2.Spec.ys : Inkproof.Demos.LogScales2.Spec → Rat × Rat
+inductive Inkproof.Demos.LogScales2.XAxis : Type
+constructor Inkproof.Demos.LogScales2.XAxis.linear : Inkproof.Demos.LogScales2.XAxis
+constructor Inkproof.Demos.LogScales2.XAxis.none : Inkproof.Demos.LogScales2.XAxis
+def Inkproof.Demos.LogScales2.XAxis.ofNat : Nat → Inkproof.Demos.LogScales2.XAxis
+theorem Inkproof.Demos.LogScales2.XAxis.ofNat_ctorIdx : ∀ (x : Inkproof.Demos.LogScales2.XAxis), Inkproof.Demos.LogScales2.XAxis.ofNat x.ctorIdx = x
+constructor Inkproof.Demos.LogScales2.XAxis.time : Inkproof.Demos.LogScales2.XAxis
 def Inkproof.Demos.LogScales2.blue : Inkproof.Scene.Color
 def Inkproof.Demos.LogScales2.decades : List Rat
 theorem Inkproof.Demos.LogScales2.decades_length : Inkproof.Demos.LogScales2.decades.length = 127
+def Inkproof.Demos.LogScales2.hourAgo : Nat → Rat
+theorem Inkproof.Demos.LogScales2.hourAgo_eq : ∀ (n : Nat), Inkproof.Demos.LogScales2.hourAgo n = 1784289600 - 3600 * ↑n
+def Inkproof.Demos.LogScales2.hours : Inkproof.Core.Series Rat Rat
 instance Inkproof.Demos.LogScales2.instDecidableEqKind : DecidableEq Inkproof.Demos.LogScales2.Kind
+instance Inkproof.Demos.LogScales2.instDecidableEqXAxis : DecidableEq Inkproof.Demos.LogScales2.XAxis
 def Inkproof.Demos.LogScales2.magenta : Inkproof.Scene.Color
 def Inkproof.Demos.LogScales2.orange : Inkproof.Scene.Color
 def Inkproof.Demos.LogScales2.points : Nat → Bool → List (Option Rat) → Inkproof.Core.Series Rat Rat
