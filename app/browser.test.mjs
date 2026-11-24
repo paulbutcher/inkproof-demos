@@ -685,7 +685,7 @@ for (const [path, chart, expected] of [['grouped-bars/', 0, ['Metric 1', 'Metric
 }
 
 // Legends that read values: each entry starts with the name uPlot gives the series, `Value` where the demo gives none.
-for (const [path, chart, expected] of [['missing-data/', 0, ['CPU', 'RAM', 'TCP Out']], ['missing-data/', 1, ['Value']], ['points/', 0, ['Value', 'Value', 'Value', 'Value']], ['axis-control/', 0, ['sin(x)']], ['zoom-wheel/', 0, ['One', 'Two']], ['area-fill/', 0, ['Value', 'Value', 'Value']], ['timezones-dst/', 0, ['2019']], ['timezones-dst/', 11, ['2019']], ['months/', 0, ['Value']]]) {
+for (const [path, chart, expected] of [['missing-data/', 0, ['CPU', 'RAM', 'TCP Out']], ['missing-data/', 1, ['Value']], ['points/', 0, ['Value', 'Value', 'Value', 'Value']], ['axis-control/', 0, ['sin(x)']], ['zoom-wheel/', 0, ['One', 'Two']], ['area-fill/', 0, ['Value', 'Value', 'Value']], ['timezones-dst/', 0, ['2019']], ['timezones-dst/', 11, ['2019']], ['months/', 0, ['Value']], ['gradients/', 0, ['Trends']], ['gradients/', 1, ['Over/Under']], ['gradients/', 3, ['Tank 1 (red = high pressure)', 'Tank 2 (red = low pressure)']]]) {
   test(`${path.slice(0, -1)} chart ${chart}: the legend names the series ${expected.join(', ')}`, async () => {
     const { page, problems } = await open(path);
     await page.waitForFunction(i => document.querySelectorAll('inkproof-chart')[i]?.shadowRoot?.querySelector('.legend button'), chart);

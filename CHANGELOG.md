@@ -4,12 +4,14 @@
 
 - Time-axis labels draw their context line (the year or the day) under the label.
 - Cursor Bind draws at uPlot's size with its 10% fills.
+- Gradients names its series as uPlot does.
 - Depends on inkproof-web v0.25.1, inkproof-axis v0.14.0 and inkproof-scene v0.30.0.
 
 ## v0.24.2
 
 - The Timezones and DST series are named 2019.
 - Cursor Bind draws at uPlot's size with its 10% fills.
+- Gradients names its series as uPlot does.
 
 ## v0.24.1
 

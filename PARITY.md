@@ -2,7 +2,7 @@
 
 Each page is compared with the uPlot demo it recreates, run locally from a clone of https://github.com/leeoniya/uPlot at commit `e995b061e9fc5476a6d862cd2fb2ebc7452ca012` (v1.6.32), in headless Chromium at the same viewport and device pixel ratio. Differences that come only from random data are not listed. A difference is `fixed` (with the pull request), `requested` (with the issue on the library that must change), `explained` (with the reason), or `open` (found, not yet resolved; none may remain when the comparison is finished).
 
-Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch, Sparklines, Sparklines Bars, Months, Timezones and DST, Annotations, Arcsinh Scales, Box and Whisker, Candlestick, Cursor Bind.
+Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch, Sparklines, Sparklines Bars, Months, Timezones and DST, Annotations, Arcsinh Scales, Box and Whisker, Candlestick, Cursor Bind, Custom Scales, Gradients, High-Low Bands, Latency Heatmap and Heatmap Cells.
 
 ## Shared differences
 
@@ -140,3 +140,34 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Data: three series of thirty integers over 1..30. Matches.
 - Size and fills: uPlot is 1920 by 600 with 10% fills (red, bright green, blue); the page was 900 by 400 with no fills. Fixed; the chart is `Linked.cursorBindChart`, with a theorem for its fills.
 - Ctrl-drag annotation: no counterpart, as the page says. Explained: it is a prompt for text that uPlot's demo discards.
+
+## Custom Scales (`custom-scales.html`)
+
+- Data: the same fitted curve, bounds and twenty observations in the same three charts (linear, both logarithmic, and a Weibull y axis). The curves match.
+- Series names: `upper_ci`, `lower_ci` and `weibull_fitted` in uPlot; the site reads `Value`. Open.
+- X range: uPlot's logarithmic x axis starts at the first sample, about 0.4; the site's starts at 0.1. Open.
+- Ticks: uPlot labels the linear y axis every 0.05 and the logarithmic ones at 1, 0.5, 0.2, 0.1 and so on; the site labels every 0.1 and at decades with six decimals. Open: the library's tick choice.
+- Chart titles inside the chart: see Shared differences.
+
+## Gradients (`gradients.html`)
+
+- Data and colours: the same five charts with the same strokes and fills, the same switch points and the same fill stops. Matches.
+- Series names: `Trends`, `Over/Under`, `Tank 1 (red = high pressure)`, `Tank 2 (red = low pressure)` and `Tank 1`; the site read `Value`. Fixed; a browser test checks them.
+- Banded: uPlot's third chart has a symmetric logarithmic y axis from -100 to 100 and three colours by band; the site's is linear from -30 to 30. Open.
+- Markers: uPlot draws a hollow circle at every point; the site draws none. Open.
+- X ticks of the fills: uPlot labels `0`, `0.5`, `1`; the site `0.0`, `0.5`, `1.0`. Open: the library's number label.
+
+## High-Low Bands (`high-low-bands.html`)
+
+- Only the first of uPlot's twelve charts is recreated: the year of daily lows, highs and means. The others (differing paths, bars, inverted bands, the unaligned and thin bar cases, the minute-resolution temperatures) have no counterpart. Open.
+- Temperatures: the same shape, bands and gaps, with a dashed blue mean. Matches.
+- Ticks: uPlot labels every twenty days as `1/11`; the site `Jan 11`. Open: the library's date label.
+- Series names: `Low`, `High` and `Avg` in uPlot; the site reads `Value`. Open.
+
+## Latency Heatmap and Heatmap Cells (`latency-heatmap.html`)
+
+- Heatmap cells: uPlot's third chart (mode 2, 45k latencies in 15 second by 2 ms cells) is the page `heatmap-cells`; it has no demo of its own. Matches in shape: oranges to red by count, over about eighty minutes.
+- Raw and aggregated heatmaps: translucent red dashes, and cyan to red buckets of 10 ms; the site's buckets are 5 ms and its time ticks every ten seconds against five. Open.
+- Histograms: uPlot's start at 5 with the tail to 155; the site's x axis starts at 25 and its first bar is the 25 to 30 bucket. Open.
+- Bucket sliders: uPlot has size and offset above the histograms; the site has none. Open.
+- Legends read `Time`, `Value`; the site's name its columns. Explained.
