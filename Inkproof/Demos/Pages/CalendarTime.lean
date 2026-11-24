@@ -12,7 +12,7 @@ def scene (px : Browser.Pixels) (s : CalendarTime.Spec) (off : Array Bool) : IO 
   let measure ← measurer Browser.font s.labelTexts.toArray
   pure { commands := px.frameBytes (s.chart off measure) background,
          labels := Browser.tickLabels (s.axes measure),
-         access := Browser.accessOf s.name s.frame (Browser.seriesTraces off [(CalendarTime.red, s.data)]) }
+         access := Browser.accessOf s.name s.frame (Browser.seriesTraces off [(CalendarTime.red, s.data)] (if s.name == "months" then [] else ["2019"])) }
 
 /-- The charts of `timezones-dst` and `months`, by the name a page's chart gives as its source. -/
 def run : IO Unit := do

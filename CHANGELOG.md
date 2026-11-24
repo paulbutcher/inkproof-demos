@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.24.2
+
+- The Timezones and DST series are named 2019.
+
 ## v0.24.1
 
 - Retained layers' recorded draws are kept by Web's `SceneCache.buildRetained`, not in a ref beside it.

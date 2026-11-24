@@ -2,7 +2,7 @@
 
 Each page is compared with the uPlot demo it recreates, run locally from a clone of https://github.com/leeoniya/uPlot at commit `e995b061e9fc5476a6d862cd2fb2ebc7452ca012` (v1.6.32), in headless Chromium at the same viewport and device pixel ratio. Differences that come only from random data are not listed. A difference is `fixed` (with the pull request), `requested` (with the issue on the library that must change), `explained` (with the reason), or `open` (found, not yet resolved; none may remain when the comparison is finished).
 
-Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch.
+Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch, Sparklines, Sparklines Bars, Months, Timezones and DST.
 
 ## Shared differences
 
@@ -84,3 +84,29 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Legend: the series are `One` and `Two`; the pages named them `Series N`. Fixed (`Zoom.legendNames`). The other zoom pages leave their series unnamed and read `Value`.
 - Wheel and touch pass-through: requested, see Shared differences.
+
+## Sparklines (`sparklines.html`)
+
+- Data and drawing: ten stocks, volume and close, 150 by 30 pixels on a pink canvas, a blue line over a light blue fill, no axes, cursor or legend. Side by side the twenty sparklines match in shape and extent. Matches.
+- The page adds a link and a sentence above the table. Explained: the site's pages say what they show.
+
+## Sparklines Bars (`sparklines-bars.html`)
+
+- Data: sixteen points, a line with a gradient fill and floating bars of five either side. Same ranges (`-25` to `15`, the bar highs do not widen the range) and the same dashed line at zero. Matches.
+- Colours: green above zero and red below, bars split at zero in the first chart and one colour per bar in the second. Matches.
+- Headings: the site adds a title and a sentence for each chart. Explained.
+
+## Months (`months.html`)
+
+- Data: one value per month start from 2017 to 2019, random but for the first. Ticks fall on month starts, labelled with month names. Matches.
+- Year line: uPlot writes the year under the first January tick; the site does not. Requested, [inkproof-axis#52](http://localhost:3000/tentenths/inkproof-axis/issues/52).
+- Markers: uPlot draws a small circle at every point; the site draws none. Open.
+- Legend: `Value` with the cursor's readout under the plot; see Shared differences.
+
+## Timezones and DST (`timezones-dst.html`)
+
+- Data: a spike once a day over the range, the same twelve charts (four ranges, UTC, the zone with the change and the other zone), with the same titles. Matches.
+- Ticks: uPlot labels every day as `3/29`, `3/30`; the site's step is two days and its labels read `Mar 29`. Open: the step comes from the library's tick choice for the width, and the label format from the library's date label.
+- Year line: uPlot writes the year under the first tick. Requested, [inkproof-axis#52](http://localhost:3000/tentenths/inkproof-axis/issues/52).
+- Series name: `2019` in uPlot; the site read `Value`. Fixed; a browser test checks it.
+- Section headings: uPlot puts each range's heading in a pale blue band; the site's are plain. Open.

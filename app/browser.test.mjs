@@ -669,7 +669,7 @@ for (const [path, chart, expected] of [['grouped-bars/', 0, ['Metric 1', 'Metric
   test(`${path.slice(0, -1)} chart ${chart}: the static legend names the series as uPlot's does, lists no values and hides a series on a click`, async () => {
     const { page, problems } = await open(path);
     const rows = () => page.evaluate(i => [...document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelectorAll('.legend button')].map(b => b.textContent), chart);
-    await page.waitForFunction(i => document.querySelectorAll('inkproof-chart')[i]?.shadowRoot.querySelector('.legend button'), chart);
+    await page.waitForFunction(i => document.querySelectorAll('inkproof-chart')[i]?.shadowRoot?.querySelector('.legend button'), chart);
     const names = await rows();
     assert.deepEqual(names, expected);
     assert.ok(names.every(n => !n.includes(':') && !n.includes('(last)')), `no values in ${names}`);
@@ -685,10 +685,10 @@ for (const [path, chart, expected] of [['grouped-bars/', 0, ['Metric 1', 'Metric
 }
 
 // Legends that read values: each entry starts with the name uPlot gives the series, `Value` where the demo gives none.
-for (const [path, chart, expected] of [['missing-data/', 0, ['CPU', 'RAM', 'TCP Out']], ['missing-data/', 1, ['Value']], ['points/', 0, ['Value', 'Value', 'Value', 'Value']], ['axis-control/', 0, ['sin(x)']], ['zoom-wheel/', 0, ['One', 'Two']], ['area-fill/', 0, ['Value', 'Value', 'Value']]]) {
+for (const [path, chart, expected] of [['missing-data/', 0, ['CPU', 'RAM', 'TCP Out']], ['missing-data/', 1, ['Value']], ['points/', 0, ['Value', 'Value', 'Value', 'Value']], ['axis-control/', 0, ['sin(x)']], ['zoom-wheel/', 0, ['One', 'Two']], ['area-fill/', 0, ['Value', 'Value', 'Value']], ['timezones-dst/', 0, ['2019']], ['timezones-dst/', 11, ['2019']], ['months/', 0, ['Value']]]) {
   test(`${path.slice(0, -1)} chart ${chart}: the legend names the series ${expected.join(', ')}`, async () => {
     const { page, problems } = await open(path);
-    await page.waitForFunction(i => document.querySelectorAll('inkproof-chart')[i]?.shadowRoot.querySelector('.legend button'), chart);
+    await page.waitForFunction(i => document.querySelectorAll('inkproof-chart')[i]?.shadowRoot?.querySelector('.legend button'), chart);
     const names = await page.evaluate(i => [...document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelectorAll('.legend button')].map(b => b.textContent), chart);
     assert.equal(names.length, expected.length);
     names.forEach((n, i) => assert.ok(n.startsWith(expected[i]), `${n} starts with ${expected[i]}`));
@@ -736,7 +736,7 @@ for (const [path, counts] of Object.entries(legends)) {
   test(`${path.slice(0, -1)}: each chart has a legend entry for each series, and the values follow the cursor and hide the series`, async () => {
     const { page, problems } = await open(path);
     const rows = () => page.evaluate(() => [...document.querySelectorAll('inkproof-chart')].map(e => [...e.shadowRoot.querySelectorAll('.legend button')].map(b => b.textContent)));
-    await page.waitForFunction(n => [...document.querySelectorAll('inkproof-chart')].every(e => e.shadowRoot.querySelector('.legend button')) && document.querySelectorAll('inkproof-chart').length === n, counts.length);
+    await page.waitForFunction(n => [...document.querySelectorAll('inkproof-chart')].every(e => e.shadowRoot?.querySelector('.legend button')) && document.querySelectorAll('inkproof-chart').length === n, counts.length);
     assert.deepEqual((await rows()).map(r => r.length), counts);
     assert.ok((await rows()).flat().every(t => !t.includes('NaN')), 'a missing value reads as a dash');
     const before = await page.evaluate(() => window.draws.length);
