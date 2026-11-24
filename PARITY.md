@@ -2,7 +2,7 @@
 
 Each page is compared with the uPlot demo it recreates, run locally from a clone of https://github.com/leeoniya/uPlot at commit `e995b061e9fc5476a6d862cd2fb2ebc7452ca012` (v1.6.32), in headless Chromium at the same viewport and device pixel ratio. Differences that come only from random data are not listed. A difference is `fixed` (with the pull request), `requested` (with the issue on the library that must change), `explained` (with the reason), or `open` (found, not yet resolved; none may remain when the comparison is finished).
 
-Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch, Sparklines, Sparklines Bars, Months, Timezones and DST, Annotations, Arcsinh Scales, Box and Whisker, Candlestick, Cursor Bind, Custom Scales, Gradients, High-Low Bands, Latency Heatmap, Heatmap Cells, Log Scales, Log Scales 2 and Path Gap Clip.
+Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Control, Stacked Series, Scatter and Bubble, Multi-Bars, Grouped Bars, Points, Missing Data, Zoom Wheel and Touch, Sparklines, Sparklines Bars, Months, Timezones and DST, Annotations, Arcsinh Scales, Box and Whisker, Candlestick, Cursor Bind, Custom Scales, Gradients, High-Low Bands, Latency Heatmap, Heatmap Cells, Log Scales, Log Scales 2, Path Gap Clip, A Million Points, Server Events, Sync Cursor, Timeline / Discrete and Tooltip and Legend.
 
 ## Shared differences
 
@@ -195,3 +195,41 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Data: temperature series and the band with its gaps match.
 - Theme: uPlot's charts here have a grey plot background; the site's are white. Open.
 - X range of the gaps chart: uPlot's axis is in seconds since an offset; the site's is the clock time. Explained.
+
+## A Million Points (`million.html`)
+
+- No uPlot demo of this name: the nearest is `bench/uPlot-10M.html` (two million points in one chart, forty thousand by fifty series in another, random data, no spikes). The page recreates what uPlot's decimation claims, not its data: a million samples with twelve one sample spikes, drawn naively and as lowest and highest of each pixel column. Explained.
+- Legend, cursor and focus (`prox: 30`) of the benchmark: none on the page. Open.
+
+## Server Events (`server-events.html`)
+
+- Data: uPlot's `bench/data.json` holds 55,550 one minute samples of CPU, RAM and TCP out (`bench/uPlot.html`); the site generates the same count of CPU, memory and traffic samples from a hash, as the page does not ship uPlot's file. Explained.
+- Axes: uPlot draws CPU and RAM on a `%` axis on the left and TCP out on its own `MB` axis on the right, without a grid; the site draws all three on one 0 to 100 axis. Open.
+- Series: red CPU, blue RAM, green TCP out at one device pixel; the site's are red, green and blue (Busy, Memory used, Traffic) at one CSS pixel. Open.
+- Time axis: uPlot's x is time; the site's is the sample index. Open.
+- Legend and cursor readouts (`CPU`, `RAM`, `TCP Out` with `%` and `MB` values): the site has none. Open: see Shared differences.
+
+## Sync Cursor (`sync-cursor.html`)
+
+- Data: uPlot cuts three thousand-sample stretches out of the same real data into three charts (CPU, RAM, TCP, each with three series); the site draws three stretches of its own generated series, the same shape. Explained.
+- Sizes: 1920 by 400 for CPU and 940 by 400 for the others; the site's are 800 by 240. Open.
+- Syncing: uPlot syncs only the cursor, with a lock on click and focus of the series nearest it; the site also links the x range, a superset. Explained.
+- Toggles: uPlot has buttons to disable syncing and the mouse up and down sync; the site has one button that unlinks the middle chart. Open.
+- Mis-matched series order: uPlot's second pair of charts matches series by label across charts; no counterpart. Open.
+- Axis labels: `%` and ` MB` suffixes in uPlot; the site's are plain. Open.
+
+## Timeline / Discrete (`timeline-discrete.html`)
+
+- Data: the states of the first three charts (devices A to C, states 0 to 5, the periodic and lettered series) are uPlot's; the irregular times are drawn from a fixed seed rather than at random. Matches.
+- Charts: uPlot's fourth, `Merged same consecutive states`, has no counterpart. Open.
+- Colours: states use the red, green, blue, cyan, orange and yellow strokes with the same fill alphas; bars have a four pixel inside outline. Matches.
+- Hover: uPlot highlights the bar under the cursor and shows its state in the legend; the page has a cursor only. Open.
+- Axes: uPlot's labels sit 15 pixels from a 70 pixel wide gutter; the site's gutter is 90. Explained.
+- Chart title inside the chart, drop shadow and padding: see Shared differences.
+
+## Tooltip and Legend (`tooltip-legend.html`)
+
+- Page stands in for uPlot's `tooltips-closest.html` and legend pages; the data are those of Cursor Bind, not the benchmark results uPlot's tooltips draw (a series per cache state with commit hashes). Explained.
+- Tooltip: uPlot shows the value and commit in a box beside the nearest point, with its border in the series colour; the page names the series and values of the nearest point. Matches in kind.
+- Focus: uPlot dims series other than the one nearest the cursor (`alpha: 0.3`, `prox: 5`); the page does not. Open: [inkproof-web#110](http://localhost:3000/tentenths/inkproof-web/issues/110) concerns the legend.
+- Legend: see Shared differences.

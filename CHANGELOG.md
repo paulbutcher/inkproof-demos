@@ -2,7 +2,7 @@
 
 ## v0.25.2
 
-- PARITY.md compares Log Scales, Log Scales 2 and Path Gap Clip with uPlot.
+- PARITY.md compares Log Scales, Log Scales 2, Path Gap Clip, A Million Points, Server Events, Sync Cursor, Timeline / Discrete and Tooltip and Legend with uPlot.
 - Log Scales draws each server's line across the samples it did not report, as uPlot does.
 
 ## v0.25.1
