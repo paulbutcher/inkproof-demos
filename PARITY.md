@@ -144,7 +144,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 ## Custom Scales (`custom-scales.html`)
 
 - Data: the same fitted curve, bounds and twenty observations in the same three charts (linear, both logarithmic, and a Weibull y axis). The curves match.
-- Series names: `upper_ci`, `lower_ci` and `weibull_fitted` in uPlot; the site reads `Value`. Open.
+- Series names: `upper_ci`, `lower_ci` and `weibull_fitted` in uPlot; the site reads `Value`. Fixed.
 - X range: uPlot's logarithmic x axis starts at the first sample, about 0.4; the site's starts at 0.1. Open.
 - Ticks: uPlot labels the linear y axis every 0.05 and the logarithmic ones at 1, 0.5, 0.2, 0.1 and so on; the site labels every 0.1 and at decades with six decimals. Open: the library's tick choice.
 - Chart titles inside the chart: see Shared differences.
@@ -162,7 +162,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Only the first of uPlot's twelve charts is recreated: the year of daily lows, highs and means. The others (differing paths, bars, inverted bands, the unaligned and thin bar cases, the minute-resolution temperatures) have no counterpart. Open.
 - Temperatures: the same shape, bands and gaps, with a dashed blue mean. Matches.
 - Ticks: uPlot labels every twenty days as `1/11`; the site `Jan 11`. Open: the library's date label.
-- Series names: `Low`, `High` and `Avg` in uPlot; the site reads `Value`. Open.
+- Series names: `Low`, `High` and `Avg` in uPlot; the site reads `Value`. Fixed.
 
 ## Latency Heatmap and Heatmap Cells (`latency-heatmap.html`)
 

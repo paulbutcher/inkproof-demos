@@ -23,9 +23,9 @@ def meanSeries : Series Rat Rat := series days ((withGaps (List.range' 300 10) m
 /-- Lows and highs as thin lines, the mean dashed, the space between the mean and each of the others filled. -/
 def temps : Chart :=
   let layers : List Layer :=
-    [{ data := lowSeries, color := ⟨0, 128, 0, 255⟩ },
-     { data := highSeries, color := ⟨255, 0, 0, 255⟩ },
-     { data := meanSeries, color := ⟨0, 0, 255, 255⟩, halfWidth := 1, dash := some ⟨10, 10⟩ }]
+    [{ data := lowSeries, label := "Low", color := ⟨0, 128, 0, 255⟩ },
+     { data := highSeries, label := "High", color := ⟨255, 0, 0, 255⟩ },
+     { data := meanSeries, label := "Avg", color := ⟨0, 0, 255, 255⟩, halfWidth := 1, dash := some ⟨10, 10⟩ }]
   { name := "temps", width := 1920, height := 600, xs := (days.getD 0 0, days.getD 364 0), time := true,
     left := autoYAxis layers "°F", layers,
     bands := [⟨1, 2, ⟨255, 0, 0, 26⟩⟩, ⟨0, 2, ⟨0, 255, 0, 26⟩⟩] }

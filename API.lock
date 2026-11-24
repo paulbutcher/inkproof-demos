@@ -327,6 +327,8 @@ def Inkproof.Demos.CustomScales.lambda : Float
 def Inkproof.Demos.CustomScales.layers : List (Inkproof.Scene.Color × Inkproof.Core.Series Rat Rat)
 def Inkproof.Demos.CustomScales.lower : Inkproof.Core.Series Rat Rat
 theorem Inkproof.Demos.CustomScales.lower_eq : Inkproof.Demos.CustomScales.lower = Inkproof.Demos.Lines.series Inkproof.Demos.CustomScales.times (Array.map Option.some (Inkproof.Demos.CustomScales.curve (-1)))
+def Inkproof.Demos.CustomScales.names : List String
+theorem Inkproof.Demos.CustomScales.names_length : Inkproof.Demos.CustomScales.names.length = Inkproof.Demos.CustomScales.layers.length
 def Inkproof.Demos.CustomScales.observations : List (Rat × Rat)
 def Inkproof.Demos.CustomScales.orange : Inkproof.Scene.Color
 def Inkproof.Demos.CustomScales.probability : Float → Float

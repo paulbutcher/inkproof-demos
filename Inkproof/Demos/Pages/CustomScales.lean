@@ -14,6 +14,6 @@ def run : IO Unit :=
     let measure ← measurer Browser.font s.labelTexts.toArray
     pure { commands := px.frameBytes (s.chart off measure) background,
            labels := Browser.tickLabels (s.axes measure),
-           access := Browser.accessOf "Custom Scales" s.frame (Browser.seriesTraces off CustomScales.layers) }
+           access := Browser.accessOf "Custom Scales" s.frame (Browser.seriesTraces off CustomScales.layers CustomScales.names) }
 
 end Page.CustomScales

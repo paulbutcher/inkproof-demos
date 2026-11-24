@@ -223,6 +223,11 @@ def band : Color := ⟨255, 165, 0, 48⟩
 /-- The series as the legend lists them, with their colours. -/
 def layers : List (Color × Series Rat Rat) := [(blue, upper), (green, lower), (orange, fitted)]
 
+/-- The names uPlot gives the three series. -/
+def names : List String := ["upper_ci", "lower_ci", "weibull_fitted"]
+
+theorem names_length : names.length = layers.length := rfl
+
 /-- The space between the bounds, unless the legend has hidden either, as the fitted curve dashed over it, and a square at each observation. -/
 def Spec.chart (s : Spec) (off : Array Bool) (measure : String → Float × Float) : DisplayList :=
   let shown (i : Nat) := !off.getD i false
