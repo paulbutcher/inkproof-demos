@@ -17,16 +17,19 @@ open Inkproof.Core Inkproof.Scene Inkproof.Scale Inkproof.Demos
 /-- Latencies are counted in buckets this wide, in milliseconds. -/
 def bucket : Nat := 5
 
-/-- A hundred columns of between 200 and 500 latencies each, in whole milliseconds and none below 25. -/
+/-- No latency is recorded below this, in milliseconds. -/
+def floor : Int := 5
+
+/-- A hundred columns of between 200 and 500 latencies each, in whole milliseconds and none below `floor`. -/
 def columns : Array (Array Int) :=
   (List.range 100).toArray.map fun i =>
     let n := (Data.ints (1000 + i) 1 200 500)[0]?.getD 200
-    (Latency.draws (2000 + i) n 30 30 3).map fun v => max 25 (Int.ofNat v.floor.toUInt64.toNat)
+    (Latency.draws (2000 + i) n 30 30 3).map fun v => max floor (Int.ofNat v.floor.toUInt64.toNat)
 
 theorem columns_eq : columns =
     (List.range 100).toArray.map fun i =>
       let n := (Data.ints (1000 + i) 1 200 500)[0]?.getD 200
-      (Latency.draws (2000 + i) n 30 30 3).map fun v => max 25 (Int.ofNat v.floor.toUInt64.toNat) := rfl
+      (Latency.draws (2000 + i) n 30 30 3).map fun v => max floor (Int.ofNat v.floor.toUInt64.toNat) := rfl
 
 /-- Every latency, over every column. -/
 def samples : Array Int := columns.flatten

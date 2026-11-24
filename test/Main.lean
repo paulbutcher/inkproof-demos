@@ -217,7 +217,7 @@ private def barsTest : Except String Unit := do
 private def latencyTest : Except String Unit := do
   check (LatencyHistogram.counts.foldl (· + ·) 0 == LatencyHistogram.samples.size) "every latency is counted in a bucket"
   check (LatencyHistogram.columns.size == 100 && LatencyHistogram.columns.all fun c => 200 ≤ c.size && c.size ≤ 500) "each column holds 200 to 500 latencies"
-  check (LatencyHistogram.samples.all (25 ≤ ·)) "no latency falls below the 25 ms floor"
+  check (LatencyHistogram.samples.all (LatencyHistogram.floor ≤ ·)) "no latency falls below the floor"
   check (LatencyHistogram.counts.foldl max 0 > 0) "the histogram is not empty"
 
 private def heatmapTest : Except String Unit := do
