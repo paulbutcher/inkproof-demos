@@ -14,7 +14,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Cursor markers (a dot on each series at the cursor, hollow markers filled under it): fixed; every chart with a `cursor` attribute adds `markers`. Charts with no `cursor` attribute draw no cursor in either version.
 - Circle markers drawn as octagons: fixed by Gpu 0.19.0, with no change to the pages, which never tessellated markers themselves; they now draw as circles.
 - Series without a label are named `Value` in uPlot's legend. Fixed: `Browser.seriesTraces` names a series `Value` unless its page gives a name (`Lines.Layer.label`), and a browser test checks the legends of Missing Data, Points, Axis Control, Zoom Wheel and Area Fill.
-- uPlot draws the chart title inside the chart, above the plot; the pages put it in a heading above the chart. Open.
+- uPlot draws the chart title inside the chart, above the plot; the pages put it in a heading above the chart. Explained: the heading sits in the same place relative to the plot, and as page text it stays selectable and reaches screen readers, which a title drawn into the canvas would not.
 
 ## Line Paths (`line-paths.html`)
 
