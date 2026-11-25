@@ -223,8 +223,9 @@ private def barsTest : Except String Unit := do
       check (c.bars.size == present) s!"{c.groups}: a bar for each present value and none for a missing one"
     else
       let labelled := c.bars.filterMap (·.label)
-      let totals := (List.range c.groups.size).map fun g => c.series.foldl (fun t s => t + ((s.values.getD g none).getD 0)) 0
-      check (labelled.toList == totals) s!"{c.groups}: a stack is labelled with its total"
+      let tops := (List.range c.groups.size).flatMap fun g =>
+        ((c.series.toList.filterMap fun s => s.values.getD g none).scanl (· + ·) 0).tail
+      check (labelled.toList == tops) s!"{c.groups}: each segment of a stack is labelled with the height of its top"
     let blocks := (List.range c.groups.size).map c.block
     check (blocks.zip blocks.tail |>.all fun ((s, l), (s', _)) => s + l ≤ s') s!"{c.groups}: groups do not overlap"
     let axes := c.axes measure

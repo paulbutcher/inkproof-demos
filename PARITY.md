@@ -59,14 +59,14 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Legend names: `Lib Size (KB)`, `Render Time (ms)`, `Peak Heap (MB)`, `Final Heap (MB)`, `Interact 10s (ms)`, `Toggle 6x (ms)` and `Random line`, the line hidden by a click as the bars are. Fixed; a browser test checks the names and that clicking the last entry redraws.
 - Random line in the horizontal layout: uPlot draws it; `Bars.lineDisplay` returns none when `horizontal`. Fixed: the points are computed in screen coordinates from the same `along` and category centres the horizontal bars use.
-- Numbers on the bars: `Browser.barLabels` writes 10 pixel sans-serif; uPlot fits the size to each bar. Open.
+- Numbers on the bars: `Browser.barLabels` writes 10 pixel sans-serif black text; uPlot writes 10 pixel Arial scaled by the pixel ratio, the same size for every bar. Explained: the sizes agree, the typeface is the page's sans-serif.
 - Line width: two pixels, as uPlot. Matches.
 
 ## Grouped Bars (`bars-grouped-stacked.html`)
 
 - Legend names: `Metric 1` to `Metric 3`. Fixed (same browser test).
 - Horizontal exception: the grouped and stacked horizontal charts draw no lines because they have none. Matches.
-- Numbers on each bar are too small, and stacked segments carry no numbers of their own, only a total on the top bar. Open.
+- Numbers on each bar: the same size as uPlot's (see Multi-Bars). uPlot labels every stacked segment with the height of its top, as the stacked data are cumulative; the site now does too. Fixed; a native test checks the labels.
 
 ## Points (`points.html`)
 

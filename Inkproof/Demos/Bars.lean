@@ -105,19 +105,17 @@ def Chart.rect (c : Chart) (a b u v : Rat) : Rect :=
 theorem Chart.rect_eq (c : Chart) (a b u v : Rat) :
     c.rect a b u v = if c.horizontal then ⟨a, u, b, v⟩ else ⟨u, a, v, b⟩ := rfl
 
-/-- The bars of the chart, group by group. Where stacked, the values pile up from zero and only the top bar is labelled, with the total; a missing value has no bar. -/
+/-- The bars of the chart, group by group. Where stacked, the values pile up from zero and each segment is labelled with the height of its top; a missing value has no bar. -/
 def Chart.bars (c : Chart) : Array Bar :=
   (List.range c.groups.size).toArray.flatMap fun g =>
     let (start, len) := c.block g
     let indexed := c.series.toList.zipIdx.filter fun (s, _) => (s.values.getD g none).isSome
     if c.stacked then
-      let last := indexed.getLast?.map (·.2)
-      let total := indexed.foldl (fun acc (s, _) => acc + (s.values.getD g none).getD 0) 0
-      (indexed.foldl (fun (acc : Rat × Array Bar) (s, i) =>
+      (indexed.foldl (fun (acc : Rat × Array Bar) (s, _) =>
         let v := (s.values.getD g none).getD 0
         let top := acc.1 + v
         (top, acc.2.push ⟨c.rect (c.along s.range acc.1) (c.along s.range top) start (start + len), s.fill,
-          if last == some i then some total else none, 0 ≤ v, none, 1⟩)) (0, #[])).2
+          some top, 0 ≤ v, none, 1⟩)) (0, #[])).2
     else
       indexed.toArray.map fun (s, i) =>
         let v := (s.values.getD g none).getD 0
@@ -130,13 +128,11 @@ theorem Chart.bars_eq (c : Chart) : c.bars =
     let (start, len) := c.block g
     let indexed := c.series.toList.zipIdx.filter fun (s, _) => (s.values.getD g none).isSome
     if c.stacked then
-      let last := indexed.getLast?.map (·.2)
-      let total := indexed.foldl (fun acc (s, _) => acc + (s.values.getD g none).getD 0) 0
-      (indexed.foldl (fun (acc : Rat × Array Bar) (s, i) =>
+      (indexed.foldl (fun (acc : Rat × Array Bar) (s, _) =>
         let v := (s.values.getD g none).getD 0
         let top := acc.1 + v
         (top, acc.2.push ⟨c.rect (c.along s.range acc.1) (c.along s.range top) start (start + len), s.fill,
-          if last == some i then some total else none, 0 ≤ v, none, 1⟩)) (0, #[])).2
+          some top, 0 ≤ v, none, 1⟩)) (0, #[])).2
     else
       indexed.toArray.map fun (s, i) =>
         let v := (s.values.getD g none).getD 0
