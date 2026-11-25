@@ -18,13 +18,13 @@ def syncCharts : List (String × Zoom.Chart) :=
   let colours : List Color := [⟨255, 0, 0, 255⟩, ⟨0, 128, 0, 255⟩, ⟨0, 0, 255, 255⟩]
   ServerEvents.series.zipIdx.map fun (f, i) =>
     (s!"sync-{i}", ⟨800, 240, (List.range 3).zip colours |>.map fun (k, colour) =>
-      ⟨xs, (Array.range 1000).map fun j => ((f (1000 * k + j) : Int) : Rat) / 100, colour, none⟩, none, []⟩)
+      ⟨xs, (Array.range 1000).map fun j => ((f (1000 * k + j) : Int) : Rat) / 100, colour, none⟩, none, [], ["%", "%", " MB"].getD i ""⟩)
 
 /-- Two thousand minutes of the first server events series, drawn small as the overview and large as the chart that shows the selected range, as uPlot's zoom-ranger page does. -/
 def rangerCharts : List (String × Zoom.Chart) :=
   let xs : Array Rat := (Array.range 2000).map fun i => ((i : Nat) : Rat)
   let line : Zoom.Line := ⟨xs, (Array.range 2000).map fun j => ((ServerEvents.busy j : Int) : Rat) / 100, ⟨0, 0, 255, 255⟩, none⟩
-  [("ranger-main", ⟨800, 300, [line], none, []⟩), ("ranger-overview", ⟨800, 120, [line], none, []⟩)]
+  [("ranger-main", ⟨800, 300, [line], none, [], ""⟩), ("ranger-overview", ⟨800, 120, [line], none, [], ""⟩)]
 
 /-- The range of minutes the large chart shows when the page opens. -/
 def rangerStart : Float := 600
@@ -34,20 +34,20 @@ def rangerEnd : Float := 1200
 theorem rangerCharts_eq : rangerCharts =
     let xs : Array Rat := (Array.range 2000).map fun i => ((i : Nat) : Rat)
     let line : Zoom.Line := ⟨xs, (Array.range 2000).map fun j => ((ServerEvents.busy j : Int) : Rat) / 100, ⟨0, 0, 255, 255⟩, none⟩
-    [("ranger-main", ⟨800, 300, [line], none, []⟩), ("ranger-overview", ⟨800, 120, [line], none, []⟩)] := rfl
+    [("ranger-main", ⟨800, 300, [line], none, [], ""⟩), ("ranger-overview", ⟨800, 120, [line], none, [], ""⟩)] := rfl
 
 /-- Three series of thirty integers in `-10..10` over `1..30`, the data of uPlot's cursor-bind page, drawn from `seed`. -/
 def bindChart (seed : Nat) : Zoom.Chart :=
   let xs : Array Rat := (Array.range 30).map fun i => ((i + 1 : Nat) : Rat)
   let line (k : Nat) (colour : Color) : Zoom.Line :=
     ⟨xs, (Data.ints (3 * seed + k) 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), colour, none⟩
-  ⟨900, 400, [line 0 ⟨255, 0, 0, 255⟩, line 1 ⟨0, 128, 0, 255⟩, line 2 ⟨0, 0, 255, 255⟩], none, []⟩
+  ⟨900, 400, [line 0 ⟨255, 0, 0, 255⟩, line 1 ⟨0, 128, 0, 255⟩, line 2 ⟨0, 0, 255, 255⟩], none, [], ""⟩
 
 theorem bindChart_eq (seed : Nat) : bindChart seed =
     let xs : Array Rat := (Array.range 30).map fun i => ((i + 1 : Nat) : Rat)
     let line (k : Nat) (colour : Color) : Zoom.Line :=
       ⟨xs, (Data.ints (3 * seed + k) 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), colour, none⟩
-    ⟨900, 400, [line 0 ⟨255, 0, 0, 255⟩, line 1 ⟨0, 128, 0, 255⟩, line 2 ⟨0, 0, 255, 255⟩], none, []⟩ := rfl
+    ⟨900, 400, [line 0 ⟨255, 0, 0, 255⟩, line 1 ⟨0, 128, 0, 255⟩, line 2 ⟨0, 0, 255, 255⟩], none, [], ""⟩ := rfl
 
 /-- The cursor-bind chart: `bindChart`'s three series at uPlot's page size, each over a fill of 10% alpha (the green line over a brighter green fill, as there). -/
 def cursorBindChart (seed : Nat) : Zoom.Chart :=
@@ -123,7 +123,7 @@ theorem windowOf_eq (x0 x1 : Float) : windowOf x0 x1 =
 
 /-- The chart of the points fetched, over the extent of the whole series. -/
 def fetched (pts : Array (Rat × Rat)) : Zoom.Chart :=
-  ⟨800, 400, [⟨pts.map (·.1), pts.map (·.2), ⟨255, 0, 0, 255⟩, none⟩], some ((0, ((samples - 1 : Nat) : Rat)), (0, 256)), []⟩
+  ⟨800, 400, [⟨pts.map (·.1), pts.map (·.2), ⟨255, 0, 0, 255⟩, none⟩], some ((0, ((samples - 1 : Nat) : Rat)), (0, 256)), [], ""⟩
 
 theorem fetched_lines (pts : Array (Rat × Rat)) : (fetched pts).lines = [⟨pts.map (·.1), pts.map (·.2), ⟨255, 0, 0, 255⟩, none⟩] := rfl
 

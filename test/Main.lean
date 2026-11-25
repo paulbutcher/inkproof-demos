@@ -275,6 +275,10 @@ private def linkedTest : Except String Unit := do
     let pts := Linked.points 1 first (whole.extract first (first + count))
     check (pts.all fun (x, y) => y == (Linked.sample x.floor.toNat : Nat)) "fetched points hold the samples at their index"
   check ((Linked.windowOf 100 50).2 > 0) "a reversed range still fetches a sample"
+  let measure (t : String) : Float × Float := (7 * t.length.toFloat, 12)
+  for ((_, c), suffix) in Linked.syncCharts.zip ["%", "%", " MB"] do
+    let left := ((Zoom.Chart.frame c |> fun f => axesWith c.suffix f measure).getD 1 ⟨#[], []⟩).labels
+    check (!left.isEmpty && left.all (·.text.endsWith suffix)) s!"the left labels of a synced chart end in {suffix}"
 
 private def candlesTest : Except String Unit := do
   let p := Candles.pane

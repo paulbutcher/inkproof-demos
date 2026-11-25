@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.35.0
+
+- Sync Cursor labels its left axes with %, % and MB as uPlot's do.
+- Scatter shows its second chart in the browser test in seconds, not tens of seconds (inkproof-gpu#81).
+
 ## v0.34.0
 
 - High-Low Bands draws the inverted, crossing and differing paths band charts, and Path Gap Clip the stepped after and before charts and the aligned and null-fill chart.

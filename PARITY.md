@@ -216,7 +216,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Syncing: uPlot syncs only the cursor, with a lock on click and focus of the series nearest it; the site also links the x range, a superset. Explained.
 - Toggles: uPlot has buttons to disable syncing and the mouse up and down sync; the site has one button that unlinks the middle chart. Open.
 - Mis-matched series order: uPlot's second pair of charts matches series by label across charts; no counterpart. Open.
-- Axis labels: `%` and ` MB` suffixes in uPlot; the site's are plain. Open.
+- Axis labels: `%` and ` MB` suffixes in uPlot, as the site's CPU, RAM and TCP charts have. Fixed.
 
 ## Timeline / Discrete (`timeline-discrete.html`)
 

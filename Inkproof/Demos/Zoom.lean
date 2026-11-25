@@ -41,6 +41,7 @@ structure Chart where
   lines : List Line
   bounds : Option ((Rat × Rat) × (Rat × Rat))
   marks : List Mark
+  suffix : String := ""
 
 /-- The names uPlot's wheel and touch zoom pages give their series; the other pages leave theirs unnamed. -/
 def legendNames (page : String) : List String :=
@@ -52,12 +53,12 @@ theorem legendNames_eq (page : String) :
 /-- The two series of uPlot's wheel and touch zoom pages. -/
 def basic : Chart :=
   let xs : Array Rat := #[1, 2, 3, 4, 5, 6, 7]
-  ⟨600, 400, [⟨xs, #[40, 43, 60, 65, 71, 73, 80], ⟨255, 0, 0, 255⟩, none⟩, ⟨xs, #[18, 24, 37, 55, 55, 60, 63], ⟨0, 0, 255, 255⟩, none⟩], none, []⟩
+  ⟨600, 400, [⟨xs, #[40, 43, 60, 65, 71, 73, 80], ⟨255, 0, 0, 255⟩, none⟩, ⟨xs, #[18, 24, 37, 55, 55, 60, 63], ⟨0, 0, 255, 255⟩, none⟩], none, [], ""⟩
 
 /-- Thirty points of a fixed hash of the index in `-10..10`, drawn in purple, as the variations page does. -/
 def variation : Chart :=
   let xs : Array Rat := (Array.range 30).map fun i => ((i + 1 : Nat) : Rat)
-  ⟨600, 400, [⟨xs, (Data.ints 7 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), ⟨128, 0, 128, 255⟩, none⟩], none, []⟩
+  ⟨600, 400, [⟨xs, (Data.ints 7 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), ⟨128, 0, 128, 255⟩, none⟩], none, [], ""⟩
 
 /-- The extent of every x value of the chart, and of every y value padded as an automatic axis would. -/
 def Chart.ranges (c : Chart) : (Rat × Rat) × (Rat × Rat) :=
@@ -198,7 +199,7 @@ def Chart.commands (c : Chart) (cache : Retained) (fresh : Bool) (v : Viewport.V
   let hidden (j : Nat) := j != 0 && off.getD (j - 1) false
   let pick (keep : Bool) := (layers.toList.zipIdx.filter fun (_, j) => hidden j != keep).map (·.1)
   viewLayersBytes (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 data ((plot f).scale k) (pick true) (pick false)
-    ((axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background
+    (((axisDisplayWith c.suffix f measure) ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background
 
 theorem Chart.commands_eq (c : Chart) (cache : Retained) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float)
     (size : Nat × Nat) (k : Rat) (layers : Array Gpu.Layer) (off : Array Bool) :
@@ -208,6 +209,6 @@ theorem Chart.commands_eq (c : Chart) (cache : Retained) (fresh : Bool) (v : Vie
       let pick (keep : Bool) := (layers.toList.zipIdx.filter fun (_, j) => hidden j != keep).map (·.1)
       viewLayersBytes (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 (Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2)
         ((plot f).scale k) (pick true) (pick false)
-        ((axisDisplay f measure ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background := rfl
+        (((axisDisplayWith c.suffix f measure) ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background := rfl
 
 end Inkproof.Demos.Zoom

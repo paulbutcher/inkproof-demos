@@ -15,6 +15,6 @@ def chart : Zoom.Chart :=
   let line (seed : Nat) (color fill : Color) : Zoom.Line :=
     ⟨xs, (Data.ints seed 30 0 20).map fun (v : Nat) => ((v : Int) - 10 : Int), color, some fill⟩
   ⟨1920, 600, [line 21 ⟨255, 0, 0, 255⟩ ⟨255, 0, 0, 26⟩, line 22 ⟨0, 0, 255, 255⟩ ⟨0, 0, 255, 26⟩], none,
-    [⟨4, 4, "eqk_01", ⟨76, 175, 80, 255⟩, ⟨76, 175, 80, 51⟩, false⟩, ⟨9.3, 18.5, "tor_20", ⟨255, 193, 7, 255⟩, ⟨255, 193, 7, 51⟩, true⟩]⟩
+    [⟨4, 4, "eqk_01", ⟨76, 175, 80, 255⟩, ⟨76, 175, 80, 51⟩, false⟩, ⟨9.3, 18.5, "tor_20", ⟨255, 193, 7, 255⟩, ⟨255, 193, 7, 51⟩, true⟩], ""⟩
 
 end Inkproof.Demos.Annotations

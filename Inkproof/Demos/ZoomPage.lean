@@ -25,13 +25,13 @@ def sceneOf (full : Zoom.Chart) (name : String) (cache : Browser.Retention) (px 
     (off : Array Bool) (v : View Float) : IO Scene := do
   let c := fixed full
   let f := c.viewFrame v
-  let measure ← measurer Browser.font (texts f ++ (c.marks.map (·.label)).toArray)
+  let measure ← measurer Browser.font (textsWith c.suffix f ++ (c.marks.map (·.label)).toArray)
   let bytes ← cache.build fun old first => pure (c.commands old first v measure px.backing px.ratio layers off)
   let points := ((c.lines.zipIdx.filter fun (_, i) => !off.getD i false).map (·.1.xs.size)).foldl max 0
   let traces := (full.lines.zipIdx.map fun (l, i) =>
     { name := (Zoom.legendNames name).getD i "Value", color := s!"rgb({l.color.r},{l.color.g},{l.color.b})",
       xs := l.xs.map Rat.toFloat, ys := l.ys.map Rat.toFloat, hidden := off.getD i false : Trace }).toArray
-  pure { commands := bytes, labels := Browser.tickLabels (axes f measure) ++
+  pure { commands := bytes, labels := Browser.tickLabels (axesWith c.suffix f measure) ++
            (c.markTexts f measure).toArray.map fun (text, x, y) => { text, x := Rat.toFloat x, y := Rat.toFloat y, baseline := .top },
          access := { name, series := (c.lines.map fun _ => "line").toArray, points, view := some c.config, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), traces } }
 
