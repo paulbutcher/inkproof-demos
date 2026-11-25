@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.40.0
+
+- Stacked Series strokes the top edge of each area and marks every sample, and outlines its bars in uPlot's green, magenta, blue and red.
+
 ## v0.39.0
 
 - Line Paths and Path Gap Clip are in the dark theme, and every page's chart draws its axes and background in the theme its `theme` attribute names.

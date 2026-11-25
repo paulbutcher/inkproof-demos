@@ -66,7 +66,22 @@ def barFrame : Frame := Frame.sized 800 400 (-1, 101) (-100, 1200)
 private def fills : List Color :=
   [⟨165, 55, 253, 102⟩, ⟨255, 165, 0, 102⟩, ⟨0, 0, 255, 77⟩, ⟨0, 255, 0, 77⟩, ⟨255, 0, 0, 77⟩]
 
-private def paint (k : Nat) : Paint := ⟨k, fills.getD k ⟨0, 0, 0, 255⟩⟩
+/-- The strokes uPlot names for the area series: purple, orange, blue, green and red. -/
+private def areaStrokes : List Color :=
+  [⟨128, 0, 128, 255⟩, ⟨255, 165, 0, 255⟩, ⟨0, 0, 255, 255⟩, ⟨0, 128, 0, 255⟩, ⟨255, 0, 0, 255⟩]
+
+/-- The fills of the bar series: green, magenta, blue and red at 30%. -/
+private def barFills : List Color :=
+  [⟨0, 255, 0, 77⟩, ⟨255, 0, 255, 77⟩, ⟨0, 0, 255, 77⟩, ⟨255, 0, 0, 77⟩]
+
+private def barStrokes : List Color :=
+  [⟨0, 128, 0, 255⟩, ⟨255, 0, 255, 255⟩, ⟨0, 0, 255, 255⟩, ⟨255, 0, 0, 255⟩]
+
+private def black : Color := ⟨0, 0, 0, 255⟩
+
+private def paint (k : Nat) : Paint := ⟨k, fills.getD k black⟩
+
+private def barPaint (k : Nat) : Paint := ⟨k, barFills.getD k black⟩
 
 /-- The series with those `off` marks at zero, so the others stack as if they were absent. -/
 def hide (off : Array Bool) (ss : Array (Series Rat Rat)) : Array (Series Rat Rat) :=
@@ -75,26 +90,74 @@ def hide (off : Array Bool) (ss : Array (Series Rat Rat)) : Array (Series Rat Ra
 theorem hide_eq (off : Array Bool) (ss : Array (Series Rat Rat)) : hide off ss =
     ss.mapIdx fun i s => if off.getD i false then Series.ofUnsorted (s.points.map fun (x, _) => (x, some 0)) else s := rfl
 
+/-- The stacked areas, each with its top edge stroked in its colour and a point at every sample, as uPlot draws them; a series in `off` has none. -/
+def areaEdges (off : Array Bool) (proj : Projection Rat Rat) (ss : Array (Series Rat Rat)) : DisplayList :=
+  (Series.stack (hide off ss)).toList.zipIdx.foldl (init := #[]) fun acc (s, k) =>
+    if off.getD k false then acc else
+      let c := areaStrokes.getD k black
+      acc ++ compileLine ⟨⟨k + 10, c⟩, Axes.strokeHalfWidth, false, none, .straight⟩ proj (Segmented.single s)
+        ++ compileScatter ⟨⟨k + 10, c⟩, .circle, 5 / 2⟩ proj s
+
+theorem areaEdges_eq (off : Array Bool) (proj : Projection Rat Rat) (ss : Array (Series Rat Rat)) : areaEdges off proj ss =
+    (Series.stack (hide off ss)).toList.zipIdx.foldl (init := #[]) fun acc (s, k) =>
+      if off.getD k false then acc else
+        let c := areaStrokes.getD k black
+        acc ++ compileLine ⟨⟨k + 10, c⟩, Axes.strokeHalfWidth, false, none, .straight⟩ proj (Segmented.single s)
+          ++ compileScatter ⟨⟨k + 10, c⟩, .circle, 5 / 2⟩ proj s := rfl
+
 def areaChart (off : Array Bool) (f : Frame) (measure : String → Float × Float) : DisplayList :=
-  axisDisplay f measure ++ compileStackedAreas paint (projection f) (hide off areaSeries)
+  axisDisplay f measure ++ compileStackedAreas paint (projection f) (hide off areaSeries) ++ areaEdges off (projection f) areaSeries
 
 theorem areaChart_eq (off : Array Bool) (f : Frame) (measure : String → Float × Float) :
-    areaChart off f measure = axisDisplay f measure ++ compileStackedAreas paint (projection f) (hide off areaSeries) := rfl
+    areaChart off f measure = axisDisplay f measure ++ compileStackedAreas paint (projection f) (hide off areaSeries) ++ areaEdges off (projection f) areaSeries := rfl
 
 /-- The width in pixels of a bar: 60% of the distance between adjacent x values, which are one apart. -/
 def barWidth (f : Frame) : Rat := ((projection f).x 1 - (projection f).x 0) * 3 / 5
 
 theorem barWidth_eq (f : Frame) : barWidth f = ((projection f).x 1 - (projection f).x 0) * 3 / 5 := rfl
 
+/-- A two pixel outline centred on the edge of `r`, as four rectangles that do not overlap. -/
+def outline (r : Rect) (c : Color) (layer : Nat) : DisplayList :=
+  let (x0, x1, y0, y1) := (min r.x0 r.x1, max r.x0 r.x1, min r.y0 r.y1, max r.y0 r.y1)
+  if x1 - x0 ≤ 2 || y1 - y0 ≤ 2 then #[⟨layer, c, .rect ⟨x0 - 1, y0 - 1, x1 + 1, y1 + 1⟩⟩]
+  else
+    #[⟨layer, c, .rect ⟨x0 - 1, y0 - 1, x1 + 1, y0 + 1⟩⟩, ⟨layer, c, .rect ⟨x0 - 1, y1 - 1, x1 + 1, y1 + 1⟩⟩,
+      ⟨layer, c, .rect ⟨x0 - 1, y0 + 1, x0 + 1, y1 - 1⟩⟩, ⟨layer, c, .rect ⟨x1 - 1, y0 + 1, x1 + 1, y1 - 1⟩⟩]
+
+/-- The outlines of the stacked bars, each in its series' stroke. -/
+theorem outline_eq (r : Rect) (c : Color) (layer : Nat) : outline r c layer =
+    let (x0, x1, y0, y1) := (min r.x0 r.x1, max r.x0 r.x1, min r.y0 r.y1, max r.y0 r.y1)
+    if x1 - x0 ≤ 2 || y1 - y0 ≤ 2 then #[⟨layer, c, .rect ⟨x0 - 1, y0 - 1, x1 + 1, y1 + 1⟩⟩]
+    else
+      #[⟨layer, c, .rect ⟨x0 - 1, y0 - 1, x1 + 1, y0 + 1⟩⟩, ⟨layer, c, .rect ⟨x0 - 1, y1 - 1, x1 + 1, y1 + 1⟩⟩,
+        ⟨layer, c, .rect ⟨x0 - 1, y0 + 1, x0 + 1, y1 - 1⟩⟩, ⟨layer, c, .rect ⟨x1 - 1, y0 + 1, x1 + 1, y1 - 1⟩⟩] := rfl
+
+def barOutlines (width : Rat) (proj : Projection Rat Rat) (ss : Array (Series Rat Rat)) : DisplayList :=
+  (Array.range ss.size).flatMap fun k =>
+    ((stackedColumns proj ss k).filterMap id).toArray.flatMap fun c =>
+      outline (barRect c width) (barStrokes.getD k black) (k + 10)
+
+theorem barOutlines_eq (width : Rat) (proj : Projection Rat Rat) (ss : Array (Series Rat Rat)) : barOutlines width proj ss =
+    (Array.range ss.size).flatMap fun k =>
+      ((stackedColumns proj ss k).filterMap id).toArray.flatMap fun c =>
+        outline (barRect c width) (barStrokes.getD k black) (k + 10) := rfl
+
 def barChart (off : Array Bool) (seed : Nat) (f : Frame) (measure : String → Float × Float) : DisplayList :=
-  axisDisplay f measure ++ compileStackedBars paint (barWidth f) (projection f) (hide off (barSeries seed))
+  axisDisplay f measure ++ compileStackedBars barPaint (barWidth f) (projection f) (hide off (barSeries seed))
+    ++ barOutlines (barWidth f) (projection f) (hide off (barSeries seed))
 
 theorem barChart_eq (off : Array Bool) (seed : Nat) (f : Frame) (measure : String → Float × Float) :
-    barChart off seed f measure = axisDisplay f measure ++ compileStackedBars paint (barWidth f) (projection f) (hide off (barSeries seed)) := rfl
+    barChart off seed f measure = axisDisplay f measure ++ compileStackedBars barPaint (barWidth f) (projection f) (hide off (barSeries seed))
+      ++ barOutlines (barWidth f) (projection f) (hide off (barSeries seed)) := rfl
 
-/-- The colour of series `k` without its transparency, as the legend shows it. -/
-def colour (k : Nat) : Color := { fills.getD k ⟨0, 0, 0, 255⟩ with a := 255 }
+/-- The legend colour of area series `k`. -/
+def colour (k : Nat) : Color := areaStrokes.getD k black
 
-theorem colour_eq (k : Nat) : colour k = { fills.getD k ⟨0, 0, 0, 255⟩ with a := 255 } := rfl
+theorem colour_eq (k : Nat) : colour k = areaStrokes.getD k black := rfl
+
+/-- The legend colour of bar series `k`. -/
+def barColour (k : Nat) : Color := barStrokes.getD k black
+
+theorem barColour_eq (k : Nat) : barColour k = barStrokes.getD k black := rfl
 
 end Inkproof.Demos.Stacked

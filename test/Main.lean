@@ -34,6 +34,19 @@ private def stackedTest : Except String Unit := do
     check (!bar.isEmpty) "the first bar series draws bars"
     check (bar.all fun (_, r) => r.x1 - r.x0 > 0 && r.x1 - r.x0 ≤ spacing && r.x1 - r.x0 == spacing * 3 / 5) s!"at width {width} a bar is 60% of the spacing of its centres"
 
+private def stackedStrokeTest : Except String Unit := do
+  let f := Stacked.areaFrame
+  let d := Stacked.areaChart #[] f fun _ => (0, 0)
+  let edges := d.filter fun c => c.layer ≥ 10
+  let lines := edges.filter fun c => match c.shape with | .strip _ _ => true | _ => false
+  let dots := edges.filter fun c => match c.shape with | .marker .. => true | _ => false
+  check (lines.size == Stacked.areaSeries.size) "each stacked area strokes its top edge"
+  check (dots.size == Stacked.areaSeries.size * 30) "each stacked area has a point at every sample"
+  let off := Stacked.areaChart #[false, true] f fun _ => (0, 0)
+  check ((off.filter fun c => c.layer ≥ 10 && c.layer < 12).all fun c => c.layer == 10) "a hidden series draws no edge or points"
+  let bars := (Stacked.barChart #[] 1 Stacked.barFrame fun _ => (0, 0)).filter fun c => c.layer ≥ 10
+  check (!bars.isEmpty && bars.all fun c => match c.shape with | .rect r => r.x1 - r.x0 ≥ 2 | _ => false) "bars are outlined"
+
 private partial def strokes : Shape → List (Rat × List (List Pt))
   | .strip hw items => [(hw, Item.runs items)]
   | .clipped _ inner => strokes inner
@@ -474,4 +487,4 @@ private def parityTest : Except String Unit := do
     check (!strokes.isEmpty && strokes.all fun (hw, _) => hw == 1 / 2) s!"{name}: the series is one pixel wide, uPlot's default"
 
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, ⟨"gradient rings", gradientRingsTest⟩, ⟨"calendar time", calendarTimeTest⟩, ⟨"arcsinh scales", arcsinhTest⟩, ⟨"custom scales", customScalesTest⟩, ⟨"parity with uPlot", parityTest⟩, ⟨"hover", hoverTest⟩, ⟨"dark theme", darkThemeTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"stacked strokes", stackedStrokeTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, ⟨"gradient rings", gradientRingsTest⟩, ⟨"calendar time", calendarTimeTest⟩, ⟨"arcsinh scales", arcsinhTest⟩, ⟨"custom scales", customScalesTest⟩, ⟨"parity with uPlot", parityTest⟩, ⟨"hover", hoverTest⟩, ⟨"dark theme", darkThemeTest⟩, platformTest (args.contains "--expect-wasm")]
