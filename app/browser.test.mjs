@@ -740,7 +740,7 @@ for (const [path, counts] of Object.entries({ 'candlestick/': [5], 'box-whisker/
 const legends = {
   'annotations/': [2], 'arcsinh-scales/': [1], 'months/': [1], 'timezones-dst/': Array(12).fill(1), 'cursor-bind/': [3], 'custom-scales/': [3, 3, 3], 'gradients/': [1, 1, 1, 2, 1], 'high-low-bands/': [3, 2, 2, 4],
   'line-paths/': [1, 1, 1, 1], 'log-scales/': [12, 12], 'log-scales2/': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], 'missing-data/': [3, 1],
-  'path-gap-clip/': [2, 3, 3, 3], 'points/': [4, 1, 1, 1], 'stacked/': [5, 4], 'sync-cursor/': [3, 3, 3],
+  'path-gap-clip/': [2, 3, 3, 3, 3], 'points/': [4, 1, 1, 1], 'stacked/': [5, 4], 'sync-cursor/': [3, 3, 3],
   'zoom-fetch/': [1], 'zoom-touch/': [2], 'zoom-variations/': Array(10).fill(1), 'zoom-wheel/': [2],
 };
 

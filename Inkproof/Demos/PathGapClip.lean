@@ -58,6 +58,21 @@ theorem stepped_layers (name stepLabel : String) (c d : Color) (join : Join) :
 def steppedAfter := stepped "stepped-after" "step after" ⟨0, 0, 255, 255⟩ ⟨255, 0, 0, 255⟩ .stepAfter
 def steppedBefore := stepped "stepped-before" "step before" ⟨255, 0, 0, 255⟩ ⟨0, 0, 255, 255⟩ .stepBefore
 
-def charts : List Chart := [zoomedOut, bandGap, steppedAfter, steppedBefore]
+/-- Three series, each known at different x values, drawn over the sorted union of those values: a series has no value where another was sampled, and a gap where its own value is missing. -/
+def alignedNulls : Chart :=
+  let tables : List (List (Nat × Option Rat)) :=
+    [[(3, some 2), (5, some 3), (6, some 4), (7, some 10), (20, some 5)],
+     [(1, some 7), (2, some 2), (3, some 1), (4, none), (5, some 6), (17, some 13)],
+     [(9, some 9), (14, some 5), (15, none), (16, some 1)]]
+  let xs : Array Nat := (tables.flatMap (·.map (·.1))).toArray.qsort (· < ·) |>.toList.eraseDups.toArray
+  let column (t : List (Nat × Option Rat)) : Array (Option Rat) := xs.map fun x => (t.lookup x).getD none
+  let colors : List Color := [⟨255, 0, 0, 255⟩, ⟨0, 128, 0, 255⟩, ⟨0, 0, 255, 255⟩]
+  let layers : List Layer := (tables.zip colors).map fun (t, c) =>
+    { data := series (xs.map fun (x : Nat) => (x : Rat)) (column t), color := c, fill := some { c with a := 26 }, halfWidth := 1 }
+  { name := "aligned-nulls", width := 800, height := 400, xs := (1, 20), time := false, left := autoYAxis layers, layers }
+
+theorem alignedNulls_layers : alignedNulls.layers.length = 3 := by decide +kernel
+
+def charts : List Chart := [zoomedOut, bandGap, steppedAfter, steppedBefore, alignedNulls]
 
 end Inkproof.Demos.PathGapClip
