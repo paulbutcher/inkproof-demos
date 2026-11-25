@@ -782,8 +782,7 @@ for (const [path, chart, density] of [['scatter/?seed=1', 1, true], ['zoom-wheel
       const page = await context.newPage();
       await page.goto(base + path);
       await page.waitForFunction(i => document.querySelectorAll('inkproof-chart')[i]?.shadowRoot?.querySelector('canvas'), chart, { timeout: 60000 });
-      await page.waitForTimeout(3000);
-      const r = await page.evaluate(i => {
+      const saturated = i => {
         const c = document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelector('canvas');
         const t = document.createElement('canvas'); t.width = c.width; t.height = c.height;
         const g = t.getContext('2d'); g.drawImage(c, 0, 0);
@@ -794,7 +793,9 @@ for (const [path, chart, density] of [['scatter/?seed=1', 1, true], ['zoom-wheel
           if (Math.max(d[k], d[k + 1], d[k + 2]) - Math.min(d[k], d[k + 1], d[k + 2]) > 100) { n++; if (x > x1) x1 = x; if (y > y1) y1 = y; }
         }
         return { n: n / (t.width * t.height), x: x1 / t.width, y: y1 / t.height };
-      }, chart);
+      };
+      await page.waitForFunction(`(${saturated})(${chart}).n > 0`, null, { timeout: 60000, polling: 250 });
+      const r = await page.evaluate(saturated, chart);
       await context.close();
       return r;
     };
