@@ -9,6 +9,7 @@ import Inkproof.Scene
 import Inkproof.Scale
 import Inkproof.Demos.Axes
 import Inkproof.Demos.Frame
+import Inkproof.Demos.Points
 
 namespace Inkproof.Demos.LogScales2
 
@@ -188,7 +189,7 @@ theorem Spec.projection_x (s : Spec) (x : Rat) :
 
 theorem Spec.projection_y (s : Spec) (v : Rat) : s.projection.y v = Inkproof.Float.Float.onRat s.yPixel v := rfl
 
-/-- The axes, then the series unless the legend has hidden it, filled down to the bottom of the plot if it has a fill, and stroked. -/
+/-- The axes, then the series unless the legend has hidden it, filled down to the bottom of the plot if it has a fill, stroked, and ringed at each sample. -/
 def Spec.chart (off : Array Bool) (s : Spec) (measure : String → Float × Float) : DisplayList :=
   let g := Segmented.single s.data
   (s.axes measure).foldl (· ++ ·.display) #[] ++
@@ -196,7 +197,8 @@ def Spec.chart (off : Array Bool) (s : Spec) (measure : String → Float × Floa
   (match s.fill with
     | some c => compileArea ⟨0, c⟩ s.ys.1 s.projection g
     | none => #[]) ++
-  compileLine ⟨⟨1, s.stroke⟩, Axes.strokeHalfWidth, false, none, .straight⟩ s.projection g
+  compileLine ⟨⟨1, s.stroke⟩, Axes.strokeHalfWidth, false, none, .straight⟩ s.projection g ++
+  Points.rings 1 s.stroke (5 / 2) s.projection s.data
 
 theorem Spec.chart_eq (off : Array Bool) (s : Spec) (measure : String → Float × Float) :
     s.chart off measure =
@@ -205,7 +207,8 @@ theorem Spec.chart_eq (off : Array Bool) (s : Spec) (measure : String → Float 
       (match s.fill with
         | some c => compileArea ⟨0, c⟩ s.ys.1 s.projection (Segmented.single s.data)
         | none => #[]) ++
-      compileLine ⟨⟨1, s.stroke⟩, Axes.strokeHalfWidth, false, none, .straight⟩ s.projection (Segmented.single s.data) := rfl
+      compileLine ⟨⟨1, s.stroke⟩, Axes.strokeHalfWidth, false, none, .straight⟩ s.projection (Segmented.single s.data) ++
+      Points.rings 1 s.stroke (5 / 2) s.projection s.data := rfl
 
 def magenta : Color := ⟨255, 0, 255, 255⟩
 def orange : Color := ⟨255, 165, 0, 255⟩

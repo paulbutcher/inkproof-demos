@@ -98,6 +98,9 @@ private def logScales2Test : Except String Unit := do
     let f := spec.frame
     check (spec.data.xs.all fun x => spec.xs.1 ≤ x && x ≤ spec.xs.2) s!"{spec.name}: points lie within the x range"
     check (spec.data.values.all fun v => v.all fun y => spec.kind == .linear || (0 < y && spec.ys.1 ≤ y && y ≤ spec.ys.2)) s!"{spec.name}: a log chart holds only values its scale can place"
+    let discs (off : Bool) := ((spec.chart #[off] measure).toList.filter fun cmd => match cmd.shape with | .marker .. => true | _ => false).length
+    check (discs false == 2 * (spec.data.points.filter fun (_, v) => v.isSome).size) s!"{spec.name}: a ring at every present sample"
+    check (discs true == 0) s!"{spec.name}: no rings once the legend hides the series"
     let some left := (spec.axes measure).getLast? | throw s!"{spec.name}: expected a y axis"
     check (!left.labels.isEmpty) s!"{spec.name}: the y axis keeps labels"
     check (left.labels.all fun l => l.anchor.y ≥ f.top && l.anchor.y ≤ f.bottom) s!"{spec.name}: y labels lie within the plot"
