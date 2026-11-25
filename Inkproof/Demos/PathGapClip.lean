@@ -35,23 +35,29 @@ def bandGap : Chart :=
   { name := "band-gap", width := 800, height := 400, xs := (xs.getD 0 0, xs.getD 6 0), time := true,
     left := autoYAxis layers, layers, bands := [⟨1, 0, ⟨0, 255, 0, 51⟩⟩] }
 
-/-- One series with a missing value, drawn with the given join. -/
-def joined (name : String) (join : Join) : Chart :=
-  let xs : Array Rat := (#[0, 1, 2, 3, 4, 5, 6, 7] : Array Nat).map fun (t : Nat) => (t : Rat)
-  let ys : Array (Option Rat) := #[some 3, some 7, some 4, none, some 8, some 2, some 6, some 5]
-  let layers : List Layer := [{ data := series xs ys, color := ⟨0, 0, 255, 255⟩, join }]
-  { name, width := 400, height := 250, xs := (0, 7), time := false, left := autoYAxis layers, layers }
+/-- uPlot's gap pattern: runs of one and two, with missing samples between them. -/
+def stepPattern : Array (Option Rat) :=
+  #[none, none, none, some 1, some 1, some 1, some 1, some 1, none, none, some 2, some 2, none, some 1, none, none, none, some 1, some 1, some 1, some 1, some 2, some 2, some 2, none, none]
 
-theorem joined_eq (name : String) (join : Join) : joined name join =
-    let xs : Array Rat := (#[0, 1, 2, 3, 4, 5, 6, 7] : Array Nat).map fun (t : Nat) => (t : Rat)
-    let ys : Array (Option Rat) := #[some 3, some 7, some 4, none, some 8, some 2, some 6, some 5]
-    let layers : List Layer := [{ data := series xs ys, color := ⟨0, 0, 255, 255⟩, join }]
-    { name, width := 400, height := 250, xs := (0, 7), time := false, left := autoYAxis layers, layers } := rfl
+/-- A stepped series with a fill, a linear series 0.1 above it and a spline 0.2 above it, all with the gaps of `stepPattern`. -/
+def stepped (name : String) (stepLabel : String) (stepColor linearColor : Color) (join : Join) : Chart :=
+  let xs : Array Rat := (Array.range stepPattern.size).map fun (i : Nat) => (i : Rat)
+  let above (d : Rat) : Array (Option Rat) := stepPattern.map (·.map (· + d))
+  let orange : Color := ⟨255, 165, 0, 255⟩
+  let layers : List Layer :=
+    [{ data := series xs stepPattern, label := stepLabel, color := stepColor, fill := some { stepColor with a := 77 }, halfWidth := 1, join },
+     { data := series xs (above (1 / 10)), label := "linear", color := linearColor, halfWidth := 1 },
+     { data := series xs (above (1 / 5)), label := "spline", color := orange, halfWidth := 1, join := .spline 16 }]
+  { name, width := 800, height := 400, xs := (0, (stepPattern.size - 1 : Nat)), time := false, left := autoYAxis layers, layers }
 
-def steppedBefore := joined "stepped-before" .stepBefore
-def steppedAfter := joined "stepped-after" .stepAfter
-def spline := joined "spline" (.spline 16)
+theorem stepped_name (name stepLabel : String) (c d : Color) (join : Join) : (stepped name stepLabel c d join).name = name := rfl
 
-def charts : List Chart := [zoomedOut, bandGap, steppedBefore, steppedAfter, spline]
+theorem stepped_layers (name stepLabel : String) (c d : Color) (join : Join) :
+    ((stepped name stepLabel c d join).layers.map (·.join)) = [join, .straight, .spline 16] := rfl
+
+def steppedAfter := stepped "stepped-after" "step after" ⟨0, 0, 255, 255⟩ ⟨255, 0, 0, 255⟩ .stepAfter
+def steppedBefore := stepped "stepped-before" "step before" ⟨255, 0, 0, 255⟩ ⟨0, 0, 255, 255⟩ .stepBefore
+
+def charts : List Chart := [zoomedOut, bandGap, steppedAfter, steppedBefore]
 
 end Inkproof.Demos.PathGapClip

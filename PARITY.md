@@ -191,7 +191,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 ## Path Gap Clip (`path-gap-clip.html`)
 
-- Charts: uPlot has fifteen charts; the page recreates the first two (zoom-out range with a band, and gaps in a band) and three stepped and spline variants, whose data differ from uPlot's stepped, null-fill, align and pixel-bug cases. Open: the others have no counterpart.
+- Charts: uPlot has fifteen charts; the page recreates the first two (zoom-out range with a band, and gaps in a band) and the two gaps in stepped charts (after and before, with their linear and spline companions, fill and gaps as uPlot's). The others (the aligned and null-fill cases, the single-null pixel bug cases, undefined values) have no counterpart. Open.
 - Data: temperature series and the band with its gaps match.
 - Theme: uPlot's charts here have a grey plot background; the site's are white. Open.
 - X range of the gaps chart: uPlot's axis is in seconds since an offset; the site's is the clock time. Explained.

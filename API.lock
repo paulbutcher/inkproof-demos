@@ -889,12 +889,13 @@ def Inkproof.Demos.PathGapClip.bandGap : Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.PathGapClip.charts : List Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.PathGapClip.highSeries : Inkproof.Core.Series Rat Rat
 def Inkproof.Demos.PathGapClip.hole : List Nat
-def Inkproof.Demos.PathGapClip.joined : String → Inkproof.Scene.Join → Inkproof.Demos.Lines.Chart
-theorem Inkproof.Demos.PathGapClip.joined_eq : ∀ (name : String) (join : Inkproof.Scene.Join), Inkproof.Demos.PathGapClip.joined name join = have xs := Array.map (fun t => ↑t) #[0, 1, 2, 3, 4, 5, 6, 7]; have ys := #[Option.some 3, Option.some 7, Option.some 4, Option.none, Option.some 8, Option.some 2, Option.some 6, Option.some 5]; have layers := [{ data := Inkproof.Demos.Lines.series xs ys, color := { r := 0, g := 0, b := 255, a := 255 }, join := join }]; { name := name, width := 400, height := 250, xs := (0, 7), time := Bool.false, left := Inkproof.Demos.Lines.autoYAxis layers, layers := layers }
 def Inkproof.Demos.PathGapClip.lowSeries : Inkproof.Core.Series Rat Rat
-def Inkproof.Demos.PathGapClip.spline : Inkproof.Demos.Lines.Chart
+def Inkproof.Demos.PathGapClip.stepPattern : Array (Option Rat)
+def Inkproof.Demos.PathGapClip.stepped : String → String → Inkproof.Scene.Color → Inkproof.Scene.Color → Inkproof.Scene.Join → Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.PathGapClip.steppedAfter : Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.PathGapClip.steppedBefore : Inkproof.Demos.Lines.Chart
+theorem Inkproof.Demos.PathGapClip.stepped_layers : ∀ (name stepLabel : String) (c d : Inkproof.Scene.Color) (join : Inkproof.Scene.Join), List.map (fun x => x.join) (Inkproof.Demos.PathGapClip.stepped name stepLabel c d join).layers = [join, Inkproof.Scene.Join.straight, Inkproof.Scene.Join.spline 16]
+theorem Inkproof.Demos.PathGapClip.stepped_name : ∀ (name stepLabel : String) (c d : Inkproof.Scene.Color) (join : Inkproof.Scene.Join), (Inkproof.Demos.PathGapClip.stepped name stepLabel c d join).name = name
 def Inkproof.Demos.PathGapClip.times : Array Rat
 def Inkproof.Demos.PathGapClip.zoomedOut : Inkproof.Demos.Lines.Chart
 def Inkproof.Demos.PathGapClipSource.highs : Array Int

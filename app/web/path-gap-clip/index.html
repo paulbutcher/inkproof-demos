@@ -20,14 +20,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
     <h2>Gaps in a band</h2>
     <p>Low and high with some samples missing from both, so the filled band between them breaks; the mean line has no missing samples and carries on.</p>
     <inkproof-chart src="band-gap" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
-    <h2>Stepped before each point</h2>
-    <p>A series with a stretch of missing samples, drawn as steps that jump first and then run flat to each point; the line breaks at the missing stretch.</p>
-    <inkproof-chart src="stepped-before" legend="below-center" style="width: 400px; height: 250px"></inkproof-chart>
-    <h2>Stepped after each point</h2>
-    <p>The same series drawn as steps that run flat from each point and then jump; the line breaks at the missing stretch.</p>
-    <inkproof-chart src="stepped-after" legend="below-center" style="width: 400px; height: 250px"></inkproof-chart>
-    <h2>Spline through the points</h2>
-    <p>The same series drawn as a smooth curve; the curve breaks at the missing stretch instead of bridging it.</p>
-    <inkproof-chart src="spline" legend="below-center" style="width: 400px; height: 250px"></inkproof-chart>
+    <h2>Gaps in stepped after</h2>
+    <p>A series stepped after each point and filled, with a linear series and a spline 0.1 and 0.2 above it, each breaking at the missing samples.</p>
+    <inkproof-chart src="stepped-after" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>Gaps in stepped before</h2>
+    <p>The same data with the first series stepped before each point.</p>
+    <inkproof-chart src="stepped-before" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
   </body>
 </html>
