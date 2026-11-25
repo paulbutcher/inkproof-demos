@@ -115,7 +115,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: thirty integers from -10 to 10 over 1..30 in two filled series, red and blue with 10% fills. Matches.
 - Notes: an earthquake line at 4 and a tornado band from 9.3 to 18.5, dashed two pixel borders in green and amber over a 20% fill, labelled `eqk_01` on the bottom edge and `tor_20` on the top. Matches in position and colour; they follow zoom and pan as uPlot's do.
-- Note labels: uPlot's carry a description as a tooltip and fill with a solid border on hover; the site's do not. Open.
+- Note labels: uPlot's carry a description as a tooltip and fill with a solid border on hover; the site's do not. Requested: [inkproof-web#142](http://localhost:3000/tentenths/inkproof-web/issues/142).
 
 ## Arcsinh Scales (`arcsinh-scales.html`)
 
@@ -127,13 +127,13 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: uPlot draws recorded benchmark timings of its frameworks from `data/results.json`; the site generates twelve runs for each of twenty-four frameworks. Open: the shapes agree, the numbers do not.
 - Drawing: boxes of the middle half with a median bar, dashed whiskers within one and a half interquartile ranges, and squares for the runs beyond. Matches.
-- Hover: uPlot highlights the column and shows the legend as a tooltip with every statistic; the site's cursor is a line. Open.
+- Hover: uPlot highlights the column and shows the legend as a tooltip with every statistic; the site's cursor is a line. Requested: [inkproof-web#142](http://localhost:3000/tentenths/inkproof-web/issues/142).
 
 ## Candlestick (`candlestick-ohlc.html`)
 
 - Data: the gold year's open, high, low and close, evenly spaced days, volume on a right scale of 0 to 2000; the volumes are random in uPlot and a fixed hash here. Matches.
 - Colours: `#e54245` for falls and `#4ab650` for rises. Matches.
-- Hover: as for Box and Whisker. Open.
+- Hover: as for Box and Whisker. Requested: [inkproof-web#142](http://localhost:3000/tentenths/inkproof-web/issues/142).
 
 ## Cursor Bind (`cursor-bind.html`)
 
@@ -223,7 +223,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Data: the states of the first three charts (devices A to C, states 0 to 5, the periodic and lettered series) are uPlot's; the irregular times are drawn from a fixed seed rather than at random. Matches.
 - Charts: uPlot's fourth, `Merged same consecutive states`, has no counterpart. Open.
 - Colours: states use the red, green, blue, cyan, orange and yellow strokes with the same fill alphas; bars have a four pixel inside outline. Matches.
-- Hover: uPlot highlights the bar under the cursor and shows its state in the legend; the page has a cursor only. Open.
+- Hover: uPlot highlights the bar under the cursor and shows its state in the legend; the page has a cursor only. Requested: [inkproof-web#142](http://localhost:3000/tentenths/inkproof-web/issues/142).
 - Axes: uPlot's labels sit 15 pixels from a 70 pixel wide gutter; the site's gutter is 90. Explained.
 - Chart title inside the chart, drop shadow and padding: see Shared differences.
 

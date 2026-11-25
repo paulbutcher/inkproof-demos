@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.38.0
+
+- PARITY.md records hover highlighting and annotation tooltips as requested of inkproof-web.
+
 ## v0.37.1
 
 - PARITY.md records the dark theme as requested of inkproof-web.
