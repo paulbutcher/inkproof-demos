@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.37.0
+
+- Log Scales 2 rings every sample.
+- Gradients' rings are outlined in the stroke's gradient (inkproof-scene#89).
+
 ## v0.36.1
 
 - PARITY.md explains the chart title placement differences from uPlot.
