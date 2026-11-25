@@ -21,7 +21,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Data: the four charts draw the bar series of the stacked page with a gap of four points; same ranges. Matches.
 - Colours and fills: strokes match; uPlot fills each area to the baseline at 10% (`stroke + "1A"`), as the site now does. Fixed; the chart definition carries the fill.
 - Line widths: uPlot draws series and axes at `1 / devicePixelRatio` CSS pixels, one device pixel on any screen; the site draws one CSS pixel. A display list is in CSS pixels, so the same scene is the same size on every screen. Explained.
-- Theme: uPlot's page is dark (`#2c3235` gridlines, `#c7d0d9` labels). Open.
+- Theme: uPlot's page is dark (`#2c3235` gridlines, `#c7d0d9` labels). Requested: the chart has no dark theme, [inkproof-web#139](http://localhost:3000/tentenths/inkproof-web/issues/139).
 - Axes: ticks and gridlines drawn as uPlot's; label format matches. Fixed.
 - Point markers: a 5 pixel dot at each point, as uPlot's `drawStyles.points` draws. Fixed. Legend and cursor as under Shared differences.
 
@@ -193,7 +193,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Charts: uPlot has fifteen charts; the page recreates the first two (zoom-out range with a band, and gaps in a band) and the two gaps in stepped charts (after and before, with their linear and spline companions, fill and gaps as uPlot's) and the aligned and null-fill chart over three tables, without the one second toggle of gap spanning. The others (the single-null pixel bug cases, undefined values) have no counterpart. Open.
 - Data: temperature series and the band with its gaps match.
-- Theme: uPlot's charts here have a grey plot background; the site's are white. Open.
+- Theme: uPlot's charts here have a grey plot background; the site's are white. Requested: [inkproof-web#139](http://localhost:3000/tentenths/inkproof-web/issues/139).
 - X range of the gaps chart: uPlot's axis is in seconds since an offset; the site's is the clock time. Explained.
 
 ## A Million Points (`million.html`)
