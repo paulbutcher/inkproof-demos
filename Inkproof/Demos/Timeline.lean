@@ -66,9 +66,9 @@ theorem Chart.rect_eq (c : Chart) (i : Nat) (s : Span) : c.rect i s = ⟨c.xMap 
 def outline : Rat := 4
 
 /-- A bar: its fill, then its outline. -/
-def Chart.commands (c : Chart) (i : Nat) (s : Span) : DisplayList := outlined 1 s.stroke s.fill outline (c.rect i s)
+def Chart.commands (c : Chart) (i : Nat) (s : Span) : DisplayList := #[⟨1, s.fill, .rect (c.rect i s)⟩] ++ DisplayList.outline (c.rect i s) outline .inside s.stroke 2
 
-theorem Chart.commands_eq (c : Chart) (i : Nat) (s : Span) : c.commands i s = outlined 1 s.stroke s.fill outline (c.rect i s) := rfl
+theorem Chart.commands_eq (c : Chart) (i : Nat) (s : Span) : c.commands i s = #[⟨1, s.fill, .rect (c.rect i s)⟩] ++ DisplayList.outline (c.rect i s) outline .inside s.stroke 2 := rfl
 
 /-- Every bar of every row, cut off at the plot's edge. -/
 def Chart.shapes (c : Chart) : DisplayList :=

@@ -155,7 +155,7 @@ def Mark.commands (f : Frame) (measure : String → Float × Float) (m : Mark) :
   DisplayList.clip (plot f)
     ((if m.start < m.stop then line m.stroke 2 (some ⟨5, 5⟩) b f.top b f.bottom else #[]) ++
       line m.stroke 2 (some ⟨5, 5⟩) a f.top a f.bottom ++
-      ((Mark.box f measure m).map (outlined 3 m.stroke m.fill 2)).getD #[])
+      ((Mark.box f measure m).map fun r => #[⟨3, m.fill, .rect r⟩] ++ DisplayList.outline r 2 .inside m.stroke 4).getD #[])
 
 theorem Mark.commands_eq (f : Frame) (measure : String → Float × Float) (m : Mark) : Mark.commands f measure m =
     let (a, b) := Mark.columns f m
@@ -163,7 +163,7 @@ theorem Mark.commands_eq (f : Frame) (measure : String → Float × Float) (m : 
     DisplayList.clip (plot f)
       ((if m.start < m.stop then line m.stroke 2 (some ⟨5, 5⟩) b f.top b f.bottom else #[]) ++
         line m.stroke 2 (some ⟨5, 5⟩) a f.top a f.bottom ++
-        ((Mark.box f measure m).map (outlined 3 m.stroke m.fill 2)).getD #[]) := rfl
+        ((Mark.box f measure m).map fun r => #[⟨3, m.fill, .rect r⟩] ++ DisplayList.outline r 2 .inside m.stroke 4).getD #[]) := rfl
 
 /-- The text of each mark in view, with the top left of where it is written: inside its box, which is where the mark begins. -/
 def Chart.markTexts (c : Chart) (f : Frame) (measure : String → Float × Float) : List (String × Rat × Rat) :=

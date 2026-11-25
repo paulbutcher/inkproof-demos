@@ -114,15 +114,4 @@ theorem line_eq (color : Color) (width : Rat) (dash : Option DashPattern) (x0 y0
     compileLine ⟨⟨2, color⟩, width / 2, false, dash, .straight⟩ ⟨id, id⟩
       (Segmented.single (Series.ofUnsorted #[(x0, some y0), (x1, some y1)] : Series Rat Rat)) := rfl
 
-/-- A rectangle filled with `fill` and outlined by four edges `w` thick inside it, drawn in `layer`. -/
-def outlined (layer : Nat) (stroke fill : Color) (w : Rat) (r : Rect) : DisplayList :=
-  let v := min w ((r.x1 - r.x0) / 2)
-  #[⟨layer, fill, .rect r⟩, ⟨layer + 1, stroke, .rect ⟨r.x0, r.y0, r.x1, r.y0 + w⟩⟩, ⟨layer + 1, stroke, .rect ⟨r.x0, r.y1 - w, r.x1, r.y1⟩⟩,
-    ⟨layer + 1, stroke, .rect ⟨r.x0, r.y0, r.x0 + v, r.y1⟩⟩, ⟨layer + 1, stroke, .rect ⟨r.x1 - v, r.y0, r.x1, r.y1⟩⟩]
-
-theorem outlined_eq (layer : Nat) (stroke fill : Color) (w : Rat) (r : Rect) : outlined layer stroke fill w r =
-    let v := min w ((r.x1 - r.x0) / 2)
-    #[⟨layer, fill, .rect r⟩, ⟨layer + 1, stroke, .rect ⟨r.x0, r.y0, r.x1, r.y0 + w⟩⟩, ⟨layer + 1, stroke, .rect ⟨r.x0, r.y1 - w, r.x1, r.y1⟩⟩,
-      ⟨layer + 1, stroke, .rect ⟨r.x0, r.y0, r.x0 + v, r.y1⟩⟩, ⟨layer + 1, stroke, .rect ⟨r.x1 - v, r.y0, r.x1, r.y1⟩⟩] := rfl
-
 end Inkproof.Demos.Pane

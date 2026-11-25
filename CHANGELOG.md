@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.41.0
+
+- The Timeline and Zoom pages draw their outlines with inkproof-scene v0.33.0's `DisplayList.outline`, so corners no longer overlap.
+
 ## v0.40.0
 
 - Stacked Series strokes the top edge of each area and marks every sample, and outlines its bars in uPlot's green, magenta, blue and red.
