@@ -118,25 +118,25 @@ theorem Frame.spacedTimeAxis_eq (f : Frame) (style : TimeStyle) (measure : Strin
       compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap
         ((f.spacedTimeTicks style).1.map f.xScale.map) (f.spacedTimeTicks style).2.1 (f.spacedTimeTicks style).2.2 := rfl
 
-/-- The axes of `f` with `suffix` after each label of the left one, at least `Axes.ySpacing` pixels apart. -/
-def axesWith (suffix : String) (f : Frame) (measure : String → Float × Float) : List AxisDrawing :=
-  if suffix.isEmpty then axes f measure else
-  let (ts, ls) := Axes.spacedTicks (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) f.yExtent Axes.ySpacing
+/-- The axes of `f` with `unit` ending each label of the left one, at least `Axes.ySpacing` pixels apart. -/
+def axesWith (unit : String) (f : Frame) (measure : String → Float × Float) : List AxisDrawing :=
+  if unit.isEmpty then axes f measure else
+  let (ts, ls) := Axes.spacedTicks (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) f.yExtent Axes.ySpacing unit
   [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-   compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (ts.map f.yScale.map) (ls.map (· ++ suffix))]
+   compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (ts.map f.yScale.map) ls]
 
-theorem axesWith_eq (suffix : String) (f : Frame) (measure : String → Float × Float) : axesWith suffix f measure =
-    if suffix.isEmpty then axes f measure else
-    let (ts, ls) := Axes.spacedTicks (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) f.yExtent Axes.ySpacing
+theorem axesWith_eq (unit : String) (f : Frame) (measure : String → Float × Float) : axesWith unit f measure =
+    if unit.isEmpty then axes f measure else
+    let (ts, ls) := Axes.spacedTicks (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) f.yExtent Axes.ySpacing unit
     [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-     compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (ts.map f.yScale.map) (ls.map (· ++ suffix))] := rfl
+     compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (ts.map f.yScale.map) ls] := rfl
 
-/-- The axes' commands with `suffix` on the left labels, drawn under the data. -/
-def axisDisplayWith (suffix : String) (f : Frame) (measure : String → Float × Float) : DisplayList :=
-  (axesWith suffix f measure).foldl (· ++ ·.display) #[]
+/-- The axes' commands with `unit` ending the left labels, drawn under the data. -/
+def axisDisplayWith (unit : String) (f : Frame) (measure : String → Float × Float) : DisplayList :=
+  (axesWith unit f measure).foldl (· ++ ·.display) #[]
 
-theorem axisDisplayWith_eq (suffix : String) (f : Frame) (measure : String → Float × Float) :
-    axisDisplayWith suffix f measure = (axesWith suffix f measure).foldl (· ++ ·.display) #[] := rfl
+theorem axisDisplayWith_eq (unit : String) (f : Frame) (measure : String → Float × Float) :
+    axisDisplayWith unit f measure = (axesWith unit f measure).foldl (· ++ ·.display) #[] := rfl
 
 /-- The axes' commands, drawn under the data. -/
 def axisDisplay (f : Frame) (measure : String → Float × Float) : DisplayList :=
@@ -152,11 +152,11 @@ def texts (f : Frame) : Array String :=
 theorem texts_eq (f : Frame) :
     texts f = (Axes.linearLabels (Rat.toFloat f.xs.1) (Rat.toFloat f.xs.2) ++ Axes.linearLabels (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2)).toArray := rfl
 
-/-- Every text the axes with `suffix` may label, for the host to measure. -/
-def textsWith (suffix : String) (f : Frame) : Array String :=
-  texts f ++ (Axes.spacedTicks (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) f.yExtent Axes.ySpacing).2.toArray.map (· ++ suffix)
+/-- Every text the axes with `unit` may label, for the host to measure. -/
+def textsWith (unit : String) (f : Frame) : Array String :=
+  texts f ++ (Axes.spacedTicks (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) f.yExtent Axes.ySpacing unit).2.toArray
 
-theorem textsWith_eq (suffix : String) (f : Frame) : textsWith suffix f =
-    texts f ++ (Axes.spacedTicks (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) f.yExtent Axes.ySpacing).2.toArray.map (· ++ suffix) := rfl
+theorem textsWith_eq (unit : String) (f : Frame) : textsWith unit f =
+    texts f ++ (Axes.spacedTicks (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) f.yExtent Axes.ySpacing unit).2.toArray := rfl
 
 end Inkproof.Demos

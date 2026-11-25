@@ -49,12 +49,13 @@ def xSpacing : Float := 50
 def ySpacing : Float := 30
 
 /-- Ticks of a linear axis `extent` pixels long over `lo` to `hi`, at least `spacing` pixels apart at a step of 1, 2, 2.5 or 5 times a power of ten, with their labels. -/
-def spacedTicks (lo hi extent spacing : Float) : List Float × List String :=
+def spacedTicks (lo hi extent spacing : Float) (unit : String := "") : List Float × List String :=
   let ts := spacedLinearTicks stepMultiples lo hi extent spacing
-  (ts, trimmed.formatAll ts)
+  (ts, ({ trimmed with unit } : NumberFormat).formatAll ts)
 
-theorem spacedTicks_eq (lo hi extent spacing : Float) : spacedTicks lo hi extent spacing =
-    (spacedLinearTicks stepMultiples lo hi extent spacing, trimmed.formatAll (spacedLinearTicks stepMultiples lo hi extent spacing)) := rfl
+theorem spacedTicks_eq (lo hi extent spacing : Float) (unit : String) : spacedTicks lo hi extent spacing unit =
+    (spacedLinearTicks stepMultiples lo hi extent spacing,
+     ({ trimmed with unit } : NumberFormat).formatAll (spacedLinearTicks stepMultiples lo hi extent spacing)) := rfl
 
 /-- Month names for time axes. -/
 def months : List String := ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]

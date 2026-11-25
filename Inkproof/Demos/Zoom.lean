@@ -41,7 +41,7 @@ structure Chart where
   lines : List Line
   bounds : Option ((Rat × Rat) × (Rat × Rat))
   marks : List Mark
-  suffix : String := ""
+  unit : String := ""
 
 /-- The names uPlot's wheel and touch zoom pages give their series; the other pages leave theirs unnamed. -/
 def legendNames (page : String) : List String :=
@@ -199,7 +199,7 @@ def Chart.commands (c : Chart) (cache : Retained) (fresh : Bool) (v : Viewport.V
   let hidden (j : Nat) := j != 0 && off.getD (j - 1) false
   let pick (keep : Bool) := (layers.toList.zipIdx.filter fun (_, j) => hidden j != keep).map (·.1)
   viewLayersBytes (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 data ((plot f).scale k) (pick true) (pick false)
-    (((axisDisplayWith c.suffix f measure) ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background
+    (((axisDisplayWith c.unit f measure) ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background
 
 theorem Chart.commands_eq (c : Chart) (cache : Retained) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float)
     (size : Nat × Nat) (k : Rat) (layers : Array Gpu.Layer) (off : Array Bool) :
@@ -209,6 +209,6 @@ theorem Chart.commands_eq (c : Chart) (cache : Retained) (fresh : Bool) (v : Vie
       let pick (keep : Bool) := (layers.toList.zipIdx.filter fun (_, j) => hidden j != keep).map (·.1)
       viewLayersBytes (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 (Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2)
         ((plot f).scale k) (pick true) (pick false)
-        (((axisDisplayWith c.suffix f measure) ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background := rfl
+        (((axisDisplayWith c.unit f measure) ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background := rfl
 
 end Inkproof.Demos.Zoom

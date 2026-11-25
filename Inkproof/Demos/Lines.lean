@@ -34,7 +34,7 @@ theorem withGaps_eq (gaps : List Nat) (ys : Array Rat) :
 /-- A y axis: the range it shows, a unit written after each label, and whether its ticks have gridlines. -/
 structure YAxis where
   range : Rat × Rat
-  suffix : String := ""
+  unit : String := ""
   grid : Bool := true
 
 /-- A colour that varies along an axis between stops placed at data values, ascending. When `discrete`, each stop's colour holds from its value up to the next stop's, changing at once there, instead of blending. -/
@@ -128,15 +128,15 @@ def values (layers : List Layer) : List Rat := layers.flatMap fun l => l.data.va
 theorem values_eq (layers : List Layer) : values layers = layers.flatMap fun l => l.data.values.toList.filterMap id := rfl
 
 /-- The y axis showing every value of the layers, as `autoRange` pads them. -/
-def autoYAxis (layers : List Layer) (suffix : String := "") : YAxis :=
+def autoYAxis (layers : List Layer) (unit : String := "") : YAxis :=
   match (values layers).min?, (values layers).max? with
-  | some lo, some hi => { range := autoRange (1 / 10) lo hi, suffix }
-  | _, _ => { range := (0, 1), suffix }
+  | some lo, some hi => { range := autoRange (1 / 10) lo hi, unit }
+  | _, _ => { range := (0, 1), unit }
 
-theorem autoYAxis_eq (layers : List Layer) (suffix : String) : autoYAxis layers suffix =
+theorem autoYAxis_eq (layers : List Layer) (unit : String) : autoYAxis layers unit =
     match (values layers).min?, (values layers).max? with
-    | some lo, some hi => { range := autoRange (1 / 10) lo hi, suffix }
-    | _, _ => { range := (0, 1), suffix } := rfl
+    | some lo, some hi => { range := autoRange (1 / 10) lo hi, unit }
+    | _, _ => { range := (0, 1), unit } := rfl
 
 def Chart.frame (c : Chart) : Frame :=
   ⟨60, c.width - (if c.right.isSome then 80 else 20), 20, c.height - 40, c.xs, c.left.range⟩
@@ -163,20 +163,18 @@ theorem Chart.projection_x (c : Chart) (l : Layer) (x : Rat) : (c.projection l).
 /-- The tick values and labels of a y axis. -/
 def YAxis.ticks (a : YAxis) : List Float × List String :=
   let ts := linearTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) 10
-  (ts, (tickLabels .en ts).map (· ++ a.suffix))
+  (ts, ({ locale := .en, unit := a.unit } : NumberFormat).formatAll ts)
 
 theorem YAxis.ticks_eq (a : YAxis) : a.ticks =
     (linearTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) 10,
-     (tickLabels .en (linearTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) 10)).map (· ++ a.suffix)) := rfl
+     ({ locale := .en, unit := a.unit } : NumberFormat).formatAll (linearTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) 10)) := rfl
 
 /-- The tick values and labels of a y axis `extent` pixels long, at least `Axes.ySpacing` pixels apart. -/
 def YAxis.spacedTicks (a : YAxis) (extent : Float) : List Float × List String :=
-  let (ts, ls) := Axes.spacedTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) extent Axes.ySpacing
-  (ts, ls.map (· ++ a.suffix))
+  Axes.spacedTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) extent Axes.ySpacing a.unit
 
 theorem YAxis.spacedTicks_eq (a : YAxis) (extent : Float) : a.spacedTicks extent =
-    ((Axes.spacedTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) extent Axes.ySpacing).1,
-     (Axes.spacedTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) extent Axes.ySpacing).2.map (· ++ a.suffix)) := rfl
+    Axes.spacedTicks (Rat.toFloat a.range.1) (Rat.toFloat a.range.2) extent Axes.ySpacing a.unit := rfl
 
 /-- About one tick every 120 pixels along a time axis. -/
 def Chart.timeTarget (c : Chart) : Nat := c.width / 120

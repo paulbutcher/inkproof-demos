@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.36.0
+
+- Sync Cursor and Zoom end their left axis labels with the unit through Axis 0.17's NumberFormat.unit (inkproof-axis#66).
+
 ## v0.35.0
 
 - Sync Cursor labels its left axes with %, % and MB as uPlot's do.
