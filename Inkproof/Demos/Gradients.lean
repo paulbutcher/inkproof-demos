@@ -10,7 +10,7 @@ namespace Inkproof.Demos.Gradients
 open Inkproof.Scene Inkproof.Demos.Lines
 
 private def line (xs ys : Array Rat) (color : Color) : Layer :=
-  { data := series xs (ys.map some), color, halfWidth := 2 }
+  { data := series xs (ys.map some), color, halfWidth := 2, rings := some (5 / 2) }
 
 private def chart (name : String) (xs : Array Rat) (layers : List Layer) : Chart :=
   { name, width := 800, height := 400, xs := (xs.getD 0 0, xs.getD (xs.size - 1) 0), time := false, spaced := true, left := autoYAxis layers, layers }

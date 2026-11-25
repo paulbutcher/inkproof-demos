@@ -99,6 +99,8 @@ structure Layer where
   fillGradient : Option Gradient := none
   /-- The radius of a dot drawn at each present sample. -/
   dots : Option Rat := none
+  /-- The radius of a hollow ring at each present sample, outlined as the stroke is. -/
+  rings : Option Rat := none
 
 /-- The filled space between two layers, where both have a value. -/
 structure Band where
@@ -315,6 +317,12 @@ def Chart.layerDisplay (c : Chart) (l : Layer) : DisplayList :=
   compileLine ⟨⟨1, l.strokeShading (c.projection l)⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments ++
   (match l.dots with
     | some r => compileScatter ⟨⟨1, l.color⟩, .circle, r⟩ (c.projection l) l.data
+    | none => #[]) ++
+  (match l.rings with
+    | some r => l.data.points.flatMap fun (x, v) =>
+      match v with
+      | some y => compileRing ⟨1, l.strokeShading (c.projection l), ⟨255, 255, 255, 255⟩, r, 1⟩ ⟨(c.projection l).x x, (c.projection l).y y⟩
+      | none => #[]
     | none => #[])
 
 theorem Chart.layerDisplay_eq (c : Chart) (l : Layer) : c.layerDisplay l =
@@ -324,6 +332,12 @@ theorem Chart.layerDisplay_eq (c : Chart) (l : Layer) : c.layerDisplay l =
     compileLine ⟨⟨1, l.strokeShading (c.projection l)⟩, l.halfWidth, false, l.dash, l.join⟩ (c.projection l) l.segments ++
     (match l.dots with
       | some r => compileScatter ⟨⟨1, l.color⟩, .circle, r⟩ (c.projection l) l.data
+      | none => #[]) ++
+    (match l.rings with
+      | some r => l.data.points.flatMap fun (x, v) =>
+        match v with
+        | some y => compileRing ⟨1, l.strokeShading (c.projection l), ⟨255, 255, 255, 255⟩, r, 1⟩ ⟨(c.projection l).x x, (c.projection l).y y⟩
+        | none => #[]
       | none => #[]) := rfl
 
 /-- The chart without the data of the layers `off` marks, so that they draw nothing and leave the others where they were. -/

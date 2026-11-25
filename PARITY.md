@@ -154,7 +154,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Data and colours: the same five charts with the same strokes and fills, the same switch points and the same fill stops. Matches.
 - Series names: `Trends`, `Over/Under`, `Tank 1 (red = high pressure)`, `Tank 2 (red = low pressure)` and `Tank 1`; the site read `Value`. Fixed; a browser test checks them.
 - Banded: uPlot's third chart has a symmetric logarithmic y axis from -100 to 100 and three colours by band; the site's is linear from -30 to 30. Open.
-- Markers: uPlot draws a hollow circle at every point, stroked in the series' gradient; the site draws none, since a ring takes one colour. Requested: http://localhost:3000/tentenths/inkproof-scene/issues/89.
+- Markers: a hollow circle at every point, outlined in the series' gradient as uPlot's are. Fixed; a test checks each outline takes the stroke's shading.
 - X ticks of the fills: uPlot labels `0`, `0.5`, `1`; the site's labels drop their trailing zeros too. Fixed.
 
 ## High-Low Bands (`high-low-bands.html`)

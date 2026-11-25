@@ -82,6 +82,14 @@ private def gradientsTest : Except String Unit := do
             let want := if !g.discrete then a.2.lerp b.2 w else match g.axis with | .x => a.2 | .y => b.2
             check ((((got.r.toNat : Int) - want.r.toNat).natAbs ≤ 1) && (((got.g.toNat : Int) - want.g.toNat).natAbs ≤ 1) && (((got.b.toNat : Int) - want.b.toNat).natAbs ≤ 1)) s!"{c.name}: colour between stops is their blend, or the lower stop's for a stepped one"
 
+private def gradientRingsTest : Except String Unit := do
+  for c in Gradients.charts do
+    for l in c.layers do
+      let sh := l.strokeShading (c.projection l)
+      let outlines := (c.layerDisplay l).toList.filter fun cmd => match cmd.shape with | .marker _ _ r => r == 5 / 2 | _ => false
+      check (outlines.length == l.data.values.toList.countP Option.isSome) s!"{c.name}: an outline at every present sample"
+      check (outlines.all fun cmd => cmd.color == sh) s!"{c.name}: a ring is outlined in the stroke's shading"
+
 private def axesTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
   let drawings := axes (AreaFill.frame 1200) measure
@@ -427,4 +435,4 @@ private def parityTest : Except String Unit := do
     check (!strokes.isEmpty && strokes.all fun (hw, _) => hw == 1 / 2) s!"{name}: the series is one pixel wide, uPlot's default"
 
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, ⟨"calendar time", calendarTimeTest⟩, ⟨"arcsinh scales", arcsinhTest⟩, ⟨"custom scales", customScalesTest⟩, ⟨"parity with uPlot", parityTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, ⟨"gradient rings", gradientRingsTest⟩, ⟨"calendar time", calendarTimeTest⟩, ⟨"arcsinh scales", arcsinhTest⟩, ⟨"custom scales", customScalesTest⟩, ⟨"parity with uPlot", parityTest⟩, platformTest (args.contains "--expect-wasm")]
