@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.37.1
+
+- PARITY.md records the dark theme as requested of inkproof-web.
+
 ## v0.37.0
 
 - Log Scales 2 rings every sample.
