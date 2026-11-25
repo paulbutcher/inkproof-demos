@@ -40,6 +40,7 @@ structure Chart where
   horizontal : Bool := false
   /-- The range of the value axis, on the first series' scale. -/
   axis : Rat × Rat
+  theme : Option Theme := none
 
 /-- The rectangle the bars and their axes share. -/
 def Chart.plot (c : Chart) : Rect :=
@@ -82,6 +83,8 @@ structure Bar where
   positive : Bool
   outline : Option Color := none
   outlineWidth : Rat := 1
+  /-- The group and series it stands for and its value, when it stands for data. -/
+  source : Option (Nat × Nat × Rat) := none
 
 /-- The colour a bar of `s` in group `g` is filled with, and its outline where the series gives one. -/
 def Series.colorsOf (s : Series) (g : Nat) : Color × Option Color :=
@@ -111,34 +114,39 @@ def Chart.bars (c : Chart) : Array Bar :=
     let (start, len) := c.block g
     let indexed := c.series.toList.zipIdx.filter fun (s, _) => (s.values.getD g none).isSome
     if c.stacked then
-      (indexed.foldl (fun (acc : Rat × Array Bar) (s, _) =>
+      (indexed.foldl (fun (acc : Rat × Array Bar) (s, i) =>
         let v := (s.values.getD g none).getD 0
         let top := acc.1 + v
         (top, acc.2.push ⟨c.rect (c.along s.range acc.1) (c.along s.range top) start (start + len), s.fill,
-          some top, 0 ≤ v, none, 1⟩)) (0, #[])).2
+          some top, 0 ≤ v, none, 1, some (g, i, v)⟩)) (0, #[])).2
     else
       indexed.toArray.map fun (s, i) =>
         let v := (s.values.getD g none).getD 0
         let (u, w) := slot start len c.series.size i
         let (f, o) := s.colorsOf g
-        ⟨c.rect (c.along s.range 0) (c.along s.range v) u w, f, some v, 0 ≤ v, o, 1⟩
+        ⟨c.rect (c.along s.range 0) (c.along s.range v) u w, f, some v, 0 ≤ v, o, 1, some (g, i, v)⟩
 
 theorem Chart.bars_eq (c : Chart) : c.bars =
   (List.range c.groups.size).toArray.flatMap fun g =>
     let (start, len) := c.block g
     let indexed := c.series.toList.zipIdx.filter fun (s, _) => (s.values.getD g none).isSome
     if c.stacked then
-      (indexed.foldl (fun (acc : Rat × Array Bar) (s, _) =>
+      (indexed.foldl (fun (acc : Rat × Array Bar) (s, i) =>
         let v := (s.values.getD g none).getD 0
         let top := acc.1 + v
         (top, acc.2.push ⟨c.rect (c.along s.range acc.1) (c.along s.range top) start (start + len), s.fill,
-          some top, 0 ≤ v, none, 1⟩)) (0, #[])).2
+          some top, 0 ≤ v, none, 1, some (g, i, v)⟩)) (0, #[])).2
     else
       indexed.toArray.map fun (s, i) =>
         let v := (s.values.getD g none).getD 0
         let (u, w) := slot start len c.series.size i
         let (f, o) := s.colorsOf g
-        ⟨c.rect (c.along s.range 0) (c.along s.range v) u w, f, some v, 0 ≤ v, o, 1⟩ := rfl
+        ⟨c.rect (c.along s.range 0) (c.along s.range v) u w, f, some v, 0 ≤ v, o, 1, some (g, i, v)⟩ := rfl
+
+/-- The style of the chart's axes. -/
+def Chart.style (c : Chart) : AxisStyle := Axes.styled c.theme
+
+theorem Chart.style_eq (c : Chart) : c.style = Axes.styled c.theme := rfl
 
 /-- The axes: categories along one side and values along another. -/
 def Chart.axes (c : Chart) (measure : String → Float × Float) : List AxisDrawing :=
@@ -149,8 +157,8 @@ def Chart.axes (c : Chart) (measure : String → Float × Float) : List AxisDraw
     if c.horizontal then ⟨Rat.toFloat c.axis.1, Rat.toFloat c.axis.2, Rat.toFloat p.x0, Rat.toFloat p.x1⟩
     else ⟨Rat.toFloat c.axis.1, Rat.toFloat c.axis.2, Rat.toFloat p.y1, Rat.toFloat p.y0⟩
   [compileCategoricalAxis (if c.horizontal then .left else .bottom) p categories id c.groups.size Axes.spec.labelGap measure
-      { Axes.style with grid := none },
-   compileLinearAxis (if c.horizontal then .top else .left) p scale Axes.spec measure Axes.style]
+      { c.style with grid := none },
+   compileLinearAxis (if c.horizontal then .top else .left) p scale Axes.spec measure c.style]
 
 theorem Chart.axes_eq (c : Chart) (measure : String → Float × Float) : c.axes measure =
   let p := c.plot
@@ -160,8 +168,8 @@ theorem Chart.axes_eq (c : Chart) (measure : String → Float × Float) : c.axes
     if c.horizontal then ⟨Rat.toFloat c.axis.1, Rat.toFloat c.axis.2, Rat.toFloat p.x0, Rat.toFloat p.x1⟩
     else ⟨Rat.toFloat c.axis.1, Rat.toFloat c.axis.2, Rat.toFloat p.y1, Rat.toFloat p.y0⟩
   [compileCategoricalAxis (if c.horizontal then .left else .bottom) p categories id c.groups.size Axes.spec.labelGap measure
-      { Axes.style with grid := none },
-   compileLinearAxis (if c.horizontal then .top else .left) p scale Axes.spec measure Axes.style] := rfl
+      { c.style with grid := none },
+   compileLinearAxis (if c.horizontal then .top else .left) p scale Axes.spec measure c.style] := rfl
 
 /-- The sides the axes of `c` lie on, in order. -/
 def Chart.sides (c : Chart) : List Side :=

@@ -138,12 +138,12 @@ def numericChart (seed : Nat) (f : Frame) (measure : String → Float × Float) 
   axisDisplay f measure ++ DisplayList.clip (plot f) ((durations seed).toList.zipIdx.toArray.flatMap fun (d, i) =>
     let p := projection f
     let (fill, outline) := statusColors i
-    Bar.commands ⟨⟨p.x ((i : Rat) - 3 / 10), p.y 0, p.x ((i : Rat) + 3 / 10), p.y (d : Rat)⟩, fill, none, 0 ≤ d, some outline, 1⟩)
+    Bar.commands ⟨⟨p.x ((i : Rat) - 3 / 10), p.y 0, p.x ((i : Rat) + 3 / 10), p.y (d : Rat)⟩, fill, none, 0 ≤ d, some outline, 1, none⟩)
 
 theorem numericChart_eq (seed : Nat) (f : Frame) (measure : String → Float × Float) :
     numericChart seed f measure = axisDisplay f measure ++ DisplayList.clip (plot f) ((durations seed).toList.zipIdx.toArray.flatMap fun (d, i) =>
       let p := projection f
       let (fill, outline) := statusColors i
-      Bar.commands ⟨⟨p.x ((i : Rat) - 3 / 10), p.y 0, p.x ((i : Rat) + 3 / 10), p.y (d : Rat)⟩, fill, none, 0 ≤ d, some outline, 1⟩) := rfl
+      Bar.commands ⟨⟨p.x ((i : Rat) - 3 / 10), p.y 0, p.x ((i : Rat) + 3 / 10), p.y (d : Rat)⟩, fill, none, 0 ≤ d, some outline, 1, none⟩) := rfl
 
 end Inkproof.Demos.MultiBars

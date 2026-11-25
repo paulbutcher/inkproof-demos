@@ -83,6 +83,18 @@ theorem seriesTraces_size (off : Array Bool) (ss : List (Color × Core.Series Ra
 structure Pixels where
   css : Nat × Nat
   backing : Nat × Nat
+  /-- The theme the chart's `theme` attribute names, if it has one. -/
+  theme : Option Theme := none
+
+/-- The colour the chart is drawn on. -/
+def Pixels.background (p : Pixels) : Color := p.theme.elim Demos.background (·.background)
+
+theorem Pixels.background_eq (p : Pixels) : p.background = p.theme.elim Demos.background (·.background) := rfl
+
+/-- The colour of text on the chart, as CSS writes it. -/
+def Pixels.text (p : Pixels) : String := p.theme.elim "#000" fun t => Host.colorCss t.text
+
+theorem Pixels.text_eq (p : Pixels) : p.text = p.theme.elim "#000" fun t => Host.colorCss t.text := rfl
 
 /-- How many device pixels make a CSS pixel across the canvas. -/
 def Pixels.ratio (p : Pixels) : Rat := if p.css.1 = 0 then 1 else (p.backing.1 : Rat) / p.css.1
@@ -116,16 +128,17 @@ theorem groupsAccess_eq (name : String) (f : Frame) (groups : Array ValueGroup) 
       plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), groups } := rfl
 
 /-- The scene of a chart in `f`: `chart` draws the data, given the width and height of text, and the axes' labels go over it. With `traces` or `groups` it has a legend, and a cursor over the plot. -/
-def frameScene (px : Pixels) (f : Frame) (chart : (String → Float × Float) → Scene.DisplayList)
+def frameScene (px : Pixels) (frame : Frame) (chart : Frame → (String → Float × Float) → Scene.DisplayList)
     (name : String := "Chart") (traces : Array Trace := #[]) (groups : Array ValueGroup := #[]) : IO Scene := do
+  let f := { frame with theme := px.theme }
   let measure ← measurer font (texts f)
   let labels := tickLabels (axes f measure)
-  pure { commands := px.frameBytes (chart measure) background, labels,
+  pure { commands := px.frameBytes (chart f measure) px.background, labels,
          access := if !groups.isEmpty then groupsAccess name f groups else if traces.isEmpty then {} else accessOf name f traces }
 
 /-- Define the chart element: it draws the scene `build` makes of its `src` for its canvas's sizes. -/
 def registerPixels (build : String → Pixels → IO Scene) (buttons : Bool := false) : IO Unit :=
-  Host.registerPixels "inkproof-chart" (fun src css backing => build src ⟨css, backing⟩) buttons
+  Host.registerThemed "inkproof-chart" (fun src css backing theme => build src ⟨css, backing, theme⟩) buttons
 
 /-- A part of a chart that the legend can hide: drawn unless `hidden` says so for the legend's hidden series. -/
 structure Part where
@@ -175,7 +188,7 @@ theorem Pixels.retain_eq (p : Pixels) (d : Drawing) : p.retain d =
 def Pixels.drawRetained (p : Pixels) (cache : Retention) (d : Drawing) (retained : Array (Array Gpu.Layer)) (off : Array Bool) : IO Scene := do
   let shown (j : Nat) := j == 0 || !(d.parts[j - 1]?.elim false (·.hidden off))
   let pick (keep : Bool) := retained.toList.flatMap fun pieces => (pieces.toList.zipIdx.filter fun (_, j) => shown j == keep).map (·.1)
-  let bytes ← cache.build fun old first => pure (Gpu.strokeLayersBytes old first p.backing.1 p.backing.2 (pick true) (pick false) background)
+  let bytes ← cache.build fun old first => pure (Gpu.strokeLayersBytes old first p.backing.1 p.backing.2 (pick true) (pick false) p.background)
   pure { commands := bytes, labels := d.labels, access := d.access off }
 
 /-- The scene of a chart drawn once for each size of its canvas, and again for each set of hidden series without making or tessellating anything again. -/
@@ -228,11 +241,11 @@ def lineDrawing (c : Lines.Chart) : IO Drawing := do
 def registerLines (charts : List Lines.Chart) : IO Unit :=
   registerRetained fun src px cache => do
     let some c := charts.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
-    px.drawing cache (← lineDrawing c)
+    px.drawing cache (← lineDrawing { c with theme := px.theme })
 
 /-- The scene of a chart on `bg`: `axes` lie on `sides` in order, their labels go over `chart`'s data, and `texts` are every label they may show. -/
-def sidedScene (px : Pixels) (bg : Color) (texts : Array String) (sides : List Side)
-    (axes : (String → Float × Float) → List AxisDrawing) (chart : (String → Float × Float) → Scene.DisplayList) : IO Scene := do
+def sidedScene (px : Pixels) (texts : Array String) (sides : List Side)
+    (axes : (String → Float × Float) → List AxisDrawing) (chart : (String → Float × Float) → Scene.DisplayList) (bg : Color := px.background) : IO Scene := do
   let measure ← measurer font texts
   let labels := ((axes measure).zip sides).toArray.flatMap fun (a, side) => Label.ofDrawing side a
   pure { commands := px.frameBytes (chart measure) bg, labels }
@@ -301,16 +314,13 @@ def frameDrawing (f : Frame) (axesDisplay : (String → Float × Float) → Scen
          access := fun off => { name, traces := traces off } }
 
 /-- The scene of a bar chart: its axes and bars, with each bar's value written at its end. -/
-def barScene (px : Pixels) (c : Bars.Chart) (off : Option (Array Bool) := none) : IO Scene := do
+def barScene (px : Pixels) (chart : Bars.Chart) (off : Option (Array Bool) := none) : IO Scene := do
+  let c := { chart with theme := px.theme }
   let shown := off.elim c (hideBars c)
-  let s ← sidedScene px background c.texts c.sides c.axes shown.display
-  pure { s with labels := s.labels ++ barLabels shown,
-                access := off.elim {} fun off => { name := "Bars", traces := barTraces c off } }
-
-/-- The frame of a pane for the cursor: x counts categories from 0, so category `i` is at `i + 1/2`, and y is the left axis. -/
-def paneFrame (p : Pane.Pane) : Frame := ⟨p.plot.x0, p.plot.x1, p.plot.y0, p.plot.y1, (0, p.groups.size), p.left⟩
-
-theorem paneFrame_eq (p : Pane.Pane) : paneFrame p = ⟨p.plot.x0, p.plot.x1, p.plot.y0, p.plot.y1, (0, p.groups.size), p.left⟩ := rfl
+  let s ← sidedScene px c.texts c.sides c.axes shown.display
+  pure { s with labels := s.labels ++ barLabels shown { color := px.theme.elim ({} : TextStyle).color (·.text) },
+                access := { name := "Bars", traces := off.elim #[] (barTraces c), view := some (Hover.plane c.plot).viewConfig,
+                            plotOrigin := (Rat.toFloat c.plot.x0, Rat.toFloat c.plot.y0), items := Hover.barItems shown } }
 
 /-- The legend's group of values named `labels`, one row of `values` for each category of `p`, drawn in `color`; the group is the chart's marks, so it cannot be hidden. -/
 def paneGroup (p : Pane.Pane) (name : String) (color : Color) (labels : Array String) (values : Array (Array Rat)) : ValueGroup :=
@@ -321,11 +331,13 @@ theorem paneGroup_values (p : Pane.Pane) (name : String) (color : Color) (labels
     (paneGroup p name color labels values).values = values.map fun row => row.map Rat.toFloat := rfl
 
 /-- The scene of a pane whose shapes are `shapes`; with `groups` it has a legend, and a cursor over the plot. -/
-def paneScene (px : Pixels) (p : Pane.Pane) (shapes : Scene.DisplayList) (name : String := "Chart") (groups : Array ValueGroup := #[]) : IO Scene := do
-  let s ← sidedScene px background p.texts p.sides p.axes (p.display shapes)
-  let f := paneFrame p
+def paneScene (px : Pixels) (pane : Pane.Pane) (shapes : Scene.DisplayList) (name : String := "Chart") (groups : Array ValueGroup := #[])
+    (items : Array Inkproof.Web.Item := #[]) : IO Scene := do
+  let p := { pane with theme := px.theme }
+  let s ← sidedScene px p.texts p.sides p.axes (p.display shapes)
+  let f := p.frame
   pure { s with access := if groups.isEmpty then {} else
-    { name, points := p.groups.size, view := some f.viewConfig, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), groups } }
+    { name, points := p.groups.size, view := some f.viewConfig, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), groups, items } }
 
 /-- The places along x where row `r` has a state to read, with the state: each bar's two ends, and the middle of each gap between bars, which has none. -/
 def rowStates (r : Timeline.Row) : Array (Rat × Option String) :=
@@ -351,12 +363,13 @@ def rowGroup (r : Timeline.Row) : ValueGroup :=
 theorem rowGroup_words (r : Timeline.Row) : (rowGroup r).words = (rowStates r).map fun (_, t) => #[t] := rfl
 
 /-- The scene of a timeline: its axes and bars, with each bar's state written on it, and a legend that reads each row's state at the cursor. -/
-def timelineScene (px : Pixels) (c : Timeline.Chart) : IO Scene := do
-  let s ← sidedScene px background c.labelTexts [.bottom, .left] c.axes c.display
+def timelineScene (px : Pixels) (chart : Timeline.Chart) : IO Scene := do
+  let c := { chart with theme := px.theme }
+  let s ← sidedScene px c.labelTexts [.bottom, .left] c.axes c.display
   let f := c.frame
   let labels := c.texts.map fun (text, x, y) =>
     { text, x := Rat.toFloat x, y := Rat.toFloat y, align := if c.centred then .center else .start, baseline := .middle, font := Host.textFont { family := "Arial", size := 14 } }
-  let access : Access := { name := c.name, points := c.rows.size, view := some f.viewConfig, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), groups := c.rows.map rowGroup }
+  let access : Access := { name := c.name, points := c.rows.size, view := some f.viewConfig, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), groups := c.rows.map rowGroup, items := Hover.spanItems c }
   pure { s with labels := s.labels ++ labels, access }
 
 end Inkproof.Demos.Browser

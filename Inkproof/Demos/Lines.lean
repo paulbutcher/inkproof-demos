@@ -123,6 +123,8 @@ structure Chart where
   right : Option YAxis := none
   layers : List Layer
   bands : List Band := []
+  /-- The colours of the axes and of what must stand out from the plot's background; without one, uPlot's. -/
+  theme : Option Theme := none
 
 /-- Every value present in the layers. -/
 def values (layers : List Layer) : List Rat := layers.flatMap fun l => l.data.values.toList.filterMap id
@@ -141,10 +143,10 @@ theorem autoYAxis_eq (layers : List Layer) (unit : String) : autoYAxis layers un
     | _, _ => { range := (0, 1), unit } := rfl
 
 def Chart.frame (c : Chart) : Frame :=
-  ⟨60, c.width - (if c.right.isSome then 80 else 20), 20, c.height - 40, c.xs, c.left.range⟩
+  ⟨60, c.width - (if c.right.isSome then 80 else 20), 20, c.height - 40, c.xs, c.left.range, c.theme⟩
 
 theorem Chart.frame_eq (c : Chart) :
-    c.frame = ⟨60, c.width - (if c.right.isSome then 80 else 20), 20, c.height - 40, c.xs, c.left.range⟩ := rfl
+    c.frame = ⟨60, c.width - (if c.right.isSome then 80 else 20), 20, c.height - 40, c.xs, c.left.range, c.theme⟩ := rfl
 
 /-- Data to pixels along a y axis of `a`. -/
 def Chart.yScale (c : Chart) (a : YAxis) : Linear Rat :=
@@ -213,6 +215,16 @@ theorem Chart.xLabels_eq (c : Chart) : c.xLabels =
     else if c.spaced then c.xTicks.2
     else Axes.linearLabels (Rat.toFloat c.xs.1) (Rat.toFloat c.xs.2) := rfl
 
+/-- The style of the chart's axes. -/
+def Chart.style (c : Chart) : AxisStyle := c.frame.style
+
+theorem Chart.style_eq (c : Chart) : c.style = c.frame.style := rfl
+
+/-- The colour of the plot's background. -/
+def Chart.background (c : Chart) : Color := c.frame.background
+
+theorem Chart.background_eq (c : Chart) : c.background = c.frame.background := rfl
+
 /-- The bottom axis. -/
 def Chart.xAxis (c : Chart) (measure : String → Float × Float) : AxisDrawing :=
   let f := c.frame
@@ -222,8 +234,8 @@ def Chart.xAxis (c : Chart) (measure : String → Float × Float) : AxisDrawing 
     | none => f.timeAxis c.timeTarget measure
   else if c.spaced then
     let (ts, labels) := c.xTicks
-    compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (ts.map f.xScale.map) labels
-  else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style
+    compilePixelAxis .bottom (plot f) c.style measure Axes.spec.labelGap (ts.map f.xScale.map) labels
+  else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure c.style
 
 theorem Chart.xAxis_eq (c : Chart) (measure : String → Float × Float) : c.xAxis measure =
     let f := c.frame
@@ -233,8 +245,8 @@ theorem Chart.xAxis_eq (c : Chart) (measure : String → Float × Float) : c.xAx
       | none => f.timeAxis c.timeTarget measure
     else if c.spaced then
       let (ts, labels) := c.xTicks
-      compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (ts.map f.xScale.map) labels
-    else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style := rfl
+      compilePixelAxis .bottom (plot f) c.style measure Axes.spec.labelGap (ts.map f.xScale.map) labels
+    else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure c.style := rfl
 
 /-- Every label an axis may show: the browser measures these before the axes choose among them. -/
 def Chart.labelTexts (c : Chart) : List String :=
@@ -248,7 +260,7 @@ def Chart.axes (c : Chart) (measure : String → Float × Float) : List AxisDraw
   let yAxis (side : Side) (a : YAxis) :=
     let (ts, ls) := c.yTicks a
     let scale : Linear Float := ⟨Rat.toFloat a.range.1, Rat.toFloat a.range.2, Rat.toFloat f.bottom, Rat.toFloat f.top⟩
-    compilePixelAxis side (plot f) (if a.grid then Axes.style else { Axes.style with grid := none }) measure
+    compilePixelAxis side (plot f) (if a.grid then c.style else { c.style with grid := none }) measure
       Axes.spec.labelGap (ts.map scale.map) ls
   [c.xAxis measure, yAxis .left c.left] ++ (c.right.map (yAxis .right)).toList
 
@@ -257,7 +269,7 @@ theorem Chart.axes_eq (c : Chart) (measure : String → Float × Float) : c.axes
     let yAxis (side : Side) (a : YAxis) :=
       let (ts, ls) := c.yTicks a
       let scale : Linear Float := ⟨Rat.toFloat a.range.1, Rat.toFloat a.range.2, Rat.toFloat f.bottom, Rat.toFloat f.top⟩
-      compilePixelAxis side (plot f) (if a.grid then Axes.style else { Axes.style with grid := none }) measure
+      compilePixelAxis side (plot f) (if a.grid then c.style else { c.style with grid := none }) measure
         Axes.spec.labelGap (ts.map scale.map) ls
     [c.xAxis measure, yAxis .left c.left] ++ (c.right.map (yAxis .right)).toList := rfl
 
@@ -321,7 +333,7 @@ def Chart.layerDisplay (c : Chart) (l : Layer) : DisplayList :=
   (match l.rings with
     | some r => l.data.points.flatMap fun (x, v) =>
       match v with
-      | some y => compileRing ⟨1, l.strokeShading (c.projection l), ⟨255, 255, 255, 255⟩, r, 1⟩ ⟨(c.projection l).x x, (c.projection l).y y⟩
+      | some y => compileRing ⟨1, l.strokeShading (c.projection l), c.background, r, 1⟩ ⟨(c.projection l).x x, (c.projection l).y y⟩
       | none => #[]
     | none => #[])
 
@@ -336,7 +348,7 @@ theorem Chart.layerDisplay_eq (c : Chart) (l : Layer) : c.layerDisplay l =
     (match l.rings with
       | some r => l.data.points.flatMap fun (x, v) =>
         match v with
-        | some y => compileRing ⟨1, l.strokeShading (c.projection l), ⟨255, 255, 255, 255⟩, r, 1⟩ ⟨(c.projection l).x x, (c.projection l).y y⟩
+        | some y => compileRing ⟨1, l.strokeShading (c.projection l), c.background, r, 1⟩ ⟨(c.projection l).x x, (c.projection l).y y⟩
         | none => #[]
       | none => #[]) := rfl
 

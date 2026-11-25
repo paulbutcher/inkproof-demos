@@ -104,16 +104,16 @@ def chart : Lines.Chart :=
     left := { range := autoRange (1 / 10) ((yRange.1 * yBin : Int) : Rat) ((yRange.2 * yBin : Int) : Rat) }, layers := [] }
 
 /-- The axes, then the cells coloured by how many samples each holds. -/
-def display (measure : String → Float × Float) : DisplayList :=
+def display (measure : String → Float × Float) (theme : Option Theme := none) : DisplayList :=
   let most := counts.foldl max 0
   let least := (counts.filter (· > 0)).foldl min most
-  chart.display measure ++
+  { chart with theme }.display measure ++
     DisplayList.clip (plot chart.frame) (compileHeatmap 1 (fun n => palette.getD (paletteIndex least most n) ⟨0, 0, 0, 255⟩) ⟨chart.xScale.map, (chart.yScale chart.left).map⟩ cells)
 
-theorem display_eq (measure : String → Float × Float) : display measure =
+theorem display_eq (measure : String → Float × Float) (theme : Option Theme) : display measure theme =
     let most := counts.foldl max 0
     let least := (counts.filter (· > 0)).foldl min most
-    chart.display measure ++
+    { chart with theme }.display measure ++
       DisplayList.clip (plot chart.frame) (compileHeatmap 1 (fun n => palette.getD (paletteIndex least most n) ⟨0, 0, 0, 255⟩) ⟨chart.xScale.map, (chart.yScale chart.left).map⟩ cells) := rfl
 
 end Inkproof.Demos.HeatmapCells

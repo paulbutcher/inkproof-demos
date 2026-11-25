@@ -8,6 +8,7 @@ import Inkproof.Float
 import Inkproof.Scale
 import Inkproof.Scene
 import Inkproof.Demos.Axes
+import Inkproof.Demos.Frame
 
 namespace Inkproof.Demos.Pane
 
@@ -24,6 +25,7 @@ structure Pane where
   below : Nat := 40
   /-- About how many category labels to show. -/
   target : Nat := 48
+  theme : Option Theme := none
 
 def Pane.plot (p : Pane) : Rect := ⟨60, 18, p.width - (if p.right.isSome then 60 else 10), p.height - p.below⟩
 
@@ -45,26 +47,43 @@ def Pane.row (p : Pane) (range : Rat × Rat) (v : Rat) : Rat := (Linear.mk range
 theorem Pane.row_eq (p : Pane) (range : Rat × Rat) (v : Rat) :
     p.row range v = (Linear.mk range.1 range.2 p.plot.y1 p.plot.y0).map v := rfl
 
+/-- The frame of a pane for the cursor: x counts categories from 0, so category `i` is at `i + 1/2`, and y is the left axis. -/
+def Pane.frame (p : Pane) : Frame := ⟨p.plot.x0, p.plot.x1, p.plot.y0, p.plot.y1, (0, p.groups.size), p.left, p.theme⟩
+
+theorem Pane.frame_eq (p : Pane) : p.frame = ⟨p.plot.x0, p.plot.x1, p.plot.y0, p.plot.y1, (0, p.groups.size), p.left, p.theme⟩ := rfl
+
+/-- The full height of category `i`'s column of the pane. -/
+def Pane.column (p : Pane) (i : Nat) : Rect :=
+  ⟨p.categories.bandStart i, p.plot.y0, p.categories.bandStart i + p.categories.bandwidth, p.plot.y1⟩
+
+theorem Pane.column_eq (p : Pane) (i : Nat) :
+    p.column i = ⟨p.categories.bandStart i, p.plot.y0, p.categories.bandStart i + p.categories.bandwidth, p.plot.y1⟩ := rfl
+
+/-- The style of the pane's axes. -/
+def Pane.style (p : Pane) : AxisStyle := Axes.styled p.theme
+
+theorem Pane.style_eq (p : Pane) : p.style = Axes.styled p.theme := rfl
+
 /-- The category axis along the bottom, the left axis and the right one if there is one. -/
 def Pane.axes (p : Pane) (measure : String → Float × Float) : List AxisDrawing :=
   let r := p.plot
   let value (range : Rat × Rat) : Linear Float :=
     ⟨Rat.toFloat range.1, Rat.toFloat range.2, Rat.toFloat r.y1, Rat.toFloat r.y0⟩
   let categories : Categorical String Float := ⟨p.groups, Rat.toFloat r.x0, Rat.toFloat r.x1⟩
-  [compileCategoricalAxis .bottom r categories id p.target Axes.spec.labelGap measure { Axes.style with grid := none },
-   compileLinearAxis .left r (value p.left) Axes.spec measure Axes.style] ++
+  [compileCategoricalAxis .bottom r categories id p.target Axes.spec.labelGap measure { p.style with grid := none },
+   compileLinearAxis .left r (value p.left) Axes.spec measure p.style] ++
   (p.right.map fun range =>
-    compileLinearAxis .right r (value range) Axes.spec measure { Axes.style with grid := none }).toList
+    compileLinearAxis .right r (value range) Axes.spec measure { p.style with grid := none }).toList
 
 theorem Pane.axes_eq (p : Pane) (measure : String → Float × Float) : p.axes measure =
     let r := p.plot
     let value (range : Rat × Rat) : Linear Float :=
       ⟨Rat.toFloat range.1, Rat.toFloat range.2, Rat.toFloat r.y1, Rat.toFloat r.y0⟩
     let categories : Categorical String Float := ⟨p.groups, Rat.toFloat r.x0, Rat.toFloat r.x1⟩
-    [compileCategoricalAxis .bottom r categories id p.target Axes.spec.labelGap measure { Axes.style with grid := none },
-     compileLinearAxis .left r (value p.left) Axes.spec measure Axes.style] ++
+    [compileCategoricalAxis .bottom r categories id p.target Axes.spec.labelGap measure { p.style with grid := none },
+     compileLinearAxis .left r (value p.left) Axes.spec measure p.style] ++
     (p.right.map fun range =>
-      compileLinearAxis .right r (value range) Axes.spec measure { Axes.style with grid := none }).toList := rfl
+      compileLinearAxis .right r (value range) Axes.spec measure { p.style with grid := none }).toList := rfl
 
 def Pane.sides (p : Pane) : List Side := [.bottom, .left] ++ (p.right.map fun _ => Side.right).toList
 

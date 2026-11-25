@@ -68,7 +68,7 @@ theorem drawnHighest_eq (exts : Array Extent) : drawnHighest exts =
 
 def ys : Rat × Rat := (0, 100)
 
-def panel : Frame := ⟨60, 1180, 40, 560, (0, total), ys⟩
+def panel : Frame := ⟨60, 1180, 40, 560, (0, total), ys, none⟩
 
 /-- Column index and value in hundredths of a percent to pixels. -/
 def projection : Projection Nat Int :=
@@ -84,13 +84,13 @@ theorem projection_y (v : Int) :
 def colors : List Color := [⟨255, 0, 0, 255⟩, ⟨0, 128, 0, 255⟩, ⟨0, 0, 255, 255⟩]
 
 /-- The axes, and each series as the envelope of its columns. -/
-def chart (exts : List (Array Extent)) (measure : String → Float × Float) : DisplayList :=
-  (Demos.axes panel measure).foldl (· ++ ·.display) #[] ++
+def chart (exts : List (Array Extent)) (measure : String → Float × Float) (theme : Option Theme := none) : DisplayList :=
+  (Demos.axes { panel with theme } measure).foldl (· ++ ·.display) #[] ++
   (colors.zip exts).zipIdx.toArray.flatMap fun ((color, e), i) =>
     compileEnvelopeOfExtents ⟨i + 1, color⟩ projection e
 
-theorem chart_eq (exts : List (Array Extent)) (measure : String → Float × Float) : chart exts measure =
-    (Demos.axes panel measure).foldl (· ++ ·.display) #[] ++
+theorem chart_eq (exts : List (Array Extent)) (measure : String → Float × Float) (theme : Option Theme) : chart exts measure theme =
+    (Demos.axes { panel with theme } measure).foldl (· ++ ·.display) #[] ++
     (colors.zip exts).zipIdx.toArray.flatMap fun ((color, e), i) =>
       compileEnvelopeOfExtents ⟨i + 1, color⟩ projection e := rfl
 

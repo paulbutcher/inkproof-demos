@@ -24,6 +24,8 @@ structure Frame where
   bottom : Rat
   xs : Rat × Rat
   ys : Rat × Rat
+  /-- The colours of the axes and of the plot's background; without one, uPlot's. -/
+  theme : Option Theme := none
 
 /-- Data to pixels: x increases rightwards and y upwards, so the y range is reversed. -/
 def projection (f : Frame) : Projection Rat Rat :=
@@ -41,10 +43,10 @@ theorem plot_eq (f : Frame) : plot f = ⟨f.left, f.top, f.right, f.bottom⟩ :=
 
 /-- A `width` by `height` chart with room for the axes' labels left of and below the plot. -/
 def Frame.sized (width height : Nat) (xs ys : Rat × Rat) : Frame :=
-  ⟨60, width - 20, 20, height - 40, xs, ys⟩
+  ⟨60, width - 20, 20, height - 40, xs, ys, none⟩
 
 theorem Frame.sized_eq (width height : Nat) (xs ys : Rat × Rat) :
-    Frame.sized width height xs ys = ⟨60, width - 20, 20, height - 40, xs, ys⟩ := rfl
+    Frame.sized width height xs ys = ⟨60, width - 20, 20, height - 40, xs, ys, none⟩ := rfl
 
 /-- The view of a chart that cannot be zoomed: its home view is the whole of the frame's ranges. -/
 def Frame.viewConfig (f : Frame) : ViewConfig Float :=
@@ -73,23 +75,33 @@ def Frame.yScale (f : Frame) : Linear Float :=
 theorem Frame.yScale_eq (f : Frame) :
     f.yScale = ⟨Rat.toFloat f.ys.1, Rat.toFloat f.ys.2, Rat.toFloat f.bottom, Rat.toFloat f.top⟩ := rfl
 
+/-- The style of the frame's axes. -/
+def Frame.style (f : Frame) : AxisStyle := Axes.styled f.theme
+
+theorem Frame.style_eq (f : Frame) : f.style = Axes.styled f.theme := rfl
+
+/-- The colour the frame's chart is drawn on. -/
+def Frame.background (f : Frame) : Color := f.theme.elim Inkproof.Demos.background (·.background)
+
+theorem Frame.background_eq (f : Frame) : f.background = f.theme.elim Inkproof.Demos.background (·.background) := rfl
+
 /-- The bottom and left axes. -/
 def axes (f : Frame) (measure : String → Float × Float) : List AxisDrawing :=
-  [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-   compileLinearAxis .left (plot f) f.yScale Axes.spec measure Axes.style]
+  [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure f.style,
+   compileLinearAxis .left (plot f) f.yScale Axes.spec measure f.style]
 
 theorem axes_eq (f : Frame) (measure : String → Float × Float) :
     axes f measure =
-      [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-       compileLinearAxis .left (plot f) f.yScale Axes.spec measure Axes.style] := rfl
+      [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure f.style,
+       compileLinearAxis .left (plot f) f.yScale Axes.spec measure f.style] := rfl
 
 /-- The bottom axis of `f` over Unix times, with ticks at clock intervals, about `target` of them. -/
 def Frame.timeAxis (f : Frame) (target : Nat) (measure : String → Float × Float) : AxisDrawing :=
-  compileTimeAxis .bottom (plot f) f.xScale { Axes.spec with target } Axes.months measure Axes.style
+  compileTimeAxis .bottom (plot f) f.xScale { Axes.spec with target } Axes.months measure f.style
 
 theorem Frame.timeAxis_eq (f : Frame) (target : Nat) (measure : String → Float × Float) :
     f.timeAxis target measure =
-      compileTimeAxis .bottom (plot f) f.xScale { Axes.spec with target } Axes.months measure Axes.style := rfl
+      compileTimeAxis .bottom (plot f) f.xScale { Axes.spec with target } Axes.months measure f.style := rfl
 
 /-- The width of the plot in pixels. -/
 def Frame.xExtent (f : Frame) : Float := Rat.toFloat (f.right - f.left)
@@ -111,25 +123,25 @@ theorem Frame.spacedTimeTicks_eq (f : Frame) (style : TimeStyle) : f.spacedTimeT
 /-- The bottom axis of `f` over Unix times, labelled in `style`. -/
 def Frame.spacedTimeAxis (f : Frame) (style : TimeStyle) (measure : String → Float × Float) : AxisDrawing :=
   let (ts, labels, contexts) := f.spacedTimeTicks style
-  compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (ts.map f.xScale.map) labels contexts
+  compilePixelAxis .bottom (plot f) f.style measure Axes.spec.labelGap (ts.map f.xScale.map) labels contexts
 
 theorem Frame.spacedTimeAxis_eq (f : Frame) (style : TimeStyle) (measure : String → Float × Float) :
     f.spacedTimeAxis style measure =
-      compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap
+      compilePixelAxis .bottom (plot f) f.style measure Axes.spec.labelGap
         ((f.spacedTimeTicks style).1.map f.xScale.map) (f.spacedTimeTicks style).2.1 (f.spacedTimeTicks style).2.2 := rfl
 
 /-- The axes of `f` with `unit` ending each label of the left one, at least `Axes.ySpacing` pixels apart. -/
 def axesWith (unit : String) (f : Frame) (measure : String → Float × Float) : List AxisDrawing :=
   if unit.isEmpty then axes f measure else
   let (ts, ls) := Axes.spacedTicks (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) f.yExtent Axes.ySpacing unit
-  [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-   compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (ts.map f.yScale.map) ls]
+  [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure f.style,
+   compilePixelAxis .left (plot f) f.style measure Axes.spec.labelGap (ts.map f.yScale.map) ls]
 
 theorem axesWith_eq (unit : String) (f : Frame) (measure : String → Float × Float) : axesWith unit f measure =
     if unit.isEmpty then axes f measure else
     let (ts, ls) := Axes.spacedTicks (Rat.toFloat f.ys.1) (Rat.toFloat f.ys.2) f.yExtent Axes.ySpacing unit
-    [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-     compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (ts.map f.yScale.map) ls] := rfl
+    [compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure f.style,
+     compilePixelAxis .left (plot f) f.style measure Axes.spec.labelGap (ts.map f.yScale.map) ls] := rfl
 
 /-- The axes' commands with `unit` ending the left labels, drawn under the data. -/
 def axisDisplayWith (unit : String) (f : Frame) (measure : String → Float × Float) : DisplayList :=

@@ -21,7 +21,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Data: the four charts draw the bar series of the stacked page with a gap of four points; same ranges. Matches.
 - Colours and fills: strokes match; uPlot fills each area to the baseline at 10% (`stroke + "1A"`), as the site now does. Fixed; the chart definition carries the fill.
 - Line widths: uPlot draws series and axes at `1 / devicePixelRatio` CSS pixels, one device pixel on any screen; the site draws one CSS pixel. A display list is in CSS pixels, so the same scene is the same size on every screen. Explained.
-- Theme: uPlot's page is dark (`#2c3235` gridlines, `#c7d0d9` labels). Requested: the chart has no dark theme, [inkproof-web#139](http://localhost:3000/tentenths/inkproof-web/issues/139).
+- Theme: uPlot's page is dark. Fixed: the page and its charts are in the dark theme, so the plot, axes, gridlines and labels are light on dark; the theme's gridlines are lighter and heavier than uPlot's `#2c3235` because its colours are checked for contrast.
 - Axes: ticks and gridlines drawn as uPlot's; label format matches. Fixed.
 - Point markers: a 5 pixel dot at each point, as uPlot's `drawStyles.points` draws. Fixed. Legend and cursor as under Shared differences.
 
@@ -115,7 +115,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: thirty integers from -10 to 10 over 1..30 in two filled series, red and blue with 10% fills. Matches.
 - Notes: an earthquake line at 4 and a tornado band from 9.3 to 18.5, dashed two pixel borders in green and amber over a 20% fill, labelled `eqk_01` on the bottom edge and `tor_20` on the top. Matches in position and colour; they follow zoom and pan as uPlot's do.
-- Note labels: uPlot's carry a description as a tooltip and fill with a solid border on hover; the site's do not. Requested: [inkproof-web#142](http://localhost:3000/tentenths/inkproof-web/issues/142).
+- Note labels: uPlot's carry a description as a tooltip and fill with a solid border on hover. Fixed: a label's box is an item with its description (`Earthquake 01!`, `Tornado 20!`), so the page highlights it and shows the description under the pointer.
 
 ## Arcsinh Scales (`arcsinh-scales.html`)
 
@@ -127,13 +127,13 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: uPlot draws recorded benchmark timings of its frameworks from `data/results.json`; the site generates twelve runs for each of twenty-four frameworks. Open: the shapes agree, the numbers do not.
 - Drawing: boxes of the middle half with a median bar, dashed whiskers within one and a half interquartile ranges, and squares for the runs beyond. Matches.
-- Hover: uPlot highlights the column and shows the legend as a tooltip with every statistic; the site's cursor is a line. Requested: [inkproof-web#142](http://localhost:3000/tentenths/inkproof-web/issues/142).
+- Hover: uPlot highlights the column and shows the legend as a tooltip with every statistic. Fixed: each column is an item, highlighted under the pointer with a tooltip of the box's name and its five numbers.
 
 ## Candlestick (`candlestick-ohlc.html`)
 
 - Data: the gold year's open, high, low and close, evenly spaced days, volume on a right scale of 0 to 2000; the volumes are random in uPlot and a fixed hash here. Matches.
 - Colours: `#e54245` for falls and `#4ab650` for rises. Matches.
-- Hover: as for Box and Whisker. Requested: [inkproof-web#142](http://localhost:3000/tentenths/inkproof-web/issues/142).
+- Hover: as for Box and Whisker. Fixed: the tooltip gives the day's date, prices and volume.
 
 ## Cursor Bind (`cursor-bind.html`)
 
@@ -193,7 +193,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Charts: uPlot has fifteen charts; the page recreates the first two (zoom-out range with a band, and gaps in a band) and the two gaps in stepped charts (after and before, with their linear and spline companions, fill and gaps as uPlot's) and the aligned and null-fill chart over three tables, without the one second toggle of gap spanning. The others (the single-null pixel bug cases, undefined values) have no counterpart. Open.
 - Data: temperature series and the band with its gaps match.
-- Theme: uPlot's charts here have a grey plot background; the site's are white. Requested: [inkproof-web#139](http://localhost:3000/tentenths/inkproof-web/issues/139).
+- Theme: uPlot's charts here have a grey plot background. Fixed: the charts are in the dark theme, whose background is near black.
 - X range of the gaps chart: uPlot's axis is in seconds since an offset; the site's is the clock time. Explained.
 
 ## A Million Points (`million.html`)
@@ -223,7 +223,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Data: the states of the first three charts (devices A to C, states 0 to 5, the periodic and lettered series) are uPlot's; the irregular times are drawn from a fixed seed rather than at random. Matches.
 - Charts: uPlot's fourth, `Merged same consecutive states`, has no counterpart. Open.
 - Colours: states use the red, green, blue, cyan, orange and yellow strokes with the same fill alphas; bars have a four pixel inside outline. Matches.
-- Hover: uPlot highlights the bar under the cursor and shows its state in the legend; the page has a cursor only. Requested: [inkproof-web#142](http://localhost:3000/tentenths/inkproof-web/issues/142).
+- Hover: uPlot highlights the bar under the cursor and shows its state in the legend. Fixed: each state is an item, highlighted under the pointer with a tooltip naming its row and state.
 - Axes: uPlot's labels sit 15 pixels from a 70 pixel wide gutter; the site's gutter is 90. Explained.
 - Chart title inside the chart, drop shadow and padding: see Shared differences.
 

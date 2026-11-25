@@ -10,11 +10,11 @@ open Inkproof.Web.Host Inkproof.Demos Inkproof
 
 def run : IO Unit :=
   Browser.registerLegend fun src px off => do
-    let some s := LogScales2.specs.find? (·.name == src) | throw (IO.userError s!"no chart {src}")
+    let some s := (LogScales2.specs.find? (·.name == src)).map ({ · with theme := px.theme }) | throw (IO.userError s!"no chart {src}")
     let measure ← measurer Browser.font s.labelTexts.toArray
     let labels := Browser.tickLabels (s.axes measure)
     let traces := Browser.seriesTraces off [(s.stroke, s.data)]
-    pure { commands := px.frameBytes (s.chart off measure) background, labels,
+    pure { commands := px.frameBytes (s.chart off measure) px.background, labels,
            access := Browser.accessOf "Log Scales 2" s.frame traces }
 
 end Page.LogScales2

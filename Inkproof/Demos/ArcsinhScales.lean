@@ -83,13 +83,13 @@ def labelTexts : List String := Axes.linearLabels 1 values.size.toFloat ++ yLabe
 
 theorem labelTexts_eq : labelTexts = Axes.linearLabels 1 values.size.toFloat ++ yLabels (-3) := rfl
 
-def axes (k : Int) (measure : String → Float × Float) : List AxisDrawing :=
-  [compileLinearAxis .bottom (plot frame) frame.xScale Axes.spec measure Axes.style,
-   compilePixelAxis .left (plot frame) Axes.style measure Axes.spec.labelGap ((yTicks k).map (yPixel k)) (yLabels k)]
+def axes (k : Int) (measure : String → Float × Float) (theme : Option Theme := none) : List AxisDrawing :=
+  [compileLinearAxis .bottom (plot frame) frame.xScale Axes.spec measure (Axes.styled theme),
+   compilePixelAxis .left (plot frame) (Axes.styled theme) measure Axes.spec.labelGap ((yTicks k).map (yPixel k)) (yLabels k)]
 
-theorem axes_eq (k : Int) (measure : String → Float × Float) : axes k measure =
-    [compileLinearAxis .bottom (plot frame) frame.xScale Axes.spec measure Axes.style,
-     compilePixelAxis .left (plot frame) Axes.style measure Axes.spec.labelGap ((yTicks k).map (yPixel k)) (yLabels k)] := rfl
+theorem axes_eq (k : Int) (measure : String → Float × Float) (theme : Option Theme) : axes k measure theme =
+    [compileLinearAxis .bottom (plot frame) frame.xScale Axes.spec measure (Axes.styled theme),
+     compilePixelAxis .left (plot frame) (Axes.styled theme) measure Axes.spec.labelGap ((yTicks k).map (yPixel k)) (yLabels k)] := rfl
 
 /-- Data to pixels: the y axis is the arcsinh scale. -/
 def projection (k : Int) : Projection Rat Rat :=
@@ -105,14 +105,14 @@ def data : Core.Series Rat Rat := Lines.series times (values.map some)
 theorem data_eq : data = Lines.series times (values.map some) := rfl
 
 /-- The axes, then the line over a faint fill down to the bottom, unless the legend has hidden it. -/
-def chart (k : Int) (off : Array Bool) (measure : String → Float × Float) : DisplayList :=
-  (axes k measure).foldl (· ++ ·.display) #[] ++
+def chart (k : Int) (off : Array Bool) (measure : String → Float × Float) (theme : Option Theme := none) : DisplayList :=
+  (axes k measure theme).foldl (· ++ ·.display) #[] ++
     (if off.getD 0 false then #[]
      else compileArea ⟨0, .flat ⟨0, 0, 255, 26⟩⟩ frame.ys.1 (projection k) (Segmented.single data) ++
           compileLine ⟨⟨1, blue⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection k) (Segmented.single data))
 
-theorem chart_eq (k : Int) (off : Array Bool) (measure : String → Float × Float) : chart k off measure =
-    (axes k measure).foldl (· ++ ·.display) #[] ++
+theorem chart_eq (k : Int) (off : Array Bool) (measure : String → Float × Float) (theme : Option Theme) : chart k off measure theme =
+    (axes k measure theme).foldl (· ++ ·.display) #[] ++
       (if off.getD 0 false then #[]
        else compileArea ⟨0, .flat ⟨0, 0, 255, 26⟩⟩ frame.ys.1 (projection k) (Segmented.single data) ++
             compileLine ⟨⟨1, blue⟩, Axes.strokeHalfWidth, false, none, .straight⟩ (projection k) (Segmented.single data)) := rfl

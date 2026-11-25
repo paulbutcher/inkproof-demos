@@ -21,8 +21,8 @@ def position : IO Int := do
 
 def scene (px : Browser.Pixels) (k : Int) (off : Array Bool) : IO Scene := do
   let measure ← measurer Browser.font ArcsinhScales.labelTexts.toArray
-  pure { commands := px.frameBytes (ArcsinhScales.chart k off measure) background,
-         labels := Browser.tickLabels (ArcsinhScales.axes k measure),
+  pure { commands := px.frameBytes (ArcsinhScales.chart k off measure px.theme) px.background,
+         labels := Browser.tickLabels (ArcsinhScales.axes k measure px.theme),
          access := Browser.accessOf "ArcSinh Y Scale" ArcsinhScales.frame (Browser.seriesTraces off [(ArcsinhScales.blue, ArcsinhScales.data)]) }
 
 def run : IO Unit := do

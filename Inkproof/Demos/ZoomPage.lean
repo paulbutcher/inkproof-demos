@@ -24,16 +24,16 @@ def retain (full : Zoom.Chart) (px : Browser.Pixels) : Array Gpu.Layer := (fixed
 def sceneOf (full : Zoom.Chart) (name : String) (cache : Browser.Retention) (px : Browser.Pixels) (layers : Array Gpu.Layer)
     (off : Array Bool) (v : View Float) : IO Scene := do
   let c := fixed full
-  let f := c.viewFrame v
+  let f := { c.viewFrame v with theme := px.theme }
   let measure ← measurer Browser.font (textsWith c.unit f ++ (c.marks.map (·.label)).toArray)
-  let bytes ← cache.build fun old first => pure (c.commands old first v measure px.backing px.ratio layers off)
+  let bytes ← cache.build fun old first => pure (c.commands old first v measure px.backing px.ratio layers off px.theme)
   let points := ((c.lines.zipIdx.filter fun (_, i) => !off.getD i false).map (·.1.xs.size)).foldl max 0
   let traces := (full.lines.zipIdx.map fun (l, i) =>
     { name := (Zoom.legendNames name).getD i "Value", color := s!"rgb({l.color.r},{l.color.g},{l.color.b})",
       xs := l.xs.map Rat.toFloat, ys := l.ys.map Rat.toFloat, hidden := off.getD i false : Trace }).toArray
   pure { commands := bytes, labels := Browser.tickLabels (axesWith c.unit f measure) ++
            (c.markTexts f measure).toArray.map fun (text, x, y) => { text, x := Rat.toFloat x, y := Rat.toFloat y, baseline := .top },
-         access := { name, series := (c.lines.map fun _ => "line").toArray, points, view := some c.config, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), traces } }
+         access := { name, series := (c.lines.map fun _ => "line").toArray, points, view := some c.config, plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), traces, items := Hover.markItems c f measure } }
 
 /-- Draw each named chart, and draw it again under the range the pointer or keys move it to. -/
 def mount (charts : List (String × Zoom.Chart)) : IO Unit := do

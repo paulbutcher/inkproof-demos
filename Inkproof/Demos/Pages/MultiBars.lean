@@ -12,7 +12,7 @@ def run : IO Unit := do
   let seed ← Browser.seed
   Browser.registerLegend fun src px off => match src with
     | "builds" => Browser.barScene px (builds seed)
-    | "numeric" => Browser.frameScene px numeric (numericChart seed numeric)
+    | "numeric" => Browser.frameScene px numeric (numericChart seed)
     | "benchmark" => Browser.barScene px (benchmark seed false) (some off)
     | "benchmark-horizontal" => Browser.barScene px (benchmark seed true) (some off)
     | _ => throw (IO.userError s!"no chart {src}")

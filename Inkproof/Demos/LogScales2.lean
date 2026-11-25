@@ -67,14 +67,15 @@ structure Spec where
   fill : Option Color
   data : Series Rat Rat
   xAxis : XAxis
+  theme : Option Theme := none
 
 def Spec.margin (s : Spec) : Nat := if s.xAxis == .none then 10 else 40
 
 theorem Spec.margin_eq (s : Spec) : s.margin = if s.xAxis == .none then 10 else 40 := rfl
 
-def Spec.frame (s : Spec) : Frame := ⟨90, s.width - 20, 20, s.height - s.margin, s.xs, s.ys⟩
+def Spec.frame (s : Spec) : Frame := ⟨90, s.width - 20, 20, s.height - s.margin, s.xs, s.ys, s.theme⟩
 
-theorem Spec.frame_eq (s : Spec) : s.frame = ⟨90, s.width - 20, 20, s.height - s.margin, s.xs, s.ys⟩ := rfl
+theorem Spec.frame_eq (s : Spec) : s.frame = ⟨90, s.width - 20, 20, s.height - s.margin, s.xs, s.ys, s.theme⟩ := rfl
 
 /-- The y axis's tick values and their labels: powers of the base, labelled as such. -/
 def Spec.yTicks (s : Spec) : List Float × List String :=
@@ -157,27 +158,27 @@ theorem Spec.labelTexts_eq (s : Spec) : s.labelTexts = s.xLabels ++ s.yTicks.2 :
 /-- The bottom axis, if the chart has one. -/
 def Spec.xAxisDrawing (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   match s.xAxis with
-  | .linear => [compileLinearAxis .bottom (plot s.frame) s.frame.xScale Axes.spec measure Axes.style]
+  | .linear => [compileLinearAxis .bottom (plot s.frame) s.frame.xScale Axes.spec measure s.frame.style]
   | .time => [s.frame.timeAxis s.timeTarget measure]
   | .none => []
 
 theorem Spec.xAxisDrawing_eq (s : Spec) (measure : String → Float × Float) : s.xAxisDrawing measure =
     match s.xAxis with
-    | .linear => [compileLinearAxis .bottom (plot s.frame) s.frame.xScale Axes.spec measure Axes.style]
+    | .linear => [compileLinearAxis .bottom (plot s.frame) s.frame.xScale Axes.spec measure s.frame.style]
     | .time => [s.frame.timeAxis s.timeTarget measure]
     | .none => [] := rfl
 
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame
   s.xAxisDrawing measure ++
-  [compilePixelAxisMinor .left (plot f) Axes.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yTicks.2
-     (Axes.minorGrid (s.yMinor.map s.yPixel))]
+  [compilePixelAxisMinor .left (plot f) f.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yTicks.2
+     (Axes.minorGrid (s.yMinor.map s.yPixel) s.theme)]
 
 theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) :
     s.axes measure =
       s.xAxisDrawing measure ++
-      [compilePixelAxisMinor .left (plot s.frame) Axes.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yTicks.2
-       (Axes.minorGrid (s.yMinor.map s.yPixel))] := rfl
+      [compilePixelAxisMinor .left (plot s.frame) s.frame.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yTicks.2
+       (Axes.minorGrid (s.yMinor.map s.yPixel) s.theme)] := rfl
 
 /-- Data to pixels: the y axis is the chart's own scale. -/
 def Spec.projection (s : Spec) : Projection Rat Rat :=
@@ -217,7 +218,7 @@ def blue : Color := ⟨0, 0, 255, 255⟩
 def red : Color := ⟨255, 0, 0, 255⟩
 
 private def wide (name : String) (kind : Kind) (ys : Rat × Rat) (stroke : Color) (fill : Option Color) (data : Series Rat Rat) : Spec :=
-  ⟨name, 1200, 450, kind, (1, 127), ys, stroke, fill, data, .linear⟩
+  ⟨name, 1200, 450, kind, (1, 127), ys, stroke, fill, data, .linear, none⟩
 
 /-- A fixed time `n` hours before the end of the inverted charts' time range. -/
 def hourAgo (n : Nat) : Rat := 1784289600 - 3600 * n
@@ -235,16 +236,16 @@ def specs : List Spec :=
   [wide "linear" .linear (0, 11e7) magenta none all,
    wide "log10" .log10 (1e-6, 1e8) orange none all,
    wide "log2" .log2 (1 / 2 ^ 20, 2 ^ 27) purple none all,
-   ⟨"signed", 1200, 450, .log10, (0, 129), (1e-3, 100), blue, some ⟨0, 0, 255, 26⟩, points 0 true (signed.map some), .linear⟩,
+   ⟨"signed", 1200, 450, .log10, (0, 129), (1e-3, 100), blue, some ⟨0, 0, 255, 26⟩, points 0 true (signed.map some), .linear, none⟩,
    ⟨"skip10", 800, 300, .log10, (0, 1), (1e-14, 1e14), red, none,
-     points 0 false [some (1e-14), some (1e14)], .linear⟩,
+     points 0 false [some (1e-14), some (1e14)], .linear, none⟩,
    ⟨"skip2", 800, 300, .log2, (0, 1), (1 / 2 ^ 10, 2 ^ 20), blue, none,
-     points 0 false [some (1 / 2 ^ 10), some (2 ^ 20)], .linear⟩,
+     points 0 false [some (1 / 2 ^ 10), some (2 ^ 20)], .linear, none⟩,
    ⟨"nulls", 800, 400, .log10, (0, 2), (100, 1000), red, none,
-     points 0 false [some 100, some 200, some 1000], .linear⟩,
+     points 0 false [some 100, some 200, some 1000], .linear, none⟩,
    ⟨"tiny", 800, 600, .log10, (0, 1), (3e-16, 5e-13), red, some ⟨255, 0, 0, 26⟩,
-     points 0 false [some (31992e-20), some (49047e-17)], .linear⟩,
-   ⟨"inverted-in", 1600, 300, .log10, (hourAgo 3, hourAgo 0), (1 / 10, 100), orange, none, hours, .none⟩,
-   ⟨"inverted-out", 1600, 300, .inverted, (hourAgo 3, hourAgo 0), (1 / 10, 100), blue, none, hours, .time⟩]
+     points 0 false [some (31992e-20), some (49047e-17)], .linear, none⟩,
+   ⟨"inverted-in", 1600, 300, .log10, (hourAgo 3, hourAgo 0), (1 / 10, 100), orange, none, hours, .none, none⟩,
+   ⟨"inverted-out", 1600, 300, .inverted, (hourAgo 3, hourAgo 0), (1 / 10, 100), blue, none, hours, .time, none⟩]
 
 end Inkproof.Demos.LogScales2

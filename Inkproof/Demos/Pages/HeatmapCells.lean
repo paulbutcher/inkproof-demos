@@ -10,7 +10,9 @@ open Inkproof.Web.Host Inkproof.Demos Inkproof.Demos.HeatmapCells
 
 def run : IO Unit :=
   Browser.registerPixels fun src px => match src with
-    | "cells" => Browser.sidedScene px background chart.labelTexts.toArray [.bottom, .left] chart.axes display
+    | "cells" =>
+      let c := { chart with theme := px.theme }
+      Browser.sidedScene px c.labelTexts.toArray [.bottom, .left] c.axes (display · px.theme)
     | src => throw (IO.userError s!"no chart {src}")
 
 end Page.HeatmapCells

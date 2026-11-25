@@ -37,11 +37,12 @@ structure Chart where
   time : Bool := true
   rows : Array Row
   centred : Bool := false
+  theme : Option Theme := none
 
 /-- The room left of the plot for the row names. -/
-def Chart.frame (c : Chart) : Frame := ⟨90, c.width - 20, 20, c.height - 40, c.xs, (0, 1)⟩
+def Chart.frame (c : Chart) : Frame := ⟨90, c.width - 20, 20, c.height - 40, c.xs, (0, 1), c.theme⟩
 
-theorem Chart.frame_eq (c : Chart) : c.frame = ⟨90, c.width - 20, 20, c.height - 40, c.xs, (0, 1)⟩ := rfl
+theorem Chart.frame_eq (c : Chart) : c.frame = ⟨90, c.width - 20, 20, c.height - 40, c.xs, (0, 1), c.theme⟩ := rfl
 
 def Chart.xMap (c : Chart) (x : Rat) : Rat := (Linear.mk c.xs.1 c.xs.2 c.frame.left c.frame.right).map x
 
@@ -96,14 +97,14 @@ theorem Chart.timeTarget_eq (c : Chart) : c.timeTarget = c.width / 120 := rfl
 def Chart.axes (c : Chart) (measure : String → Float × Float) : List AxisDrawing :=
   let f := c.frame
   let rows : Categorical String Float := ⟨c.rows.map (·.name), Rat.toFloat f.top, Rat.toFloat f.bottom⟩
-  [if c.time then f.timeAxis c.timeTarget measure else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-   compileCategoricalAxis .left (plot f) rows id c.rows.size Axes.spec.labelGap measure { Axes.style with grid := none }]
+  [if c.time then f.timeAxis c.timeTarget measure else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure f.style,
+   compileCategoricalAxis .left (plot f) rows id c.rows.size Axes.spec.labelGap measure { f.style with grid := none }]
 
 theorem Chart.axes_eq (c : Chart) (measure : String → Float × Float) : c.axes measure =
     let f := c.frame
     let rows : Categorical String Float := ⟨c.rows.map (·.name), Rat.toFloat f.top, Rat.toFloat f.bottom⟩
-    [if c.time then f.timeAxis c.timeTarget measure else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure Axes.style,
-     compileCategoricalAxis .left (plot f) rows id c.rows.size Axes.spec.labelGap measure { Axes.style with grid := none }] := rfl
+    [if c.time then f.timeAxis c.timeTarget measure else compileLinearAxis .bottom (plot f) f.xScale Axes.spec measure f.style,
+     compileCategoricalAxis .left (plot f) rows id c.rows.size Axes.spec.labelGap measure { f.style with grid := none }] := rfl
 
 /-- Every label the axes may show, for the host to measure. -/
 def Chart.labelTexts (c : Chart) : Array String :=

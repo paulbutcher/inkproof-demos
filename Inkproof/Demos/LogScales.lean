@@ -42,6 +42,7 @@ theorem decadeAbove_eq (n : Nat) : decadeAbove n = 10 ^ (if n ≤ 1 then 0 else 
 structure Spec where
   name : String
   log : Bool
+  theme : Option Theme := none
 
 def width : Nat := 1600
 def height : Nat := 600
@@ -54,10 +55,10 @@ def Spec.ys (s : Spec) : Rat × Rat :=
 theorem Spec.ys_eq (s : Spec) : s.ys =
     if s.log then (1, (decadeAbove peak : Rat)) else autoRange (1 / 10 : Rat) 1 (peak : Rat) := rfl
 
-def Spec.frame (s : Spec) : Frame := ⟨80, width - 20, 20, height - 40, (times.getD 0 0, times.getD (times.size - 1) 0), s.ys⟩
+def Spec.frame (s : Spec) : Frame := ⟨80, width - 20, 20, height - 40, (times.getD 0 0, times.getD (times.size - 1) 0), s.ys, s.theme⟩
 
 theorem Spec.frame_eq (s : Spec) :
-    s.frame = ⟨80, width - 20, 20, height - 40, (times.getD 0 0, times.getD (times.size - 1) 0), s.ys⟩ := rfl
+    s.frame = ⟨80, width - 20, 20, height - 40, (times.getD 0 0, times.getD (times.size - 1) 0), s.ys, s.theme⟩ := rfl
 
 /-- The pixels uPlot keeps between ticks of this page's y axes. -/
 def ySpacing : Float := 15
@@ -104,13 +105,13 @@ theorem Spec.labelTexts_eq (s : Spec) : s.labelTexts = (s.frame.spacedTimeTicks 
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame
   [f.spacedTimeAxis Axes.twelveHour measure,
-   compilePixelAxisMinor .left (plot f) Axes.style measure Axes.spec.labelGap (s.yTicks.map s.yPixel) s.yLabels
-     (Axes.minorGrid (s.yMinor.map s.yPixel))]
+   compilePixelAxisMinor .left (plot f) f.style measure Axes.spec.labelGap (s.yTicks.map s.yPixel) s.yLabels
+     (Axes.minorGrid (s.yMinor.map s.yPixel) s.theme)]
 
 theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) : s.axes measure =
     [s.frame.spacedTimeAxis Axes.twelveHour measure,
-     compilePixelAxisMinor .left (plot s.frame) Axes.style measure Axes.spec.labelGap (s.yTicks.map s.yPixel) s.yLabels
-       (Axes.minorGrid (s.yMinor.map s.yPixel))] := rfl
+     compilePixelAxisMinor .left (plot s.frame) s.frame.style measure Axes.spec.labelGap (s.yTicks.map s.yPixel) s.yLabels
+       (Axes.minorGrid (s.yMinor.map s.yPixel) s.theme)] := rfl
 
 /-- Data to pixels: the y axis is the chart's own scale. -/
 def Spec.projection (s : Spec) : Projection Rat Rat :=
@@ -139,6 +140,6 @@ def Spec.chart (off : Array Bool) (s : Spec) (measure : String → Float × Floa
 theorem Spec.chart_eq (off : Array Bool) (s : Spec) (measure : String → Float × Float) : s.chart off measure =
     (s.axes measure).foldl (· ++ ·.display) #[] ++ (shownLayers off).foldl (fun out l => out ++ s.layerDisplay l) #[] := rfl
 
-def specs : List Spec := [⟨"log", true⟩, ⟨"linear", false⟩]
+def specs : List Spec := [⟨"log", true, none⟩, ⟨"linear", false, none⟩]
 
 end Inkproof.Demos.LogScales

@@ -137,21 +137,21 @@ def countColor (c : Nat × Nat) : Color :=
 theorem countColor_eq (c : Nat × Nat) : countColor c = Color.ofHsl (180 + 180 * (c.1 : Rat) / c.2) (4 / 5) (1 / 2) := rfl
 
 /-- The axes, then every latency as a small translucent rectangle. -/
-def samplesDisplay (measure : String → Float × Float) : DisplayList :=
-  chart.display measure ++
+def samplesDisplay (measure : String → Float × Float) (theme : Option Theme := none) : DisplayList :=
+  { chart with theme }.display measure ++
     DisplayList.clip (plot chart.frame) (compileHeatmap 1 (fun _ => sampleColor) ⟨chart.xScale.map, (chart.yScale chart.left).map⟩ sampleCells)
 
-theorem samplesDisplay_eq (measure : String → Float × Float) : samplesDisplay measure =
-    chart.display measure ++
+theorem samplesDisplay_eq (measure : String → Float × Float) (theme : Option Theme) : samplesDisplay measure theme =
+    { chart with theme }.display measure ++
       DisplayList.clip (plot chart.frame) (compileHeatmap 1 (fun _ => sampleColor) ⟨chart.xScale.map, (chart.yScale chart.left).map⟩ sampleCells) := rfl
 
 /-- The axes, then a cell for each bucket of each column, coloured by its count. -/
-def bucketsDisplay (measure : String → Float × Float) : DisplayList :=
-  chart.display measure ++
+def bucketsDisplay (measure : String → Float × Float) (theme : Option Theme := none) : DisplayList :=
+  { chart with theme }.display measure ++
     DisplayList.clip (plot chart.frame) (compileHeatmap 1 countColor ⟨chart.xScale.map, (chart.yScale chart.left).map⟩ bucketCells)
 
-theorem bucketsDisplay_eq (measure : String → Float × Float) : bucketsDisplay measure =
-    chart.display measure ++
+theorem bucketsDisplay_eq (measure : String → Float × Float) (theme : Option Theme) : bucketsDisplay measure theme =
+    { chart with theme }.display measure ++
       DisplayList.clip (plot chart.frame) (compileHeatmap 1 countColor ⟨chart.xScale.map, (chart.yScale chart.left).map⟩ bucketCells) := rfl
 
 end Inkproof.Demos.LatencyHeatmap

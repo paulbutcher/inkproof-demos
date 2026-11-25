@@ -46,7 +46,7 @@ def series : Series Rat Rat := Series.ofUnsorted points
 
 theorem series_eq : series = Series.ofUnsorted points := rfl
 
-def frame : Frame := ⟨60, 988, 20, 520, (0, 500000), (-50, 50)⟩
+def frame : Frame := ⟨60, 988, 20, 520, (0, 500000), (-50, 50), none⟩
 
 def red : Color := ⟨255, 0, 0, 255⟩
 
@@ -65,21 +65,21 @@ def labelTexts : List String :=
 theorem labelTexts_eq : labelTexts =
     Axes.linearLabels (Rat.toFloat frame.xs.1) (Rat.toFloat frame.xs.2) ++ labels := rfl
 
-def axes (measure : String → Float × Float) : List AxisDrawing :=
-  [compileLinearAxis .bottom (plot frame) frame.xScale Axes.spec measure Axes.style,
-   compilePixelAxis .right (plot frame) Axes.style measure Axes.spec.labelGap (yTicks.map frame.yScale.map) labels]
+def axes (measure : String → Float × Float) (theme : Option Theme := none) : List AxisDrawing :=
+  [compileLinearAxis .bottom (plot frame) frame.xScale Axes.spec measure (Axes.styled theme),
+   compilePixelAxis .right (plot frame) (Axes.styled theme) measure Axes.spec.labelGap (yTicks.map frame.yScale.map) labels]
 
-theorem axes_eq (measure : String → Float × Float) : axes measure =
-    [compileLinearAxis .bottom (plot frame) frame.xScale Axes.spec measure Axes.style,
-     compilePixelAxis .right (plot frame) Axes.style measure Axes.spec.labelGap (yTicks.map frame.yScale.map) labels] := rfl
+theorem axes_eq (measure : String → Float × Float) (theme : Option Theme) : axes measure theme =
+    [compileLinearAxis .bottom (plot frame) frame.xScale Axes.spec measure (Axes.styled theme),
+     compilePixelAxis .right (plot frame) (Axes.styled theme) measure Axes.spec.labelGap (yTicks.map frame.yScale.map) labels] := rfl
 
 /-- The axes, then the series as a line thinned to what its pixel columns show. -/
-def chart (measure : String → Float × Float) : DisplayList :=
-  (axes measure).foldl (· ++ ·.display) #[] ++
+def chart (measure : String → Float × Float) (theme : Option Theme := none) : DisplayList :=
+  (axes measure theme).foldl (· ++ ·.display) #[] ++
   compileLine ⟨⟨1, red⟩, Axes.strokeHalfWidth, true, none, .straight⟩ (projection frame) (Segmented.single series)
 
-theorem chart_eq (measure : String → Float × Float) : chart measure =
-    (axes measure).foldl (· ++ ·.display) #[] ++
+theorem chart_eq (measure : String → Float × Float) (theme : Option Theme) : chart measure theme =
+    (axes measure theme).foldl (· ++ ·.display) #[] ++
     compileLine ⟨⟨1, red⟩, Axes.strokeHalfWidth, true, none, .straight⟩ (projection frame) (Segmented.single series) := rfl
 
 end Inkproof.Demos.AxisControl

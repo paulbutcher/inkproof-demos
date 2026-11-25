@@ -20,10 +20,18 @@ def style : AxisStyle :=
   let faint : Paint := ⟨0, .flat ⟨0, 0, 0, 18⟩⟩
   { tick := faint, tickHalfWidth := 1, tickLength := 10, grid := some (faint, 1), labelGap := 5, showLine := false, labelText := text }
 
-/-- uPlot's minor gridlines: a one pixel stroke, fainter than the major grid. -/
-def minorGrid (positions : List Float) : MinorGrid Float := ⟨⟨0, .flat ⟨0, 0, 0, 8⟩⟩, 1 / 2, positions⟩
+/-- The axis style in `theme`'s colours; without a theme, uPlot's own. -/
+def styled (theme : Option Theme) : AxisStyle := theme.elim style (·.applyAxis style)
 
-theorem minorGrid_positions (positions : List Float) : (minorGrid positions).positions = positions := rfl
+theorem styled_none : styled none = style := rfl
+
+theorem styled_some (t : Theme) : styled (some t) = t.applyAxis style := rfl
+
+/-- uPlot's minor gridlines: a one pixel stroke, fainter than the major grid. -/
+def minorGrid (positions : List Float) (theme : Option Theme := none) : MinorGrid Float :=
+  ⟨⟨0, .flat (theme.elim ⟨0, 0, 0, 8⟩ (·.grid))⟩, 1 / 2, positions⟩
+
+theorem minorGrid_positions (positions : List Float) (theme : Option Theme) : (minorGrid positions theme).positions = positions := rfl
 
 /-- Half the width of a series' stroke, one pixel in all: uPlot's default. -/
 def strokeHalfWidth : Rat := 1 / 2

@@ -11,7 +11,7 @@ namespace Page.AreaFill
 open Lasm.JS Inkproof.Web Inkproof.Web.Host Inkproof.Demos Inkproof
 
 def scene (seed : Nat) (hidden : Array Bool) (px : Browser.Pixels) : IO Scene := do
-  let f := Frame.sized px.css.1 px.css.2 (1, 30) (-12, 12)
+  let f := { Frame.sized px.css.1 px.css.2 (1, 30) (-12, 12) with theme := px.theme }
   let numbers := (List.range 30).map (fun i => toString i) ++ (List.range 25).map (fun (i : Nat) => toString ((i : Int) - 12))
   let measure ← measurer Browser.font numbers.toArray
   let labels := Browser.tickLabels (axes f measure)
@@ -19,7 +19,7 @@ def scene (seed : Nat) (hidden : Array Bool) (px : Browser.Pixels) : IO Scene :=
     let s := AreaFill.pageSeries seed i
     { name := "Value", color := s!"rgb({stroke.r},{stroke.g},{stroke.b})", hidden := hidden.getD i false,
       xs := s.xs.map Rat.toFloat, ys := s.values.map fun y => (y.getD 0).toFloat : Trace }).toArray
-  pure { commands := px.frameBytes (AreaFill.chart seed hidden f measure) background, labels,
+  pure { commands := px.frameBytes (AreaFill.chart seed hidden f measure) px.background, labels,
          access := { name := "Area Fill", series := traces.map fun _ => "line", points := 30, view := some (AreaFill.config f),
                      plotOrigin := (Rat.toFloat f.left, Rat.toFloat f.top), traces } }
 

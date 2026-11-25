@@ -13,10 +13,12 @@ def run : IO Unit := do
   let f := cloudsFrame cs
   Browser.registerRetained fun src px cache => match src with
     | "bubble" => do
-        let scene ← Browser.sidedScene px background (labelTexts bubbleFrame) [.bottom, .left, .right]
-          (bubbleAxes bubbleFrame) (bubbleChart bubbleFrame)
+        let bf := { bubbleFrame with theme := px.theme }
+        let scene ← Browser.sidedScene px (labelTexts bf) [.bottom, .left, .right]
+          (bubbleAxes bf) (bubbleChart bf)
         pure fun _ => pure scene
     | "scatter" => do
+        let f := { f with theme := px.theme }
         let d ← Browser.frameDrawing f (axisDisplay f) (cs.map (cloudDisplay f)) "Scatter" (Browser.cloudTraces cs)
         px.drawing cache d
     | src => throw (IO.userError s!"no chart {src}")

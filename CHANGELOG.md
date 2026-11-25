@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.39.0
+
+- Line Paths and Path Gap Clip are in the dark theme, and every page's chart draws its axes and background in the theme its `theme` attribute names.
+- The Box and Whisker, Candlestick, Grouped Bars, Multi Bars, Timeline and Annotations pages highlight the region under the pointer and describe it in a tooltip.
+
 ## v0.38.0
 
 - PARITY.md records hover highlighting and annotation tooltips as requested of inkproof-web.

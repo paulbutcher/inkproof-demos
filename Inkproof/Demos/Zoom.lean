@@ -33,6 +33,8 @@ structure Mark where
   stroke : Color
   fill : Color
   atTop : Bool
+  /-- What the note says when the pointer is over its label. -/
+  description : String := ""
 
 /-- A chart of lines that the pointer zooms and pans. A chart that shows only part of its data, such as one fetched for a range, gives the extent of all of it as `bounds`. -/
 structure Chart where
@@ -193,22 +195,22 @@ theorem Chart.retain_eq (c : Chart) (k : Rat) : c.retain k = c.pieces.map fun d 
 
 /-- The encoded commands of a frame of `c` under `v`, and what is retained after it, for a target of `size` device pixels where a CSS pixel is `k` of them, from `layers` retained by `c.retain k`: the lines whose index is in `off` are left out but their buffers stay resident, so a frame uploads only the axes, which change with the view, and a line shown again uploads nothing. A cache that starts at another handle keeps charts that share a context apart, and a layer drawn before replays its recorded draws. -/
 def Chart.commands (c : Chart) (cache : Retained) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float)
-    (size : Nat × Nat) (k : Rat) (layers : Array Gpu.Layer) (off : Array Bool) : Retained × ByteArray :=
-  let f := c.viewFrame v
+    (size : Nat × Nat) (k : Rat) (layers : Array Gpu.Layer) (off : Array Bool) (theme : Option Theme := none) : Retained × ByteArray :=
+  let f := { c.viewFrame v with theme }
   let data := Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2
   let hidden (j : Nat) := j != 0 && off.getD (j - 1) false
   let pick (keep : Bool) := (layers.toList.zipIdx.filter fun (_, j) => hidden j != keep).map (·.1)
   viewLayersBytes (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 data ((plot f).scale k) (pick true) (pick false)
-    (((axisDisplayWith c.unit f measure) ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background
+    (((axisDisplayWith c.unit f measure) ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) f.background
 
 theorem Chart.commands_eq (c : Chart) (cache : Retained) (fresh : Bool) (v : Viewport.View Float) (measure : String → Float × Float)
-    (size : Nat × Nat) (k : Rat) (layers : Array Gpu.Layer) (off : Array Bool) :
-    c.commands cache fresh v measure size k layers off =
-      let f := c.viewFrame v
+    (size : Nat × Nat) (k : Rat) (layers : Array Gpu.Layer) (off : Array Bool) (theme : Option Theme) :
+    c.commands cache fresh v measure size k layers off theme =
+      let f := { c.viewFrame v with theme }
       let hidden (j : Nat) := j != 0 && off.getD (j - 1) false
       let pick (keep : Bool) := (layers.toList.zipIdx.filter fun (_, j) => hidden j != keep).map (·.1)
       viewLayersBytes (tessellateStroke ⟨0, 0⟩) cache fresh size.1 size.2 (Gpu.View.mk f.xs.1 f.xs.2 f.ys.1 f.ys.2)
         ((plot f).scale k) (pick true) (pick false)
-        (((axisDisplayWith c.unit f measure) ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) background := rfl
+        (((axisDisplayWith c.unit f measure) ++ c.marks.foldl (· ++ Mark.commands f measure ·) #[]).scale k) f.background := rfl
 
 end Inkproof.Demos.Zoom

@@ -30,6 +30,8 @@ The [uPlot demos](https://leeoniya.github.io/uPlot/demos/index.html), recreated 
 - Zoom a chart to a dragged range and fetch the samples of that range from a data file by byte range, from `zoom-fetch.html`: `Linked.windowOf`, `Linked.points`, `Linked.fetched`, at `zoom-fetch/`.
 - Select a range by dragging a small overview chart, and show it on a large chart that follows, from `zoom-ranger.html`: `Linked.rangerCharts`, at `zoom-ranger/`.
 - Show open, high, low and close as candles with wicks and a volume bar on a second scale, from `candlestick-ohlc.html`: `Candles.candles`, `Candles.shapes`, at `candlestick/`.
+- Draw a chart in the dark theme: `Frame.theme`, `Lines.Chart.theme`, `Axes.styled` and `Browser.Pixels.theme` give its axes, gridlines and background the theme's colours; Line Paths and Path Gap Clip set `theme="dark"`.
+- Highlight the box, candle, bar, state or note under the pointer and describe it in a tooltip: `Hover.boxItems`, `Hover.candleItems`, `Hover.barItems`, `Hover.spanItems`, `Hover.markItems`, with `highlight="on"` on Box and Whisker, Candlestick, Grouped Bars, Multi Bars, Timeline and Annotations.
 - Show box and whisker plots of grouped runs, with quartiles, a median, whiskers and outliers, from `box-whisker.html`: `Boxes.Box.ofRuns`, `Boxes.charts`, at `box-whisker/`.
 - Show discrete states as labelled bars in rows along a time axis, from `timeline-discrete.html`: `Timeline.Chart`, `Timeline.charts`, at `timeline-discrete/`, with a legend reading each row's state at the cursor (`Browser.rowGroup`, `Browser.rowStates`).
 - Mark a data position or range on a zooming chart with a dashed line or shaded band and a label that stay where the data is, from `annotations.html`: `Zoom.Mark`, `Annotations.chart`, at `annotations/`.

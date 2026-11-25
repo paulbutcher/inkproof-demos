@@ -8,9 +8,10 @@ namespace Page.CalendarTime
 
 open Inkproof.Web.Host Inkproof.Demos Inkproof
 
-def scene (px : Browser.Pixels) (s : CalendarTime.Spec) (off : Array Bool) : IO Scene := do
+def scene (px : Browser.Pixels) (spec : CalendarTime.Spec) (off : Array Bool) : IO Scene := do
+  let s := { spec with theme := px.theme }
   let measure ← measurer Browser.font s.labelTexts.toArray
-  pure { commands := px.frameBytes (s.chart off measure) background,
+  pure { commands := px.frameBytes (s.chart off measure) px.background,
          labels := Browser.tickLabels (s.axes measure),
          access := Browser.accessOf s.name s.frame (Browser.seriesTraces off [(CalendarTime.red, s.data)] (if s.name == "months" then [] else ["2019"])) }
 

@@ -97,12 +97,12 @@ def chart (gap stroke : Rat) (f : Frame) (measure : String → Float × Float) :
   let p := projection f
   axisDisplay f measure ++ DisplayList.clip (plot f) (counts.zipIdx.flatMap fun (n, i) =>
     let x : Rat := (span.1 : Rat) + i * bucket
-    Bars.Bar.commands ⟨⟨p.x x + gap / 2, p.y 0, p.x (x + bucket) - gap / 2, p.y n⟩, ⟨255, 153, 153, 255⟩, none, true, some ⟨255, 0, 0, 255⟩, stroke⟩)
+    Bars.Bar.commands ⟨⟨p.x x + gap / 2, p.y 0, p.x (x + bucket) - gap / 2, p.y n⟩, ⟨255, 153, 153, 255⟩, none, true, some ⟨255, 0, 0, 255⟩, stroke, none⟩)
 
 theorem chart_eq (gap stroke : Rat) (f : Frame) (measure : String → Float × Float) :
     chart gap stroke f measure =
       axisDisplay f measure ++ DisplayList.clip (plot f) (counts.zipIdx.flatMap fun (n, i) =>
         let x : Rat := (span.1 : Rat) + i * bucket
-        Bars.Bar.commands ⟨⟨(projection f).x x + gap / 2, (projection f).y 0, (projection f).x (x + bucket) - gap / 2, (projection f).y n⟩, ⟨255, 153, 153, 255⟩, none, true, some ⟨255, 0, 0, 255⟩, stroke⟩) := rfl
+        Bars.Bar.commands ⟨⟨(projection f).x x + gap / 2, (projection f).y 0, (projection f).x (x + bucket) - gap / 2, (projection f).y n⟩, ⟨255, 153, 153, 255⟩, none, true, some ⟨255, 0, 0, 255⟩, stroke, none⟩) := rfl
 
 end Inkproof.Demos.LatencyHistogram

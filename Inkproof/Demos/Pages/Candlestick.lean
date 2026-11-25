@@ -12,7 +12,7 @@ def run : IO Unit :=
   Browser.registerPixels fun src px => match src with
     | "gold" => Browser.paneScene px Candles.pane Candles.shapes "Gold"
       #[Browser.paneGroup Candles.pane "Candle" Candles.black #["Open", "High", "Low", "Close", "Volume"]
-        (Candles.candles.map fun c => #[c.open_, c.high, c.low, c.close, c.volume])]
+        (Candles.candles.map fun c => #[c.open_, c.high, c.low, c.close, c.volume])] Hover.candleItems
     | src => throw (IO.userError s!"no chart {src}")
 
 end Page.Candlestick

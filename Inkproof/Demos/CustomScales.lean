@@ -80,6 +80,7 @@ structure Spec where
   name : String
   xLog : Bool
   y : Kind
+  theme : Option Theme := none
 
 def width : Nat := 800
 def height : Nat := 800
@@ -99,14 +100,14 @@ def Spec.frame (s : Spec) : Frame :=
   let ys : Rat × Rat := match s.y with
     | .log => (1 / 1000000, 1)
     | _ => extent
-  ⟨match s.y with | .linear => 60 | _ => 80, width - 20, 20, height - 40, xs, ys⟩
+  ⟨match s.y with | .linear => 60 | _ => 80, width - 20, 20, height - 40, xs, ys, s.theme⟩
 
 theorem Spec.frame_eq (s : Spec) : s.frame =
     (let xs : Rat × Rat := if s.xLog then (1 / 10, 100) else (times.getD 0 0, times.getD (times.size - 1) 0)
      let ys : Rat × Rat := match s.y with
        | .log => (1 / 1000000, 1)
        | _ => extent
-     ⟨match s.y with | .linear => 60 | _ => 80, width - 20, 20, height - 40, xs, ys⟩) := rfl
+     ⟨match s.y with | .linear => 60 | _ => 80, width - 20, 20, height - 40, xs, ys, s.theme⟩) := rfl
 
 def forward (v : Float) : Float := Float.log (-Float.log (1 - v))
 
@@ -207,13 +208,13 @@ theorem Spec.labelTexts_eq (s : Spec) : s.labelTexts = s.xLabels ++ s.yLabels :=
 
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame
-  [compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (s.xTicks.1.map s.xPixel) s.xLabels,
-   compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yLabels]
+  [compilePixelAxis .bottom (plot f) f.style measure Axes.spec.labelGap (s.xTicks.1.map s.xPixel) s.xLabels,
+   compilePixelAxis .left (plot f) f.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yLabels]
 
 theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) : s.axes measure =
     (let f := s.frame
-     [compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (s.xTicks.1.map s.xPixel) s.xLabels,
-      compilePixelAxis .left (plot f) Axes.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yLabels]) := rfl
+     [compilePixelAxis .bottom (plot f) f.style measure Axes.spec.labelGap (s.xTicks.1.map s.xPixel) s.xLabels,
+      compilePixelAxis .left (plot f) f.style measure Axes.spec.labelGap (s.yTicks.1.map s.yPixel) s.yLabels]) := rfl
 
 def Spec.px (s : Spec) (v : Rat) : Rat := Inkproof.Float.Float.onRat s.xPixel v
 def Spec.py (s : Spec) (v : Rat) : Rat := Inkproof.Float.Float.onRat s.yPixel v
@@ -265,6 +266,6 @@ theorem Spec.chart_eq (s : Spec) (off : Array Bool) (measure : String → Float 
         else #[]) ++
        (observations.toArray.map fun (x, y) => ⟨3, black, .rect ⟨s.px x, s.py y, s.px x + 5, s.py y + 5⟩⟩)) := rfl
 
-def specs : List Spec := [⟨"linear", false, .linear⟩, ⟨"log", true, .log⟩, ⟨"weibull", true, .weibull⟩]
+def specs : List Spec := [⟨"linear", false, .linear, none⟩, ⟨"log", true, .log, none⟩, ⟨"weibull", true, .weibull, none⟩]
 
 end Inkproof.Demos.CustomScales

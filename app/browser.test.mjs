@@ -240,6 +240,115 @@ test('the time series pages draw every chart in their series colours', async () 
   }
 });
 
+test('the pages with a dark theme draw the plot in its background and the axes in its colours', async () => {
+  for (const path of ['line-paths/', 'path-gap-clip/']) {
+    const { page, problems } = await open(path);
+    await page.waitForFunction(() => window.draws.length >= 1);
+    const found = await page.evaluate(() => [...document.querySelectorAll('inkproof-chart')].map(chart => {
+      const c = chart.shadowRoot.querySelector('canvas');
+      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+      const ratio = c.width / c.clientWidth;
+      const margin = Math.floor(55 * ratio);
+      let text = 0;
+      for (let y = 0; y < c.height; y++) for (let x = 0; x < margin; x++) {
+        const i = (y * c.width + x) * 4;
+        if (d[i] > 200 && d[i + 1] > 200 && d[i + 2] > 200) text++;
+      }
+      return { theme: chart.getAttribute('data-theme'), corner: [...d.slice(8 * c.width * 4 + 8, 8 * c.width * 4 + 12)], text };
+    }));
+    for (const f of found) {
+      assert.equal(f.theme, 'dark', path);
+      assert.deepEqual(f.corner.slice(0, 3), [18, 18, 18], path);
+      assert.ok(f.text > 0, `${path} the labels are light on the dark plot: ${JSON.stringify(f)}`);
+    }
+    assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), [], path);
+    await page.close();
+  }
+});
+
+// Every page whose charts draw axes, so that each carries the theme to its plot and axes alike.
+const themed = ['annotations/', 'arcsinh-scales/', 'area-fill/', 'axis-control/', 'box-whisker/', 'candlestick/', 'months/', 'timezones-dst/', 'cursor-bind/', 'custom-scales/',
+  'gradients/', 'grouped-bars/', 'heatmap-cells/', 'high-low-bands/', 'latency-heatmap/', 'log-scales/', 'log-scales2/', 'million/', 'missing-data/', 'multi-bars/', 'points/',
+  'scatter/', 'server-events/', 'stacked/', 'sync-cursor/', 'timeline-discrete/', 'tooltip-legend/', 'zoom-fetch/', 'zoom-ranger/', 'zoom-reset-range/', 'zoom-touch/', 'zoom-variations/', 'zoom-wheel/'];
+
+for (const path of themed) {
+  test(`${path.slice(0, -1)}: the dark theme fills each plot and draws its axes' labels light`, async () => {
+    const { page, problems } = await open(path);
+    await page.waitForFunction(() => window.draws.length >= 1);
+    const before = await page.evaluate(() => window.draws.length);
+    await page.evaluate(() => document.querySelectorAll('inkproof-chart').forEach(e => e.setAttribute('theme', 'dark')));
+    await page.waitForFunction(n => window.draws.length > n, before);
+    await page.waitForTimeout(500);
+    const found = await page.evaluate(() => [...document.querySelectorAll('inkproof-chart')].map(chart => {
+      const c = chart.shadowRoot.querySelector('canvas');
+      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+      const px = (x, y) => [...d.slice((y * c.width + x) * 4, (y * c.width + x) * 4 + 3)];
+      let light = 0;
+      for (let i = 0; i < d.length; i += 4) if (d[i] > 180 && d[i + 1] > 180 && d[i + 2] > 180) light++;
+      return { corner: px(2, 2), light };
+    }));
+    for (const f of found) {
+      assert.deepEqual(f.corner, [18, 18, 18], path);
+      assert.ok(f.light > 20, `${path} has light labels on the dark plot: ${JSON.stringify(f)}`);
+    }
+    assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), [], path);
+    await page.close();
+  });
+}
+
+// What the pointer at `(x, y)` over the chart `index` of the page makes the chart show: the highlighted region's size and the tooltip's text.
+const hover = async (page, index, x, y) => {
+  await page.evaluate(([index, x, y]) => {
+    const el = document.querySelectorAll('inkproof-chart')[index];
+    const r = el.getBoundingClientRect();
+    el.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: 0, clientX: r.left + x, clientY: r.top + y }));
+  }, [index, x, y]);
+  await page.waitForTimeout(150);
+  return page.evaluate(index => {
+    const root = document.querySelectorAll('inkproof-chart')[index].shadowRoot;
+    const h = root.querySelector('.highlight');
+    const t = root.querySelector('.tip');
+    return { shown: getComputedStyle(h).display !== 'none', width: parseFloat(h.style.width), height: parseFloat(h.style.height), tip: getComputedStyle(t).display === 'none' ? '' : t.textContent };
+  }, index);
+};
+
+for (const [path, index, where, wanted] of [
+  ['box-whisker/', 0, size => [60 + (size.width - 70) * 3.5 / 24, 200], [/^[a-z]+\nMax: /, /Median: /, /Min: /]],
+  ['candlestick/', 0, size => [60 + (size.width - 120) * 0.37, 300], [/^\d{4}-\d\d-\d\d\nOpen: /, /Volume: /]],
+  ['grouped-bars/', 0, size => [60 + (size.width - 70) / 8, size.height - 45], [/^Group A\n.*: 3$/]],
+  ['annotations/', 0, size => [60 + (size.width - 80) * 3 / 29 + 20, size.height - 50], [/^Earthquake 01!$/]],
+]) {
+  test(`${path.slice(0, -1)}: the pointer highlights the region under it and its tooltip describes it`, async () => {
+    const { page, problems } = await open(path);
+    await page.waitForFunction(() => window.draws.length >= 1);
+    const size = await page.evaluate(index => { const r = document.querySelectorAll('inkproof-chart')[index].getBoundingClientRect(); return { width: r.width, height: r.height }; }, index);
+    const [x, y] = where(size);
+    const over = await hover(page, index, x, y);
+    assert.ok(over.shown, `${path} highlights the region under the pointer`);
+    assert.ok(over.width > 5 && over.height > 5, `${path} the highlight has a size: ${JSON.stringify(over)}`);
+    for (const re of wanted) assert.match(over.tip, re, path);
+    const off = await hover(page, index, 10, 10);
+    assert.ok(!off.shown && off.tip === '', `${path} nothing is highlighted away from the plot: ${JSON.stringify(off)}`);
+    assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), [], path);
+    await page.close();
+  });
+}
+
+test('timeline: the pointer over a state highlights it and the tooltip names the row and the state', async () => {
+  const { page, problems } = await open('timeline-discrete/');
+  await page.waitForFunction(() => window.draws.length >= 1);
+  const size = await page.evaluate(() => { const r = document.querySelector('inkproof-chart').getBoundingClientRect(); return { width: r.width, height: r.height }; });
+  let found;
+  for (let x = 100; x < size.width - 30 && !found; x += 40) {
+    const over = await hover(page, 0, x, 20 + (size.height - 60) / 6);
+    if (over.shown) found = over;
+  }
+  assert.ok(found, 'some state of the first row is highlighted');
+  assert.match(found.tip, /^.+: .+/, found.tip);
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});
+
 test('the log scale pages put each chart title inside the chart, above the plot', async () => {
   const { page, problems } = await open('log-scales/');
   await page.waitForFunction(() => window.draws.length >= 2);

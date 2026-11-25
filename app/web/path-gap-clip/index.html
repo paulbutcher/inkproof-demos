@@ -8,7 +8,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
     <meta charset="utf-8">
     <title>Path Gap Clip</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>inkproof-chart { display: block; }</style>
+    <style>:root { color-scheme: dark; } inkproof-chart { display: block; }</style>
     <script type="module" src="./main.js"></script>
   </head>
   <body>
@@ -16,18 +16,18 @@ Released under Apache 2.0 license as described in the file LICENSE.
     <p><a href="../">All demos</a></p>
     <h2>Scale range exceeds data range (zoom out)</h2>
     <p>Low and high temperatures with the space between them filled, over a time range eight hours wider than the data on each side: the lines and the fill start and stop where the data does.</p>
-    <inkproof-chart src="zoomed-out" legend="below-center" style="width: 756px; height: 475px"></inkproof-chart>
+    <inkproof-chart src="zoomed-out" theme="dark" legend="below-center" style="width: 756px; height: 475px"></inkproof-chart>
     <h2>Gaps in a band</h2>
     <p>Low and high with some samples missing from both, so the filled band between them breaks; the mean line has no missing samples and carries on.</p>
-    <inkproof-chart src="band-gap" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <inkproof-chart src="band-gap" theme="dark" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
     <h2>Gaps in stepped after</h2>
     <p>A series stepped after each point and filled, with a linear series and a spline 0.1 and 0.2 above it, each breaking at the missing samples.</p>
-    <inkproof-chart src="stepped-after" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <inkproof-chart src="stepped-after" theme="dark" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
     <h2>Gaps in stepped before</h2>
     <p>The same data with the first series stepped before each point.</p>
-    <inkproof-chart src="stepped-before" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <inkproof-chart src="stepped-before" theme="dark" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
     <h2>Align &amp; null-fill vs "real" null gaps</h2>
     <p>Three series sampled at different x values and drawn over all of them: a series has no value where another was sampled, and breaks where its own value is missing.</p>
-    <inkproof-chart src="aligned-nulls" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <inkproof-chart src="aligned-nulls" theme="dark" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
   </body>
 </html>

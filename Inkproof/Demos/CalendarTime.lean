@@ -53,6 +53,7 @@ structure Spec where
   ticks : Ticks
   times : Array Rat
   values : Array Rat
+  theme : Option Theme := none
 
 def Spec.xs (s : Spec) : Rat × Rat := (s.times.getD 0 0, s.times.getD (s.times.size - 1) 0)
 
@@ -65,9 +66,9 @@ def Spec.ys (s : Spec) : Rat × Rat :=
 theorem Spec.ys_eq (s : Spec) : s.ys =
     autoRange (1 / 10) (s.values.toList.foldl min (s.values.toList.headD 0)) (s.values.toList.foldl max (s.values.toList.headD 0)) := rfl
 
-def Spec.frame (s : Spec) : Frame := Frame.sized s.width s.height s.xs s.ys
+def Spec.frame (s : Spec) : Frame := { Frame.sized s.width s.height s.xs s.ys with theme := s.theme }
 
-theorem Spec.frame_eq (s : Spec) : s.frame = Frame.sized s.width s.height s.xs s.ys := rfl
+theorem Spec.frame_eq (s : Spec) : s.frame = { Frame.sized s.width s.height s.xs s.ys with theme := s.theme } := rfl
 
 /-- The width of the plot in pixels. -/
 def Spec.extent (s : Spec) : Float := Rat.toFloat (s.frame.right - s.frame.left)
@@ -135,12 +136,12 @@ theorem Spec.tickContexts_eq (s : Spec) : s.tickContexts = timeTickContextsAtWit
 
 def Spec.axes (s : Spec) (measure : String → Float × Float) : List AxisDrawing :=
   let f := s.frame
-  [compilePixelAxis .bottom (plot f) Axes.style measure Axes.spec.labelGap (s.tickTimes.map f.xScale.map) s.tickLabels s.tickContexts,
-   compileLinearAxis .left (plot f) f.yScale Axes.spec measure Axes.style]
+  [compilePixelAxis .bottom (plot f) f.style measure Axes.spec.labelGap (s.tickTimes.map f.xScale.map) s.tickLabels s.tickContexts,
+   compileLinearAxis .left (plot f) f.yScale Axes.spec measure f.style]
 
 theorem Spec.axes_eq (s : Spec) (measure : String → Float × Float) : s.axes measure =
-    [compilePixelAxis .bottom (plot s.frame) Axes.style measure Axes.spec.labelGap (s.tickTimes.map s.frame.xScale.map) s.tickLabels s.tickContexts,
-     compileLinearAxis .left (plot s.frame) s.frame.yScale Axes.spec measure Axes.style] := rfl
+    [compilePixelAxis .bottom (plot s.frame) s.frame.style measure Axes.spec.labelGap (s.tickTimes.map s.frame.xScale.map) s.tickLabels s.tickContexts,
+     compileLinearAxis .left (plot s.frame) s.frame.yScale Axes.spec measure s.frame.style] := rfl
 
 def Spec.data (s : Spec) : Core.Series Rat Rat :=
   Lines.series s.times (s.values.map some)

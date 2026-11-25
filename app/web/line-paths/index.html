@@ -8,7 +8,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
     <meta charset="utf-8">
     <title>Line Paths</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>inkproof-chart { display: block; }</style>
+    <style>:root { color-scheme: dark; } inkproof-chart { display: block; }</style>
     <script type="module" src="./main.js"></script>
   </head>
   <body>
@@ -16,15 +16,15 @@ Released under Apache 2.0 license as described in the file LICENSE.
     <p><a href="../">All demos</a></p>
     <h2>Linear</h2>
     <p>Straight lines from point to point, with a break where a value is missing.</p>
-    <inkproof-chart src="linear" legend="below-center" style="width: 800px; height: 300px"></inkproof-chart>
+    <inkproof-chart src="linear" theme="dark" legend="below-center" style="width: 800px; height: 300px"></inkproof-chart>
     <h2>Spline (monotone cubic)</h2>
     <p>A smooth curve through the same points that never overshoots them.</p>
-    <inkproof-chart src="spline" legend="below-center" style="width: 800px; height: 300px"></inkproof-chart>
+    <inkproof-chart src="spline" theme="dark" legend="below-center" style="width: 800px; height: 300px"></inkproof-chart>
     <h2>Stepped after each point</h2>
     <p>Each value is held until the next point, then the line jumps.</p>
-    <inkproof-chart src="step-after" legend="below-center" style="width: 800px; height: 300px"></inkproof-chart>
+    <inkproof-chart src="step-after" theme="dark" legend="below-center" style="width: 800px; height: 300px"></inkproof-chart>
     <h2>Stepped before each point</h2>
     <p>Each value is held back to the previous point, so the line jumps first and then runs flat to the point.</p>
-    <inkproof-chart src="step-before" legend="below-center" style="width: 800px; height: 300px"></inkproof-chart>
+    <inkproof-chart src="step-before" theme="dark" legend="below-center" style="width: 800px; height: 300px"></inkproof-chart>
   </body>
 </html>

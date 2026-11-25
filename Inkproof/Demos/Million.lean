@@ -82,8 +82,8 @@ theorem shownCount_eq (shown : Nat → Bool) : shownCount shown = (spikes.filter
 
 def ys : Rat × Rat := (-300, 1100)
 
-def naivePanel : Frame := ⟨60, 1180, 40, 340, (0, total), ys⟩
-def inkproofPanel : Frame := ⟨60, 1180, 420, 720, (0, total), ys⟩
+def naivePanel : Frame := ⟨60, 1180, 40, 340, (0, total), ys, none⟩
+def inkproofPanel : Frame := ⟨60, 1180, 420, 720, (0, total), ys, none⟩
 
 /-- Column index and sample value to pixels in `p`. -/
 def projection (p : Frame) : Projection Nat Int :=
@@ -108,26 +108,26 @@ theorem spikeMarks_eq (p : Frame) : spikeMarks p = compileScatter ⟨⟨2, spike
     (Series.ofUnsorted (spikes.map fun i => (columnOf i, some (sample i)))) := rfl
 
 /-- The naive panel: one sample per column, joined by a line. -/
-def naiveChart (measure : String → Float × Float) : DisplayList :=
-  (axes naivePanel measure).foldl (· ++ ·.display) #[] ++
+def naiveChart (measure : String → Float × Float) (theme : Option Theme := none) : DisplayList :=
+  (axes { naivePanel with theme } measure).foldl (· ++ ·.display) #[] ++
   compileLine ⟨⟨1, ink⟩, 1, true, none, .straight⟩ (projection naivePanel)
     (Segmented.single (Series.ofUnsorted ((Array.range columns).map fun c => (c, some (naive c))))) ++
   spikeMarks naivePanel
 
-theorem naiveChart_eq (measure : String → Float × Float) : naiveChart measure =
-    (axes naivePanel measure).foldl (· ++ ·.display) #[] ++
+theorem naiveChart_eq (measure : String → Float × Float) (theme : Option Theme) : naiveChart measure theme =
+    (axes { naivePanel with theme } measure).foldl (· ++ ·.display) #[] ++
     compileLine ⟨⟨1, ink⟩, 1, true, none, .straight⟩ (projection naivePanel)
       (Segmented.single (Series.ofUnsorted ((Array.range columns).map fun c => (c, some (naive c))))) ++
     spikeMarks naivePanel := rfl
 
 /-- The Inkproof panel: the lowest and highest sample of each column, as an envelope. -/
-def inkproofChart (exts : Array Extent) (measure : String → Float × Float) : DisplayList :=
-  (axes inkproofPanel measure).foldl (· ++ ·.display) #[] ++
+def inkproofChart (exts : Array Extent) (measure : String → Float × Float) (theme : Option Theme := none) : DisplayList :=
+  (axes { inkproofPanel with theme } measure).foldl (· ++ ·.display) #[] ++
   compileEnvelopeOfExtents ⟨1, ink⟩ (projection inkproofPanel) exts ++
   spikeMarks inkproofPanel
 
-theorem inkproofChart_eq (exts : Array Extent) (measure : String → Float × Float) : inkproofChart exts measure =
-    (axes inkproofPanel measure).foldl (· ++ ·.display) #[] ++
+theorem inkproofChart_eq (exts : Array Extent) (measure : String → Float × Float) (theme : Option Theme) : inkproofChart exts measure theme =
+    (axes { inkproofPanel with theme } measure).foldl (· ++ ·.display) #[] ++
     compileEnvelopeOfExtents ⟨1, ink⟩ (projection inkproofPanel) exts ++
     spikeMarks inkproofPanel := rfl
 

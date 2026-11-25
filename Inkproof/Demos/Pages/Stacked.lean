@@ -14,8 +14,8 @@ private def traces (ss : Array (Core.Series Rat Rat)) (off : Array Bool) (names 
 def run : IO Unit := do
   let seed ← Browser.seed
   Browser.registerLegend fun src px off => match src with
-    | "areas" => Browser.frameScene px areaFrame (areaChart off areaFrame) "Stacked areas" (traces areaSeries off)
-    | "bars" => Browser.frameScene px barFrame (barChart off seed barFrame) "Stacked bars" (traces (barSeries seed) off barNames)
+    | "areas" => Browser.frameScene px areaFrame (areaChart off) "Stacked areas" (traces areaSeries off)
+    | "bars" => Browser.frameScene px barFrame (barChart off seed) "Stacked bars" (traces (barSeries seed) off barNames)
     | src => throw (IO.userError s!"no chart {src}")
 
 end Page.Stacked

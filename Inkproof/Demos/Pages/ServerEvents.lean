@@ -18,12 +18,12 @@ def run : IO Unit :=
     let numbers := (List.range 12).map (fun (i : Nat) => toString (i * 10000)) ++ (List.range 11).map (fun (i : Nat) => toString (i * 10))
     let measure ← measurer Browser.font numbers.toArray
     let exts := ServerEvents.series.map fun f => ServerEvents.extents f
-    let axes := axes ServerEvents.panel measure
+    let axes := axes { ServerEvents.panel with theme := px.theme } measure
     let ticks := Browser.tickLabels axes
     let css := ["#f00", "#008000", "#00f"]
     let notes := ((ServerEvents.names.zip ServerEvents.series).zip exts).zipIdx.toArray.map fun (((name, f), e), i) =>
       { text := s!"{name}: highest {percent (ServerEvents.highest f)} %, drawn {percent (ServerEvents.drawnHighest e)} %",
         x := 60 + 370 * i.toFloat, y := 24, font := "bold 13px sans-serif", color := css[i]?.getD "#000" : Label }
-    pure { commands := px.frameBytes (ServerEvents.chart exts measure) background, labels := ticks ++ notes }
+    pure { commands := px.frameBytes (ServerEvents.chart exts measure px.theme) px.background, labels := ticks ++ notes }
 
 end Page.ServerEvents

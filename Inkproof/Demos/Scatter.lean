@@ -65,10 +65,10 @@ theorem allBubbles_eq (onRight : Bool) :
 /-- The bubble chart's frame: the x range of all bubbles and the y range of those on the left axis. -/
 def bubbleFrame : Frame :=
   let all := (regions.toArray.flatMap (·.bubbles))
-  ⟨60, 1840, 20, 560, Data.extent (all.map (·.x)), Data.extent ((allBubbles false).map (·.y))⟩
+  ⟨60, 1840, 20, 560, Data.extent (all.map (·.x)), Data.extent ((allBubbles false).map (·.y)), none⟩
 
 theorem bubbleFrame_eq : bubbleFrame =
-    ⟨60, 1840, 20, 560, Data.extent ((regions.toArray.flatMap (·.bubbles)).map (·.x)), Data.extent ((allBubbles false).map (·.y))⟩ := rfl
+    ⟨60, 1840, 20, 560, Data.extent ((regions.toArray.flatMap (·.bubbles)).map (·.x)), Data.extent ((allBubbles false).map (·.y)), none⟩ := rfl
 
 /-- The range of the right axis. -/
 def rightRange : Rat × Rat := Data.extent ((allBubbles true).map (·.y))
@@ -94,15 +94,15 @@ def rightScale (f : Frame) : Linear Float :=
 theorem rightScale_eq (f : Frame) :
     rightScale f = ⟨Rat.toFloat rightRange.1, Rat.toFloat rightRange.2, Rat.toFloat f.bottom, Rat.toFloat f.top⟩ := rfl
 
-def rightStyle : AxisStyle := { Axes.style with grid := none }
+def rightStyle (f : Frame) : AxisStyle := { f.style with grid := none }
 
-theorem rightStyle_eq : rightStyle = { Axes.style with grid := none } := rfl
+theorem rightStyle_eq (f : Frame) : rightStyle f = { f.style with grid := none } := rfl
 
 def bubbleAxes (f : Frame) (measure : String → Float × Float) : List AxisDrawing :=
-  axes f measure ++ [compileLinearAxis .right (plot f) (rightScale f) Axes.spec measure rightStyle]
+  axes f measure ++ [compileLinearAxis .right (plot f) (rightScale f) Axes.spec measure (rightStyle f)]
 
 theorem bubbleAxes_eq (f : Frame) (measure : String → Float × Float) :
-    bubbleAxes f measure = axes f measure ++ [compileLinearAxis .right (plot f) (rightScale f) Axes.spec measure rightStyle] := rfl
+    bubbleAxes f measure = axes f measure ++ [compileLinearAxis .right (plot f) (rightScale f) Axes.spec measure (rightStyle f)] := rfl
 
 /-- Every label an axis may show, for the host to measure. -/
 def labelTexts (f : Frame) : Array String :=
@@ -153,11 +153,11 @@ theorem clouds_eq (seed : Nat) : clouds seed =
 /-- The scatter chart's frame, 1920 by 600: the ranges of the points of `cs`. -/
 def cloudsFrame (cs : Array Cloud) : Frame :=
   let all := cs.flatMap (·.points)
-  ⟨60, 1900, 20, 560, Data.extent (all.map (·.1)), Data.extent (all.map (·.2))⟩
+  ⟨60, 1900, 20, 560, Data.extent (all.map (·.1)), Data.extent (all.map (·.2)), none⟩
 
 theorem cloudsFrame_eq (cs : Array Cloud) : cloudsFrame cs =
     let all := cs.flatMap (·.points)
-    ⟨60, 1900, 20, 560, Data.extent (all.map (·.1)), Data.extent (all.map (·.2))⟩ := rfl
+    ⟨60, 1900, 20, 560, Data.extent (all.map (·.1)), Data.extent (all.map (·.2)), none⟩ := rfl
 
 /-- The scatter chart's frame for the clouds of `seed`. -/
 def scatterFrame (seed : Nat) : Frame := cloudsFrame (clouds seed)

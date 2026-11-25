@@ -27,9 +27,9 @@ theorem lows_eq : lows = ys.map (· - 5) := rfl
 theorem highs_eq : highs = ys.map (· + 5) := rfl
 
 /-- The whole canvas shows the data's extent on both axes. -/
-def frame : Frame := ⟨0, width, 0, height, (1, 16), (-25, 15)⟩
+def frame : Frame := ⟨0, width, 0, height, (1, 16), (-25, 15), none⟩
 
-theorem frame_eq : frame = ⟨0, width, 0, height, (1, 16), (-25, 15)⟩ := rfl
+theorem frame_eq : frame = ⟨0, width, 0, height, (1, 16), (-25, 15), none⟩ := rfl
 
 def green : Color := ⟨0, 128, 0, 255⟩
 def red : Color := ⟨255, 0, 0, 255⟩

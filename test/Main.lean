@@ -408,7 +408,7 @@ private def customScalesTest : Except String Unit := do
   for (x, y) in xs.toList.zip (CustomScales.fitted.values.toList.map (·.getD 0)) do
     let want := 1 - Float.exp (-((Rat.toFloat x / 30) ^ 2))
     check ((Rat.toFloat y - want).abs ≤ 1e-9) s!"the fit at {Rat.toFloat x} is a Weibull distribution of scale 30 and shape 2"
-  let w := CustomScales.specs.getD 2 ⟨"", false, .linear⟩
+  let w := CustomScales.specs.getD 2 ⟨"", false, .linear, none⟩
   for v in [0.00001, 0.01, 0.5, 0.9, 0.999999] do
     let back := w.yValue (w.yPixel v)
     check ((back - v).abs ≤ 1e-9 * v) s!"the Weibull scale maps {v} and its pixel back to {back}"
@@ -417,6 +417,44 @@ private def customScalesTest : Except String Unit := do
   let slopes := (px.zip py).zip ((px.zip py).tail) |>.map fun ((x0, y0), (x1, y1)) => (y1 - y0) / (x1 - x0)
   check (slopes.all fun m => (m - slopes.headD 0).abs ≤ 1e-3 * (slopes.headD 0).abs) "the fitted curve is a straight line on log x against the Weibull scale"
   check (CustomScales.weibullTicks.length == CustomScales.weibullLabels.length) "each Weibull tick has a label"
+
+private def hoverTest : Except String Unit := do
+  let described (items : Array Web.Item) (x y : Float) : Option String := (Web.Item.hit items x y).bind fun j => items[j]? >>= (·.description)
+  let has (d : Option String) (parts : List String) : Bool := match d with
+    | some t => parts.all fun part => (t.splitOn part).length > 1
+    | none => false
+  for c in Boxes.charts do
+    let items := Hover.boxItems c
+    for (b, i) in c.boxes.zipIdx do
+      check (has (described items (i.toFloat + 0.5) (Rat.toFloat b.median)) [b.name, Hover.number b.median]) s!"{c.name}: a pointer over box {b.name} reads its statistics"
+    check (described items (c.boxes.size.toFloat + 0.5) 0.5 == none) s!"{c.name}: a pointer past the last box reads nothing"
+  let candleItems := Hover.candleItems
+  for (k, i) in Candles.candles.zipIdx do
+    check (has (described candleItems (i.toFloat + 0.5) (Rat.toFloat ((k.open_ + k.close) / 2))) [Candles.pane.groups.getD i "", Hover.number k.close]) s!"candle {i}: a pointer over it reads its prices"
+  for c in GroupedBars.charts.map (·.2) ++ [MultiBars.builds 1, MultiBars.benchmark 1 false, MultiBars.benchmark 1 true] do
+    let items := Hover.barItems c
+    let sourced := c.bars.filter fun b => b.source.isSome
+    check (items.size == sourced.size) s!"{c.groups}: an item for each bar that stands for data"
+    for b in sourced do
+      let (g, s, v) := b.source.getD (0, 0, 0)
+      let r := b.rect
+      let at_ := described items (Rat.toFloat ((r.x0 + r.x1) / 2)) (-Rat.toFloat ((r.y0 + r.y1) / 2))
+      check (has at_ [c.groups.getD g "", Hover.number v]) s!"{c.groups}: a pointer over the bar of series {s} in group {g} reads its value"
+  for c in Timeline.charts do
+    for (r, i) in c.rows.zipIdx do
+      for s in r.spans do
+        let b := c.rect i s
+        let f := c.frame
+        let at_ := described (Hover.spanItems c) (Rat.toFloat ((s.start + s.stop) / 2)) (Rat.toFloat ((f.bottom - (b.y0 + b.y1) / 2) / (f.bottom - f.top)))
+        check (has at_ [r.name, s.text]) s!"{c.name}: a pointer over a state of {r.name} reads it"
+
+private def darkThemeTest : Except String Unit := do
+  let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
+  for c in LinePaths.charts ++ PathGapClip.charts do
+    let dark : Lines.Chart := { c with theme := some .dark }
+    let colours := (dark.axes measure).flatMap (·.display.toList) |>.filterMap fun cmd => match cmd.color with | .flat k => some k | _ => none
+    check (!colours.isEmpty && colours.all fun k => k == Theme.dark.axis || k == Theme.dark.grid) s!"{c.name}: the axes and gridlines are in the dark theme's colours"
+    check (dark.background == Theme.dark.background && c.background == background) s!"{c.name}: the plot is on the theme's background, or on the page's without one"
 
 private def faint (c : Command) : Bool := match c.color with | .flat ⟨_, _, _, a⟩ => a == 18 | _ => false
 
@@ -436,4 +474,4 @@ private def parityTest : Except String Unit := do
     check (!strokes.isEmpty && strokes.all fun (hw, _) => hw == 1 / 2) s!"{name}: the series is one pixel wide, uPlot's default"
 
 def main (args : List String) : IO UInt32 :=
-  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, ⟨"gradient rings", gradientRingsTest⟩, ⟨"calendar time", calendarTimeTest⟩, ⟨"arcsinh scales", arcsinhTest⟩, ⟨"custom scales", customScalesTest⟩, ⟨"parity with uPlot", parityTest⟩, platformTest (args.contains "--expect-wasm")]
+  runTests [⟨"area fill", areaFillTest⟩, ⟨"area fill axes", axesTest⟩, ⟨"log scales", logScalesTest⟩, ⟨"log scales 2", logScales2Test⟩, ⟨"axis control", axisControlTest⟩, ⟨"time series pages", linesTest⟩, ⟨"million", millionTest⟩, ⟨"server events", serverEventsTest⟩, ⟨"gallery B", galleryBTest⟩, ⟨"bars", barsTest⟩, ⟨"latency histogram", latencyTest⟩, ⟨"heatmaps", heatmapTest⟩, ⟨"zoom", zoomTest⟩, ⟨"linked", linkedTest⟩, ⟨"candlestick", candlesTest⟩, ⟨"box and whisker", boxesTest⟩, ⟨"timeline", timelineTest⟩, ⟨"annotations", annotationsTest⟩, ⟨"stacked series", stackedTest⟩, ⟨"line paths", linePathsTest⟩, ⟨"gradients", gradientsTest⟩, ⟨"gradient rings", gradientRingsTest⟩, ⟨"calendar time", calendarTimeTest⟩, ⟨"arcsinh scales", arcsinhTest⟩, ⟨"custom scales", customScalesTest⟩, ⟨"parity with uPlot", parityTest⟩, ⟨"hover", hoverTest⟩, ⟨"dark theme", darkThemeTest⟩, platformTest (args.contains "--expect-wasm")]

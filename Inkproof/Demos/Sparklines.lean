@@ -35,10 +35,10 @@ theorem series_eq (vals : Array Rat) : series vals = Series.ofUnsorted (vals.map
 /-- The whole canvas shows the x range of the records and the y range of the values padded by a tenth. -/
 def frame (vals : Array Rat) : Frame :=
   let (lo, hi) := Data.extent vals
-  ⟨0, width, 0, height, (0, ((vals.size - 1 : Nat) : Rat)), autoRange (1 / 10) lo hi⟩
+  ⟨0, width, 0, height, (0, ((vals.size - 1 : Nat) : Rat)), autoRange (1 / 10) lo hi, none⟩
 
 theorem frame_eq (vals : Array Rat) : frame vals =
-    ⟨0, width, 0, height, (0, ((vals.size - 1 : Nat) : Rat)), autoRange (1 / 10) (Data.extent vals).1 (Data.extent vals).2⟩ := rfl
+    ⟨0, width, 0, height, (0, ((vals.size - 1 : Nat) : Rat)), autoRange (1 / 10) (Data.extent vals).1 (Data.extent vals).2, none⟩ := rfl
 
 /-- The series filled down to the bottom of the canvas and stroked on top, with no axes. -/
 def chart (vals : Array Rat) : DisplayList :=
