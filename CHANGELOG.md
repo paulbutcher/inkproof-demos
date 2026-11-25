@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.36.1
+
+- PARITY.md explains the chart title placement differences from uPlot.
+
 ## v0.36.0
 
 - Sync Cursor and Zoom end their left axis labels with the unit through Axis 0.17's NumberFormat.unit (inkproof-axis#66).
