@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.34.0
+
+- High-Low Bands draws the inverted, crossing and differing paths band charts, and Path Gap Clip the stepped after and before charts and the aligned and null-fill chart.
+
 ## v0.33.1
 
 - Numeric dates on the Axis 0.16 ticks read month/day in High-Low Bands and Timezones, the first of a month as 4/1 (inkproof-axis#64).
