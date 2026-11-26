@@ -94,16 +94,16 @@ theorem extent_eq : extent =
     (([upper, lower, fitted].flatMap fun s => s.values.toList.filterMap id).min?.getD 0,
      ([upper, lower, fitted].flatMap fun s => s.values.toList.filterMap id).max?.getD 1) := rfl
 
-/-- The ranges are those of the data, or whole decades on a logarithmic scale. -/
+/-- The ranges are those of the data, except a logarithmic x axis ends at 100 and a logarithmic y axis spans whole decades. -/
 def Spec.frame (s : Spec) : Frame :=
-  let xs : Rat × Rat := if s.xLog then (1 / 10, 100) else (times.getD 0 0, times.getD (times.size - 1) 0)
+  let xs : Rat × Rat := if s.xLog then (times.getD 0 0, 100) else (times.getD 0 0, times.getD (times.size - 1) 0)
   let ys : Rat × Rat := match s.y with
     | .log => (1 / 1000000, 1)
     | _ => extent
   ⟨match s.y with | .linear => 60 | _ => 80, width - 20, 20, height - 40, xs, ys, s.theme⟩
 
 theorem Spec.frame_eq (s : Spec) : s.frame =
-    (let xs : Rat × Rat := if s.xLog then (1 / 10, 100) else (times.getD 0 0, times.getD (times.size - 1) 0)
+    (let xs : Rat × Rat := if s.xLog then (times.getD 0 0, 100) else (times.getD 0 0, times.getD (times.size - 1) 0)
      let ys : Rat × Rat := match s.y with
        | .log => (1 / 1000000, 1)
        | _ => extent

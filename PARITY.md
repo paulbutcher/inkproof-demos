@@ -145,7 +145,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: the same fitted curve, bounds and twenty observations in the same three charts (linear, both logarithmic, and a Weibull y axis). The curves match.
 - Series names: `upper_ci`, `lower_ci` and `weibull_fitted` in uPlot; the site reads `Value`. Fixed.
-- X range: uPlot's logarithmic x axis starts at the first sample, about 0.4; the site's starts at 0.1. Open.
+- X range: uPlot's logarithmic x axis starts at the first sample, about 0.4; the site's started at 0.1. Fixed.
 - Ticks: uPlot labels the linear y axis every 0.05 and the logarithmic ones at 1, 0.5, 0.2, 0.1 and so on; the site does the same, with no padding. The Weibull axis already used uPlot's own splits. Fixed.
 - Chart titles inside the chart: see Shared differences.
 
