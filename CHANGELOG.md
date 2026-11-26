@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.46.1
+
+- DESIGN.md records why Data.gauss stays a sum of exact draws rather than RandomSampling's Float normal.
+
 ## v0.46.0
 
 - Latency Heatmap time axis is ticked every five seconds, as uPlot's.
