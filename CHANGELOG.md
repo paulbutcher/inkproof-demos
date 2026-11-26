@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.44.1
+
+- PARITY.md records that the latency heatmap's buckets and the high-low bands' tick spacing match uPlot's.
+
 ## v0.44.0
 
 - The bubble chart's right-axis region shows its tooltip y on its own axis's scale, from inkproof-web v0.29.0.
