@@ -44,7 +44,7 @@ theorem traffic_eq (i : Nat) :
 
 def series : List (Nat → Int) := [busy, memory, traffic]
 
-def names : List String := ["Busy", "Memory used", "Traffic"]
+def names : List String := ["CPU", "RAM", "TCP Out"]
 
 def values (f : Nat → Int) : Array Int := (Array.range total).map f
 
@@ -81,7 +81,7 @@ theorem projection_x (c : Nat) :
 theorem projection_y (v : Int) :
     projection.y v = (Linear.mk ys.1 ys.2 panel.bottom panel.top).map ((v : Rat) / 100) := rfl
 
-def colors : List Color := [⟨255, 0, 0, 255⟩, ⟨0, 128, 0, 255⟩, ⟨0, 0, 255, 255⟩]
+def colors : List Color := [⟨255, 0, 0, 255⟩, ⟨0, 0, 255, 255⟩, ⟨0, 128, 0, 255⟩]
 
 /-- The axes, and each series as the envelope of its columns. -/
 def chart (exts : List (Array Extent)) (measure : String → Float × Float) (theme : Option Theme := none) : DisplayList :=

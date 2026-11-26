@@ -205,7 +205,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: uPlot's `bench/data.json` holds 55,550 one minute samples of CPU, RAM and TCP out (`bench/uPlot.html`); the site generates the same count of CPU, memory and traffic samples from a hash, as the page does not ship uPlot's file. Explained.
 - Axes: uPlot draws CPU and RAM on a `%` axis on the left and TCP out on its own `MB` axis on the right, without a grid; the site draws all three on one 0 to 100 axis. Open.
-- Series: red CPU, blue RAM, green TCP out at one device pixel; the site's are red, green and blue (Busy, Memory used, Traffic) at one CSS pixel. Open.
+- Series: red CPU, blue RAM, green TCP out at one device pixel; the site's are the same colours and names (`CPU`, `RAM`, `TCP Out`) at one CSS pixel. Fixed; one CSS pixel is the shared stroke width.
 - Time axis: uPlot's x is time; the site's is the sample index. Open.
 - Legend and cursor readouts (`CPU`, `RAM`, `TCP Out` with `%` and `MB` values): the site has none. Open: see Shared differences.
 
