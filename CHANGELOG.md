@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.42.0
+
+- Custom Scales starts its logarithmic x axis at the first sample.
+
 ## v0.41.0
 
 - The Timeline and Zoom pages draw their outlines with inkproof-scene v0.33.0's `DisplayList.outline`, so corners no longer overlap.
