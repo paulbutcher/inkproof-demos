@@ -576,6 +576,11 @@ const column = (page, id, x) => page.evaluate(([id, x]) => {
 // How many pixels differ between two columns.
 const changed = (a, b) => { let n = 0; for (let i = 0; i < a.length; i += 4) if (a[i] !== b[i] || a[i + 1] !== b[i + 1] || a[i + 2] !== b[i + 2] || a[i + 3] !== b[i + 3]) n++; return n; };
 
+const pixels = (page, id) => page.evaluate(id => {
+  const canvas = document.getElementById(id).shadowRoot.querySelector('canvas');
+  return [...canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data];
+}, id);
+
 const watchViews = page => page.evaluate(() => {
   window.seen = {};
   addEventListener('inkproof-view', e => (window.seen[e.target.id] ??= []).push(e.detail));
@@ -587,16 +592,16 @@ test('sync cursor: the pointer on one chart draws the cursor on the others, and 
   await page.locator('#sync-0').scrollIntoViewIfNeeded();
   const ids = ['sync-0', 'sync-1', 'sync-2'];
   const quiet = [];
-  for (const id of ids) quiet.push(await column(page, id, 300));
+  for (const id of ids) quiet.push(await pixels(page, id));
   await pointerAt(page, 'sync-0', 'pointermove', 300, 100);
   await page.waitForTimeout(300);
   for (const [i, id] of ids.entries()) {
-    const n = changed(quiet[i], await column(page, id, 300));
+    const n = changed(quiet[i], await pixels(page, id));
     assert.ok(n > 100, `${id} draws a cursor line (${n} pixels changed)`);
   }
   await pointerAt(page, 'sync-0', 'pointerleave', 300, 100);
   await page.waitForTimeout(300);
-  assert.ok(changed(quiet[2], await column(page, 'sync-2', 300)) < 10, 'leaving takes the cursor away');
+  assert.ok(changed(quiet[2], await pixels(page, 'sync-2')) < 10, 'leaving takes the cursor away');
 
   await watchViews(page);
   await page.evaluate(() => { const el = document.getElementById('sync-0'); const r = el.getBoundingClientRect(); el.dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, clientX: r.left + 300, clientY: r.top + 100, deltaY: -300 })); });

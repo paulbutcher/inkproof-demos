@@ -212,7 +212,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 ## Sync Cursor (`sync-cursor.html`)
 
 - Data: uPlot cuts three thousand-sample stretches out of the same real data into three charts (CPU, RAM, TCP, each with three series); the site draws three stretches of its own generated series, the same shape. Explained.
-- Sizes: 1920 by 400 for CPU and 940 by 400 for the others; the site's are 800 by 240. Open.
+- Sizes: 1920 by 400 for CPU and 940 by 400 for the others; the site's are the same. Fixed.
 - Syncing: uPlot syncs only the cursor, with a lock on click and focus of the series nearest it; the site also links the x range, a superset. Explained.
 - Toggles: uPlot has buttons to disable syncing and the mouse up and down sync; the site has one button that unlinks the middle chart. Open.
 - Mis-matched series order: uPlot's second pair of charts matches series by label across charts; no counterpart. Open.

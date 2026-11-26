@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.42.1
+
+- Log Scales 2's tiny chart spans the decades around its data.
+- Sync Cursor's charts have uPlot's sizes.
+
 ## v0.42.0
 
 - Custom Scales starts its logarithmic x axis at the first sample.

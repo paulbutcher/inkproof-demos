@@ -17,7 +17,7 @@ def syncCharts : List (String × Zoom.Chart) :=
   let xs : Array Rat := (Array.range 1000).map fun i => ((i : Nat) : Rat)
   let colours : List Color := [⟨255, 0, 0, 255⟩, ⟨0, 128, 0, 255⟩, ⟨0, 0, 255, 255⟩]
   ServerEvents.series.zipIdx.map fun (f, i) =>
-    (s!"sync-{i}", ⟨800, 240, (List.range 3).zip colours |>.map fun (k, colour) =>
+    (s!"sync-{i}", ⟨if i == 0 then 1920 else 940, 400, (List.range 3).zip colours |>.map fun (k, colour) =>
       ⟨xs, (Array.range 1000).map fun j => ((f (1000 * k + j) : Int) : Rat) / 100, colour, none⟩, none, [], ["%", "%", " MB"].getD i ""⟩)
 
 /-- Two thousand minutes of the first server events series, drawn small as the overview and large as the chart that shows the selected range, as uPlot's zoom-ranger page does. -/
