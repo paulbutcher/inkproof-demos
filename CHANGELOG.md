@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.42.2
+
+- Axis Control's axis titles sit beyond the tick labels, placed by inkproof-web v0.27.1.
+
 ## v0.42.1
 
 - Log Scales 2's tiny chart spans the decades around its data.
