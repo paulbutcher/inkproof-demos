@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.44.0
+
+- The bubble chart's right-axis region shows its tooltip y on its own axis's scale, from inkproof-web v0.29.0.
+
 ## v0.43.1
 
 - Axis Control's axis titles come from the chart's `axis-title-bottom` and `axis-title-right` attributes, from inkproof-web v0.28.1.

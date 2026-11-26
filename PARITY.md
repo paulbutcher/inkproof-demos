@@ -53,7 +53,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Series names: uPlot's scatter series have no label, so the legend reads `Value` four times; the page now does the same. Fixed.
 - Data: ten thousand points per series over 0..500, y range unpadded (`guardedRange`). Matches.
 - Markers: 5 pixel circles with a fill of 10% alpha and a stroke; drawn as circles. Fixed.
-- Bubble chart: the legend names the regions Region A to D and hides one on a click, and the tooltip names the nearest bubble by country, region, x, y and size. Differences: uPlot's legend also lists GDP, Income 1 and Income 2 and shows the hovered bubble's Country, Population, GDP and Income; the right-axis region is read in left-axis coordinates, so its tooltip y is on the left axis's scale. Open.
+- Bubble chart: the legend names the regions Region A to D and hides one on a click, and the tooltip names the nearest bubble by country, region, x, y and size. Differences: uPlot's legend also lists GDP, Income 1 and Income 2 and shows the hovered bubble's Country, Population, GDP and Income; the right-axis region's tooltip y is on its own axis's scale. Open.
 
 ## Multi-Bars (`multi-bars.html`)
 

@@ -148,12 +148,14 @@ def bubbleLabel (i : Nat) : String := s!"Country {i + 1}"
 
 theorem bubbleLabel_eq (i : Nat) : bubbleLabel i = s!"Country {i + 1}" := rfl
 
-/-- The y of a bubble of a region on the right axis in the left axis's data coordinates, which is where the chart reads it. -/
-def leftY (f : Frame) (y : Rat) : Rat :=
-  f.ys.1 + (y - rightRange.1) / (rightRange.2 - rightRange.1) * (f.ys.2 - f.ys.1)
+/-- The slope and offset of the map from the right axis's data coordinates to the left axis's, which is how the chart places a series on the right axis. -/
+def toLeft (f : Frame) : Affine Float :=
+  let slope := Rat.toFloat ((f.ys.2 - f.ys.1) / (rightRange.2 - rightRange.1))
+  ⟨slope, Rat.toFloat f.ys.1 - slope * Rat.toFloat rightRange.1⟩
 
-theorem leftY_eq (f : Frame) (y : Rat) :
-    leftY f y = f.ys.1 + (y - rightRange.1) / (rightRange.2 - rightRange.1) * (f.ys.2 - f.ys.1) := rfl
+theorem toLeft_eq (f : Frame) : toLeft f =
+    ⟨Rat.toFloat ((f.ys.2 - f.ys.1) / (rightRange.2 - rightRange.1)),
+     Rat.toFloat f.ys.1 - Rat.toFloat ((f.ys.2 - f.ys.1) / (rightRange.2 - rightRange.1)) * Rat.toFloat rightRange.1⟩ := rfl
 
 /-- The scatter plot's series: ten thousand points with both coordinates in `0..500`, in the colour of their markers. -/
 structure Cloud where

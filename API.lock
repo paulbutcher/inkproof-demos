@@ -1028,8 +1028,6 @@ theorem Inkproof.Demos.Scatter.clouds_eq : ∀ (seed : Nat), Inkproof.Demos.Scat
 def Inkproof.Demos.Scatter.green : Inkproof.Scene.Color
 def Inkproof.Demos.Scatter.labelTexts : Inkproof.Demos.Frame → Array String
 theorem Inkproof.Demos.Scatter.labelTexts_eq : ∀ (f : Inkproof.Demos.Frame), Inkproof.Demos.Scatter.labelTexts f = Inkproof.Demos.texts f ++ (Inkproof.Demos.Axes.linearLabels Inkproof.Demos.Scatter.rightRange.fst.toFloat Inkproof.Demos.Scatter.rightRange.snd.toFloat).toArray
-def Inkproof.Demos.Scatter.leftY : Inkproof.Demos.Frame → Rat → Rat
-theorem Inkproof.Demos.Scatter.leftY_eq : ∀ (f : Inkproof.Demos.Frame) (y : Rat), Inkproof.Demos.Scatter.leftY f y = f.ys.fst + (y - Inkproof.Demos.Scatter.rightRange.fst) / (Inkproof.Demos.Scatter.rightRange.snd - Inkproof.Demos.Scatter.rightRange.fst) * (f.ys.snd - f.ys.fst)
 def Inkproof.Demos.Scatter.maxSize : Nat
 theorem Inkproof.Demos.Scatter.maxSize_eq : Inkproof.Demos.Scatter.maxSize = List.foldl (fun m r => Array.foldl (fun m b => Max.max m b.size) m r.bubbles) 1 Inkproof.Demos.Scatter.regions
 def Inkproof.Demos.Scatter.orange : Inkproof.Scene.Color
@@ -1054,6 +1052,8 @@ def Inkproof.Demos.Scatter.scatterChart : Nat → Inkproof.Demos.Frame → Array
 theorem Inkproof.Demos.Scatter.scatterChart_eq : ∀ (seed : Nat) (f : Inkproof.Demos.Frame) (off : Array Bool) (measure : String → Float × Float), Inkproof.Demos.Scatter.scatterChart seed f off measure = Inkproof.Demos.Scatter.cloudsChart (Inkproof.Demos.Scatter.clouds seed) f off measure
 def Inkproof.Demos.Scatter.scatterFrame : Nat → Inkproof.Demos.Frame
 theorem Inkproof.Demos.Scatter.scatterFrame_eq : ∀ (seed : Nat), Inkproof.Demos.Scatter.scatterFrame seed = Inkproof.Demos.Scatter.cloudsFrame (Inkproof.Demos.Scatter.clouds seed)
+def Inkproof.Demos.Scatter.toLeft : Inkproof.Demos.Frame → Inkproof.Scale.Affine Float
+theorem Inkproof.Demos.Scatter.toLeft_eq : ∀ (f : Inkproof.Demos.Frame), Inkproof.Demos.Scatter.toLeft f = { slope := ((f.ys.snd - f.ys.fst) / (Inkproof.Demos.Scatter.rightRange.snd - Inkproof.Demos.Scatter.rightRange.fst)).toFloat, offset := f.ys.fst.toFloat - ((f.ys.snd - f.ys.fst) / (Inkproof.Demos.Scatter.rightRange.snd - Inkproof.Demos.Scatter.rightRange.fst)).toFloat * Inkproof.Demos.Scatter.rightRange.fst.toFloat }
 def Inkproof.Demos.ServerEvents.busy : Nat → Int
 theorem Inkproof.Demos.ServerEvents.busy_eq : ∀ (i : Nat), Inkproof.Demos.ServerEvents.busy i = Int.ofNat (50 + Inkproof.Demos.ServerEvents.hash 1 i % 100 + if (Inkproof.Demos.ServerEvents.hash 5 (i / 300) % 4 == 0) = Bool.true then Inkproof.Demos.ServerEvents.hash 2 i % 9000 else 0)
 def Inkproof.Demos.ServerEvents.chart : List (Array Inkproof.Demos.Reduce.Extent) → (String → Float × Float) → optParam (Option Inkproof.Scene.Theme) Option.none → Inkproof.Scene.DisplayList

@@ -828,6 +828,23 @@ test('scatter: the tooltip over the bubble chart names the nearest bubble by its
   await page.close();
 });
 
+test('scatter: the tooltip for a right-axis bubble gives its y on the right axis', async () => {
+  const { page, problems } = await open('scatter/');
+  await page.waitForFunction(() => window.draws.length >= 2);
+  const ys = [];
+  for (let x = 100; x < 1800; x += 120) {
+    for (let y = 40; y < 560; y += 40) {
+      const { tip } = await hover(page, 0, x, y);
+      const m = /^Region A, [^:]*: [^,]*, (-?[\d.]+),/.exec(tip);
+      if (m) ys.push(Number(m[1]));
+    }
+  }
+  assert.ok(ys.length > 0, 'a region A bubble was found');
+  assert.ok(ys.every(v => v <= 0), `region A's y values are the negated ones: ${ys}`);
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});
+
 // Legends that read values: each entry starts with the name uPlot gives the series, `Value` where the demo gives none.
 for (const [path, chart, expected] of [['missing-data/', 0, ['CPU', 'RAM', 'TCP Out']], ['missing-data/', 1, ['Value']], ['points/', 0, ['Value', 'Value', 'Value', 'Value']], ['axis-control/', 0, ['sin(x)']], ['zoom-wheel/', 0, ['One', 'Two']], ['area-fill/', 0, ['Value', 'Value', 'Value']], ['timezones-dst/', 0, ['2019']], ['timezones-dst/', 11, ['2019']], ['months/', 0, ['Value']], ['gradients/', 0, ['Trends']], ['gradients/', 1, ['Over/Under']], ['gradients/', 3, ['Tank 1 (red = high pressure)', 'Tank 2 (red = low pressure)']]]) {
   test(`${path.slice(0, -1)} chart ${chart}: the legend names the series ${expected.join(', ')}`, async () => {

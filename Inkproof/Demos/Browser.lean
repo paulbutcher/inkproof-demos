@@ -309,22 +309,24 @@ theorem cloudTraces_eq (cs : Array Scatter.Cloud) (off : Array Bool) : cloudTrac
     cs.zipIdx.map fun (c, i) =>
       { name := c.name, color := cssColor c.color, hidden := off.getD i false, xs := #[], ys := #[] } := rfl
 
-/-- The legend's entries for the regions of the bubble chart, those `off` marked hidden, each bubble with its size and label; a region on the right axis is read in the left axis's coordinates. -/
+/-- The legend's entries for the regions of the bubble chart, those `off` marked hidden, each bubble with its size and label; a region on the right axis carries its map to the left axis. -/
 def bubbleTraces (f : Frame) (off : Array Bool) : Array Trace :=
   Scatter.regions.toArray.zipIdx.map fun (r, i) =>
     { name := Scatter.regionName i, color := cssColor r.outline, hidden := off.getD i false,
       xs := r.bubbles.map (Rat.toFloat ·.x),
-      ys := r.bubbles.map fun b => Rat.toFloat (if r.onRight then Scatter.leftY f b.y else b.y),
+      ys := r.bubbles.map fun b => Rat.toFloat b.y,
       sizes := r.bubbles.map (·.size.toFloat),
-      labels := (Array.range r.bubbles.size).map Scatter.bubbleLabel }
+      labels := (Array.range r.bubbles.size).map Scatter.bubbleLabel,
+      toLeft := if r.onRight then Scatter.toLeft f else ⟨1, 0⟩ }
 
 theorem bubbleTraces_eq (f : Frame) (off : Array Bool) : bubbleTraces f off =
     Scatter.regions.toArray.zipIdx.map fun (r, i) =>
       { name := Scatter.regionName i, color := cssColor r.outline, hidden := off.getD i false,
         xs := r.bubbles.map (Rat.toFloat ·.x),
-        ys := r.bubbles.map fun b => Rat.toFloat (if r.onRight then Scatter.leftY f b.y else b.y),
+        ys := r.bubbles.map fun b => Rat.toFloat b.y,
         sizes := r.bubbles.map (·.size.toFloat),
-        labels := (Array.range r.bubbles.size).map Scatter.bubbleLabel } := rfl
+        labels := (Array.range r.bubbles.size).map Scatter.bubbleLabel,
+        toLeft := if r.onRight then Scatter.toLeft f else ⟨1, 0⟩ } := rfl
 
 /-- The bubble chart in `f`: its three axes always drawn, each region's bubbles unless the legend hides it. -/
 def bubbleDrawing (f : Frame) : IO Drawing := do

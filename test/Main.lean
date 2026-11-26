@@ -205,6 +205,9 @@ private def galleryBTest : Except String Unit := do
   let sizes := (Scatter.regions.toArray.flatMap (·.bubbles)).map (·.size)
   check (sizes.all fun a => sizes.all fun b => a ≤ b || Scatter.radius b Scatter.maxSize ≤ Scatter.radius a Scatter.maxSize) "a bigger bubble never has a smaller radius"
   check (sizes.all fun a => 2 * Scatter.radius a Scatter.maxSize ≤ 60) "no bubble is wider than 60 pixels"
+  let ⟨a, b⟩ := Scatter.toLeft f
+  let near (x y : Float) := (x - y).abs < 1e-6 * (1 + y.abs)
+  check (near (a * Rat.toFloat Scatter.rightRange.1 + b) (Rat.toFloat f.ys.1) && near (a * Rat.toFloat Scatter.rightRange.2 + b) (Rat.toFloat f.ys.2)) "the right axis's range maps onto the left axis's"
   let [_, left, right] := Scatter.bubbleAxes f measure | throw "expected three axes"
   check (right.labels.all fun l => l.anchor.x ≥ f.right && left.labels.all fun l => l.anchor.x ≤ f.left) "y labels lie outside the plot"
   check (StocksSource.stocks.all fun s => s.closeCents.size == s.volume.size && s.volume.size > 1) "every stock has a close and a volume for each record"
