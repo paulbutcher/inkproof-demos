@@ -161,7 +161,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - The page recreates the first of uPlot's twelve charts (the year of daily lows, highs and means) and the two small band charts (inverted and crossing lines), and the differing paths chart with a fixed hash for uPlot's random spread. The others (bars, the unaligned and thin bar cases, the minute-resolution temperatures) have no counterpart. Open.
 - Temperatures: the same shape, bands and gaps, with a dashed blue mean. Matches.
-- Ticks: uPlot labels every twenty days as `1/11`; the site labels numerically too, every ten days (the step comes from the pixels between ticks), the first of a month reading `4/1`. Open.
+- Ticks: uPlot labels every ten days as `1/11`, the first of a month reading `4/1` (checked by running its page at 1920 pixels); the site's labels are numeric, every ten days. Matches.
 - Series names: `Low`, `High` and `Avg` in uPlot; the site reads `Value`. Fixed.
 
 ## Latency Heatmap and Heatmap Cells (`latency-heatmap.html`)
