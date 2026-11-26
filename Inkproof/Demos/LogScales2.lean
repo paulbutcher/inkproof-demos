@@ -243,7 +243,7 @@ def specs : List Spec :=
      points 0 false [some (1 / 2 ^ 10), some (2 ^ 20)], .linear, none⟩,
    ⟨"nulls", 800, 400, .log10, (0, 2), (100, 1000), red, none,
      points 0 false [some 100, some 200, some 1000], .linear, none⟩,
-   ⟨"tiny", 800, 600, .log10, (0, 1), (3e-16, 5e-13), red, some ⟨255, 0, 0, 26⟩,
+   ⟨"tiny", 800, 600, .log10, (0, 1), (1e-16, 1e-12), red, some ⟨255, 0, 0, 26⟩,
      points 0 false [some (31992e-20), some (49047e-17)], .linear, none⟩,
    ⟨"inverted-in", 1600, 300, .log10, (hourAgo 3, hourAgo 0), (1 / 10, 100), orange, none, hours, .none, none⟩,
    ⟨"inverted-out", 1600, 300, .inverted, (hourAgo 3, hourAgo 0), (1 / 10, 100), blue, none, hours, .time, none⟩]
