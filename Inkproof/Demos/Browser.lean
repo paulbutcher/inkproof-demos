@@ -47,6 +47,13 @@ def tickLabels (axes : List AxisDrawing) : Array Label :=
 theorem tickLabels_eq (axes : List AxisDrawing) :
     tickLabels axes = (axes.zip [Side.bottom, Side.left]).toArray.flatMap fun (a, side) => Label.ofDrawing side a := rfl
 
+/-- The labels of a chart's bottom, left and right axes, in that order. -/
+def sidedLabels (axes : List AxisDrawing) : Array Label :=
+  (axes.zip [Side.bottom, .left, .right]).toArray.flatMap fun (a, side) => Label.ofDrawing side a
+
+theorem sidedLabels_eq (axes : List AxisDrawing) :
+    sidedLabels axes = (axes.zip [Side.bottom, .left, .right]).toArray.flatMap fun (a, side) => Label.ofDrawing side a := rfl
+
 /-- A colour as CSS writes it. -/
 def cssColor (c : Color) : String := s!"rgb({c.r},{c.g},{c.b})"
 

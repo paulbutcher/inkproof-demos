@@ -163,6 +163,12 @@ private def serverEventsTest : Except String Unit := do
     check (e.size == ServerEvents.columns) "one extent per column"
     check (ServerEvents.drawnHighest e == ServerEvents.highest f) "the envelope reaches the highest value of the data"
     check (ServerEvents.highest f > 0) "the series is not flat"
+  let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)
+  let [_, left, right] := ServerEvents.axes measure | throw "expected three axes"
+  check (left.labels.all fun l => l.text.endsWith "%") "the left axis reads in percent"
+  check (!right.labels.isEmpty && right.labels.all fun l => l.text.endsWith " MB") "the right axis reads in megabytes"
+  check (right.labels.all fun l => l.anchor.x ≥ ServerEvents.panel.right) "the right axis labels lie right of the plot"
+  check (right.display.size ≤ 2 * right.labels.length) "the right axis draws ticks only, no grid"
 
 private def axisControlTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)

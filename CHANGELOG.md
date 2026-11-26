@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.45.0
+
+- Server Events has a time x axis, and CPU and RAM on a percent axis on the left and TCP out on its own MB axis on the right.
+
 ## v0.44.1
 
 - PARITY.md records that the latency heatmap's buckets and the high-low bands' tick spacing match uPlot's.

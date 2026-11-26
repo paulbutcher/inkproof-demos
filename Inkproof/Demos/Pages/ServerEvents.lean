@@ -15,11 +15,10 @@ def percent (v : Int) : String := s!"{v / 100}.{if v % 100 < 10 then "0" else ""
 
 def run : IO Unit :=
   Browser.registerPixels fun _ px => do
-    let numbers := (List.range 12).map (fun (i : Nat) => toString (i * 10000)) ++ (List.range 11).map (fun (i : Nat) => toString (i * 10))
-    let measure ← measurer Browser.font numbers.toArray
+    let measure ← measurer Browser.font ServerEvents.labelTexts
     let exts := ServerEvents.series.map fun f => ServerEvents.extents f
-    let axes := axes { ServerEvents.panel with theme := px.theme } measure
-    let ticks := Browser.tickLabels axes
+    let axes := ServerEvents.axes measure px.theme
+    let ticks := Browser.sidedLabels axes
     let css := ["#f00", "#008000", "#00f"]
     let notes := ((ServerEvents.names.zip ServerEvents.series).zip exts).zipIdx.toArray.map fun (((name, f), e), i) =>
       { text := s!"{name}: highest {percent (ServerEvents.highest f)} %, drawn {percent (ServerEvents.drawnHighest e)} %",
