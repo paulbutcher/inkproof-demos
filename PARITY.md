@@ -167,7 +167,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 ## Latency Heatmap and Heatmap Cells (`latency-heatmap.html`)
 
 - Heatmap cells: uPlot's third chart (mode 2, 45k latencies in 15 second by 2 ms cells) is the page `heatmap-cells`; it has no demo of its own. Matches in shape: oranges to red by count, over about eighty minutes.
-- Raw and aggregated heatmaps: translucent red dashes, and cyan to red buckets of 10 ms; the site's buckets are 5 ms and its time ticks every ten seconds against five. Open.
+- Raw and aggregated heatmaps: translucent red dashes, and cyan to red buckets. uPlot's title says 10 ms but its code buckets by `bucketIncr = 5`, as the site does. Matches. Time ticks: every five seconds in uPlot, every ten on the site. Open.
 - Histograms: uPlot floors latencies at 5 (`yMin`), as the site now does, so the first bar is the 5 to 10 bucket. Fixed.
 - Bucket sliders: uPlot has size and offset above the histograms; the site has none. Open.
 - Legends read `Time`, `Value`; the site's name its columns. Explained.
