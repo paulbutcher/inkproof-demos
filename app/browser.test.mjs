@@ -313,7 +313,7 @@ const hover = async (page, index, x, y) => {
 };
 
 for (const [path, index, where, wanted] of [
-  ['box-whisker/', 0, size => [60 + (size.width - 70) * 3.5 / 24, 200], [/^[a-z]+\nMax: /, /Median: /, /Min: /]],
+  ['box-whisker/', 0, size => [60 + (size.width - 70) * 3.5 / 30, 200], [/^[\w.-]+\nMax: /, /Median: /, /Min: /]],
   ['candlestick/', 0, size => [60 + (size.width - 120) * 0.37, 300], [/^\d{4}-\d\d-\d\d\nOpen: /, /Volume: /]],
   ['grouped-bars/', 0, size => [60 + (size.width - 70) / 8, size.height - 45], [/^Group A\n.*: 3$/]],
   ['annotations/', 0, size => [60 + (size.width - 80) * 3 / 29 + 20, size.height - 50], [/^Earthquake 01!$/]],
@@ -709,7 +709,7 @@ const countPixels = (page, index, wanted) => page.evaluate(([index, wanted]) => 
 test('the composed shape pages draw their shapes in their colours', async () => {
   const pages = [
     ['candlestick/', 1, [[74, 182, 80, 255], [229, 66, 69, 255], [0, 0, 0, 255]]],
-    ['box-whisker/', 3, [[0, 0, 0, 255], [238, 238, 238, 255]]],
+    ['box-whisker/', 17, [[0, 0, 0, 255], [238, 238, 238, 255]]],
     ['timeline-discrete/', 3, [[255, 0, 0, 255], [0, 255, 0, 255], [255, 165, 0, 255], [255, 255, 0, 255], [255, 204, 204, 255]]],
   ];
   for (const [path, charts, wanted] of pages) {
@@ -859,7 +859,7 @@ for (const [path, chart, expected] of [['missing-data/', 0, ['CPU', 'RAM', 'TCP 
 }
 
 // Pages whose legend reads a group of values at each x: the number of entries of each chart, in page order.
-for (const [path, counts] of Object.entries({ 'candlestick/': [5], 'box-whisker/': [5, 5, 5], 'timeline-discrete/': [3, 3, 3], 'latency-heatmap/': [3, 3, 3, 3] })) {
+for (const [path, counts] of Object.entries({ 'candlestick/': [5], 'box-whisker/': Array(17).fill(5), 'timeline-discrete/': [3, 3, 3], 'latency-heatmap/': [3, 3, 3, 3] })) {
   test(`${path.slice(0, -1)}: each chart's legend reads its group of values at the cursor`, async () => {
     const { page, problems } = await open(path);
     const rows = () => page.evaluate(() => [...document.querySelectorAll('inkproof-chart')].map(e => [...e.shadowRoot.querySelectorAll('.legend .entry')].map(b => b.textContent)));

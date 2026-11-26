@@ -2,7 +2,7 @@
 Copyright (c) 2026 Paul Butcher. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
-import Inkproof.Demos.Data
+import Inkproof.Demos.BoxSource
 import Inkproof.Demos.Pane
 
 namespace Inkproof.Demos.Boxes
@@ -47,31 +47,16 @@ theorem Box.ofRuns_eq (name : String) (runs : Array Rat) : Box.ofRuns name runs 
     { name, median := quantile sorted (1 / 2), q1, q3, min := inside.getD 0 q1, max := inside.getD (inside.size - 1) q3,
       outliers := sorted.filter fun v => v < q1 - pad || q3 + pad < v } := rfl
 
-def frameworks : Array String :=
-  #["vanillajs", "solid", "svelte", "vue", "preact", "inferno", "lit", "alpine", "mithril", "react", "marko", "hyperapp", "knockout",
-    "riot", "stencil", "angular", "ember", "elm", "imba", "dojo", "aurelia", "backbone", "ractive", "cycle"]
+/-- The boxes of a benchmark's runs, the thirty with the fastest medians, fastest first. -/
+def boxes (runs : Array (Array Nat)) : Array Box :=
+  let all := BoxSource.frameworks.zipIdx.map fun (name, i) =>
+    Box.ofRuns name ((runs.getD i #[]).map fun (v : Nat) => (v : Rat) / 1000000)
+  (all.qsort fun a b => a.median < b.median).extract 0 30
 
-/-- Twelve timings of each framework in a benchmark: a typical value per framework, noise around it, and a rare slow run. -/
-def runsOf (bench : Nat) (lo hi : Nat) : Array (String × Array Rat) :=
-  let base := Data.ints (500 + bench) frameworks.size lo hi
-  frameworks.zipIdx.map fun (name, i) =>
-    let noise := Data.ints (100 * bench + i) 12 0 100
-    let b : Rat := base.getD i lo
-    (name, noise.map fun (n : Nat) => b * (1 + (n : Rat) / 400 + (if n ≥ 98 then 1 / 2 else 0)))
-
-theorem runsOf_eq (bench lo hi : Nat) : runsOf bench lo hi =
-    let base := Data.ints (500 + bench) frameworks.size lo hi
-    frameworks.zipIdx.map fun (name, i) =>
-      let noise := Data.ints (100 * bench + i) 12 0 100
-      let b : Rat := base.getD i lo
-      (name, noise.map fun (n : Nat) => b * (1 + (n : Rat) / 400 + (if n ≥ 98 then 1 / 2 else 0))) := rfl
-
-/-- The boxes of a benchmark, fastest median first. -/
-def boxes (bench lo hi : Nat) : Array Box :=
-  ((runsOf bench lo hi).map fun (name, runs) => Box.ofRuns name runs).qsort (·.median < ·.median)
-
-theorem boxes_eq (bench lo hi : Nat) : boxes bench lo hi =
-    ((runsOf bench lo hi).map fun (name, runs) => Box.ofRuns name runs).qsort (·.median < ·.median) := rfl
+theorem boxes_eq (runs : Array (Array Nat)) : boxes runs =
+    let all := BoxSource.frameworks.zipIdx.map fun (name, i) =>
+      Box.ofRuns name ((runs.getD i #[]).map fun (v : Nat) => (v : Rat) / 1000000)
+    (all.qsort fun a b => a.median < b.median).extract 0 30 := rfl
 
 /-- A plot of `bs`, the value axis padded to hold every outlier. -/
 def paneOf (bs : Array Box) : Pane :=
@@ -137,15 +122,14 @@ def Chart.shapes (c : Chart) : DisplayList := c.boxes.zipIdx.flatMap fun (b, i) 
 
 theorem Chart.shapes_eq (c : Chart) : c.shapes = c.boxes.zipIdx.flatMap fun (b, i) => commands c.pane i b := rfl
 
-def chartOf (name : String) (bench lo hi : Nat) : Chart :=
-  let bs := boxes bench lo hi
+def chartOf (name : String) (runs : Array (Array Nat)) : Chart :=
+  let bs := boxes runs
   ⟨name, bs, paneOf bs⟩
 
-theorem chartOf_eq (name : String) (bench lo hi : Nat) : chartOf name bench lo hi =
-    ⟨name, boxes bench lo hi, paneOf (boxes bench lo hi)⟩ := rfl
+theorem chartOf_eq (name : String) (runs : Array (Array Nat)) : chartOf name runs =
+    ⟨name, boxes runs, paneOf (boxes runs)⟩ := rfl
 
-/-- Timings in milliseconds of three of the benchmarks of the JS framework benchmark that uPlot's page draws. -/
-def charts : List Chart :=
-  [chartOf "create-rows" 1 100 400, chartOf "replace-all-rows" 2 120 450, chartOf "select-row" 3 10 90]
+/-- A chart of each benchmark of the JS framework benchmark that uPlot's page draws. -/
+def charts : List Chart := BoxSource.benchmarks.toList.map fun (name, runs) => chartOf name runs
 
 end Inkproof.Demos.Boxes

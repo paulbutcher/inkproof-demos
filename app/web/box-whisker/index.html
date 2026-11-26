@@ -14,15 +14,40 @@ Released under Apache 2.0 license as described in the file LICENSE.
   <body>
     <h1>Box &amp; Whisker</h1>
     <p><a href="../">All demos</a></p>
-    <p>Timings of runs of a benchmark for each framework: the box holds the middle half of the runs with a line at the median, dashed whiskers reach the furthest runs within one and a half interquartile ranges of the box, and the squares are the runs beyond them.</p>
-    <h2>create-rows</h2>
-    <p>The runs of the benchmark that creates rows, one box per framework.</p>
-    <inkproof-chart id="create-rows" src="create-rows" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
-    <h2>replace-all-rows</h2>
-    <p>The runs of the benchmark that replaces every row, one box per framework.</p>
-    <inkproof-chart id="replace-all-rows" src="replace-all-rows" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
-    <h2>select-row</h2>
-    <p>The runs of the benchmark that selects a row, one box per framework.</p>
-    <inkproof-chart id="select-row" src="select-row" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <p>Timings of runs of each benchmark of the JS framework benchmark, for the thirty frameworks with the fastest medians: the box holds the middle half of the runs with a line at the median, dashed whiskers reach the furthest runs within one and a half interquartile ranges of the box, and the squares are the runs beyond them.</p>
+    <h2>01_run1k</h2>
+    <inkproof-chart id="01_run1k" src="01_run1k" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>02_replace1k</h2>
+    <inkproof-chart id="02_replace1k" src="02_replace1k" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>03_update10th1k_x16</h2>
+    <inkproof-chart id="03_update10th1k_x16" src="03_update10th1k_x16" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>04_select1k</h2>
+    <inkproof-chart id="04_select1k" src="04_select1k" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>05_swap1k</h2>
+    <inkproof-chart id="05_swap1k" src="05_swap1k" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>06_remove-one-1k</h2>
+    <inkproof-chart id="06_remove-one-1k" src="06_remove-one-1k" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>07_create10k</h2>
+    <inkproof-chart id="07_create10k" src="07_create10k" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>08_create1k-after1k_x2</h2>
+    <inkproof-chart id="08_create1k-after1k_x2" src="08_create1k-after1k_x2" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>09_clear1k_x8</h2>
+    <inkproof-chart id="09_clear1k_x8" src="09_clear1k_x8" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>21_ready-memory</h2>
+    <inkproof-chart id="21_ready-memory" src="21_ready-memory" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>22_run-memory</h2>
+    <inkproof-chart id="22_run-memory" src="22_run-memory" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>23_update5-memory</h2>
+    <inkproof-chart id="23_update5-memory" src="23_update5-memory" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>24_run5-memory</h2>
+    <inkproof-chart id="24_run5-memory" src="24_run5-memory" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>25_run-clear-memory</h2>
+    <inkproof-chart id="25_run-clear-memory" src="25_run-clear-memory" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>31_startup-ci</h2>
+    <inkproof-chart id="31_startup-ci" src="31_startup-ci" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>32_startup-bt</h2>
+    <inkproof-chart id="32_startup-bt" src="32_startup-bt" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
+    <h2>34_startup-totalbytes</h2>
+    <inkproof-chart id="34_startup-totalbytes" src="34_startup-totalbytes" highlight="on" cursor="x markers" legend="below-center" style="width: 800px; height: 400px"></inkproof-chart>
   </body>
 </html>

@@ -125,7 +125,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 ## Box and Whisker (`box-whisker.html`)
 
-- Data: uPlot draws recorded benchmark timings of its frameworks from `data/results.json`; the site generates twelve runs for each of twenty-four frameworks. Open: the shapes agree, the numbers do not.
+- Data: uPlot's recorded benchmark timings, `data/results.json` of 1.6.32 without the non-keyed frameworks, copied with its MIT notice (values rounded to a millionth): a chart for each of the seventeen benchmarks, the thirty fastest medians in order. uPlot rounds the quartiles to two decimals before drawing; the site does not. Fixed.
 - Drawing: boxes of the middle half with a median bar, dashed whiskers within one and a half interquartile ranges, and squares for the runs beyond. Matches.
 - Hover: uPlot highlights the column and shows the legend as a tooltip with every statistic. Fixed: each column is an item, highlighted under the pointer with a tooltip of the box's name and its five numbers.
 
