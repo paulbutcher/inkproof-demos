@@ -12,11 +12,7 @@ def run : IO Unit := do
   let cs := clouds (← Browser.seed)
   let f := cloudsFrame cs
   Browser.registerRetained fun src px cache => match src with
-    | "bubble" => do
-        let bf := { bubbleFrame with theme := px.theme }
-        let scene ← Browser.sidedScene px (labelTexts bf) [.bottom, .left, .right]
-          (bubbleAxes bf) (bubbleChart bf)
-        pure fun _ => pure scene
+    | "bubble" => do px.drawing cache (← Browser.bubbleDrawing { bubbleFrame with theme := px.theme })
     | "scatter" => do
         let f := { f with theme := px.theme }
         let d ← Browser.frameDrawing f (axisDisplay f) (cs.map (cloudDisplay f)) "Scatter" (Browser.cloudTraces cs)

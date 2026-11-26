@@ -124,16 +124,36 @@ theorem bubbleDisplay_eq (r : Region) (proj : Projection Rat Rat) :
       let rad := radius b.size maxSize
       if 1 < rad then compileRing ⟨2, r.outline, r.fill, rad, 1⟩ c else #[⟨2, r.outline, .marker .circle c rad⟩] := rfl
 
-/-- The axes, then each region's bubbles against its own y axis, cut off at the plot's edge. -/
-def bubbleChart (f : Frame) (measure : String → Float × Float) : DisplayList :=
-  (bubbleAxes f measure).foldl (· ++ ·.display) #[] ++
-    DisplayList.clip (plot f) (regions.toArray.flatMap fun r =>
-      bubbleDisplay r (if r.onRight then .linear ⟨f.xs.1, f.xs.2, f.left, f.right⟩ ⟨rightRange.1, rightRange.2, f.bottom, f.top⟩ else projection f))
+/-- The projection of a region's bubbles: against the right axis for a region on it. -/
+def regionProjection (f : Frame) (r : Region) : Projection Rat Rat :=
+  if r.onRight then .linear ⟨f.xs.1, f.xs.2, f.left, f.right⟩ ⟨rightRange.1, rightRange.2, f.bottom, f.top⟩ else projection f
 
-theorem bubbleChart_eq (f : Frame) (measure : String → Float × Float) :
-    bubbleChart f measure = (bubbleAxes f measure).foldl (· ++ ·.display) #[] ++
-      DisplayList.clip (plot f) (regions.toArray.flatMap fun r =>
-        bubbleDisplay r (if r.onRight then .linear ⟨f.xs.1, f.xs.2, f.left, f.right⟩ ⟨rightRange.1, rightRange.2, f.bottom, f.top⟩ else projection f)) := rfl
+theorem regionProjection_eq (f : Frame) (r : Region) : regionProjection f r =
+    if r.onRight then .linear ⟨f.xs.1, f.xs.2, f.left, f.right⟩ ⟨rightRange.1, rightRange.2, f.bottom, f.top⟩ else projection f := rfl
+
+/-- A region's bubbles against its own y axis, cut off at the plot's edge. -/
+def regionDisplay (f : Frame) (r : Region) : DisplayList :=
+  DisplayList.clip (plot f) (bubbleDisplay r (regionProjection f r))
+
+theorem regionDisplay_eq (f : Frame) (r : Region) :
+    regionDisplay f r = DisplayList.clip (plot f) (bubbleDisplay r (regionProjection f r)) := rfl
+
+/-- The name of the region at index `i`, as its legend entry reads. -/
+def regionName (i : Nat) : String := s!"Region {Char.ofNat (65 + i)}"
+
+theorem regionName_eq (i : Nat) : regionName i = s!"Region {Char.ofNat (65 + i)}" := rfl
+
+/-- A bubble's text for the tooltip, the country it stands for. -/
+def bubbleLabel (i : Nat) : String := s!"Country {i + 1}"
+
+theorem bubbleLabel_eq (i : Nat) : bubbleLabel i = s!"Country {i + 1}" := rfl
+
+/-- The y of a bubble of a region on the right axis in the left axis's data coordinates, which is where the chart reads it. -/
+def leftY (f : Frame) (y : Rat) : Rat :=
+  f.ys.1 + (y - rightRange.1) / (rightRange.2 - rightRange.1) * (f.ys.2 - f.ys.1)
+
+theorem leftY_eq (f : Frame) (y : Rat) :
+    leftY f y = f.ys.1 + (y - rightRange.1) / (rightRange.2 - rightRange.1) * (f.ys.2 - f.ys.1) := rfl
 
 /-- The scatter plot's series: ten thousand points with both coordinates in `0..500`, in the colour of their markers. -/
 structure Cloud where

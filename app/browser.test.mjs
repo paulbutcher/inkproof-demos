@@ -794,7 +794,7 @@ test('tooltip and legend: the tooltip names the nearest point, the legend reads 
 
 // Static legends: the pages whose uPlot demo has a key without values.
 const barNames = ['Lib Size (KB)', 'Render Time (ms)', 'Peak Heap (MB)', 'Final Heap (MB)', 'Interact 10s (ms)', 'Toggle 6x (ms)', 'Random line'];
-for (const [path, chart, expected] of [['grouped-bars/', 0, ['Metric 1', 'Metric 2', 'Metric 3']], ['multi-bars/', 2, barNames], ['multi-bars/', 3, barNames], ['scatter/', 1, ['Value', 'Value', 'Value', 'Value']]]) {
+for (const [path, chart, expected] of [['grouped-bars/', 0, ['Metric 1', 'Metric 2', 'Metric 3']], ['multi-bars/', 2, barNames], ['multi-bars/', 3, barNames], ['scatter/', 0, ['Region A', 'Region B', 'Region C', 'Region D']], ['scatter/', 1, ['Value', 'Value', 'Value', 'Value']]]) {
   test(`${path.slice(0, -1)} chart ${chart}: the static legend names the series as uPlot's does, lists no values and hides a series on a click`, async () => {
     const { page, problems } = await open(path);
     const rows = () => page.evaluate(i => [...document.querySelectorAll('inkproof-chart')[i].shadowRoot.querySelectorAll('.legend button')].map(b => b.textContent), chart);
@@ -812,6 +812,21 @@ for (const [path, chart, expected] of [['grouped-bars/', 0, ['Metric 1', 'Metric
     await page.close();
   });
 }
+
+test('scatter: the tooltip over the bubble chart names the nearest bubble by its label, series and size', async () => {
+  const { page, problems } = await open('scatter/');
+  await page.waitForFunction(() => window.draws.length >= 2);
+  const seen = new Set();
+  for (const [x, y] of [[400, 200], [900, 300], [1400, 400]]) {
+    const { tip } = await hover(page, 0, x, y);
+    assert.match(tip, /Country \d+/, tip);
+    assert.match(tip, /Region [A-D]/, tip);
+    seen.add(tip);
+  }
+  assert.ok(seen.size > 1, 'the tooltip follows the pointer');
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});
 
 // Legends that read values: each entry starts with the name uPlot gives the series, `Value` where the demo gives none.
 for (const [path, chart, expected] of [['missing-data/', 0, ['CPU', 'RAM', 'TCP Out']], ['missing-data/', 1, ['Value']], ['points/', 0, ['Value', 'Value', 'Value', 'Value']], ['axis-control/', 0, ['sin(x)']], ['zoom-wheel/', 0, ['One', 'Two']], ['area-fill/', 0, ['Value', 'Value', 'Value']], ['timezones-dst/', 0, ['2019']], ['timezones-dst/', 11, ['2019']], ['months/', 0, ['Value']], ['gradients/', 0, ['Trends']], ['gradients/', 1, ['Over/Under']], ['gradients/', 3, ['Tank 1 (red = high pressure)', 'Tank 2 (red = low pressure)']]]) {
