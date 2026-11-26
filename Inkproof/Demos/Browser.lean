@@ -140,6 +140,10 @@ def frameScene (px : Pixels) (frame : Frame) (chart : Frame → (String → Floa
 def registerPixels (build : String → Pixels → IO Scene) (buttons : Bool := false) : IO Unit :=
   Host.registerThemed "inkproof-chart" (fun src css backing theme => build src ⟨css, backing, theme⟩) buttons
 
+/-- Like `registerPixels`, for a chart whose axes carry the titles the element's attributes give. -/
+def registerTitled (build : String → Pixels → Host.AxisTitles → IO Scene) (buttons : Bool := false) : IO Unit :=
+  Host.registerTitled "inkproof-chart" (fun src css backing theme titles => build src ⟨css, backing, theme⟩ titles) buttons
+
 /-- A part of a chart that the legend can hide: drawn unless `hidden` says so for the legend's hidden series. -/
 structure Part where
   display : Scene.DisplayList

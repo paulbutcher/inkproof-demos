@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.43.1
+
+- Axis Control's axis titles come from the chart's `axis-title-bottom` and `axis-title-right` attributes, from inkproof-web v0.28.1.
+
 ## v0.43.0
 
 - The bubble chart has a legend of its regions, a tooltip naming the nearest bubble, and a click to hide a region, from inkproof-web v0.28.0.

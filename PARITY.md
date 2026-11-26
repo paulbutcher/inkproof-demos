@@ -38,7 +38,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: sine over half a million points, y fixed to -50..50. Matches.
 - Series width: uPlot one pixel; the page drew two. Fixed.
-- Right axis: labels and title red, ticks faint; the page drew red ticks. Fixed. Its title sits 8 pixels from the labels in uPlot; the page places it by hand, so axis titles are requested of Web: [inkproof-web#144](http://localhost:3000/tentenths/inkproof-web/issues/144).
+- Right axis: labels and title red, ticks faint; the page drew red ticks. Fixed. Its title sits 8 pixels from the labels as in uPlot, given by the page's `axis-title-right` attribute and placed by Web ([inkproof-web#144](http://localhost:3000/tentenths/inkproof-web/issues/144)). Fixed.
 - Legend: the page names its series `sin(x)` as uPlot does; the x entry and readouts are under Shared differences. Fixed; a browser test checks the name.
 
 ## Stacked Series (`stacked-series.html`)
