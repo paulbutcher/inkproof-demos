@@ -53,7 +53,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Series names: uPlot's scatter series have no label, so the legend reads `Value` four times; the page now does the same. Fixed.
 - Data: ten thousand points per series over 0..500, y range unpadded (`guardedRange`). Matches.
 - Markers: 5 pixel circles with a fill of 10% alpha and a stroke; drawn as circles. Fixed.
-- Bubble chart: the page draws the bubbles of `data2`; sizes and labels in the legend `GDP`, `Income 1`, `Income 2` and the region names are not yet compared. Open.
+- Bubble chart: the page draws the bubbles of `data2` as a static scene, so it has no legend (`GDP`, `Income 1`, `Income 2` and the region names), hover readout or toggling; requested of Web: [inkproof-web#146](http://localhost:3000/tentenths/inkproof-web/issues/146).
 
 ## Multi-Bars (`multi-bars.html`)
 
