@@ -273,6 +273,8 @@ private def heatmapTest : Except String Unit := do
   let total := LatencyHeatmap.bucketCells.foldl (fun n c => n + (c.value.map (·.1)).getD 0) 0
   check (total == LatencyHeatmap.columns.foldl (· + ·.size) 0) "every latency is counted in a bucket"
   check (LatencyHeatmap.bucketCells.all fun c => match c.value with | some (n, most) => 0 < n && n ≤ most | none => false) "a bucket's count never exceeds its column's largest"
+  let (secs, _, _) := LatencyHeatmap.chart.frame.spacedTimeTicks Axes.twelveHour
+  check (secs.length ≥ 15 && (secs.zip (secs.drop 1)).all fun (a, b) => b - a == 5) "the time axis is ticked every five seconds, as the original"
   check (LatencyHeatmap.sampleCells.size == LatencyHeatmap.columns.foldl (· + ·.size) 0) "a cell for every latency"
   check (HeatmapCells.counts.foldl (· + ·) 0 == HeatmapCells.samples) "every sample falls in a cell"
   check (HeatmapCells.cells.size > 0) "the heatmap is not empty"

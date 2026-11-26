@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.46.0
+
+- Latency Heatmap time axis is ticked every five seconds, as uPlot's.
+
 ## v0.45.0
 
 - Server Events has a time x axis, and CPU and RAM on a percent axis on the left and TCP out on its own MB axis on the right.

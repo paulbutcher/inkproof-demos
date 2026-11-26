@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import Inkproof.Scene
 import Inkproof.Scale
 import Inkproof.Demos.Lines
+import Inkproof.Demos.Axes
 import Inkproof.Demos.Frame
 import Inkproof.Demos.Latency
 import Inkproof.Demos.Data
@@ -38,12 +39,12 @@ theorem yBounds_eq : yBounds =
 /-- The frame of both charts: seconds across, latencies up. -/
 def chart : Lines.Chart :=
   { name := "latency-heatmap", width := 1800, height := 600,
-    xs := ((start : Rat), ((start + columns.size - 1 : Nat) : Rat)), time := true,
+    xs := ((start : Rat), ((start + columns.size - 1 : Nat) : Rat)), time := true, timeStyle := some Axes.twelveHour,
     left := { range := autoRange (1 / 10) (yBounds.1 : Rat) (yBounds.2 : Rat) }, layers := [] }
 
 theorem chart_eq : chart =
     { name := "latency-heatmap", width := 1800, height := 600,
-      xs := ((start : Rat), ((start + columns.size - 1 : Nat) : Rat)), time := true,
+      xs := ((start : Rat), ((start + columns.size - 1 : Nat) : Rat)), time := true, timeStyle := some Axes.twelveHour,
       left := { range := autoRange (1 / 10) (yBounds.1 : Rat) (yBounds.2 : Rat) }, layers := [] } := rfl
 
 /-- How many seconds and how many milliseconds one pixel spans. -/
