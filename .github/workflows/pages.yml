@@ -1,7 +1,7 @@
 # Deploys the site to GitHub Pages from each release tag. This runs on GitHub,
 # not in the kit: the push mirror carries main and every tag there. It is
 # code-owned by the human, and scripts/setup-repo.sh checks it against the
-# kit's templates/site/, so the repository's agent can't change it.
+# Lasm layer's templates/site/, so the repository's agent can't change it.
 #
 # The repository's own scripts/build-site.sh builds the whole site into
 # _site/; the kit's CI runs it on every pull request too. Only the build job
@@ -9,7 +9,7 @@
 # The deploy job runs no repository code.
 #
 # Pages must be set to deploy from GitHub Actions, and the github-pages
-# environment must allow the v* tags (RUNBOOK.md, Adding a site). To deploy
+# environment must allow the v* tags (the runbook, Adding a site). To deploy
 # again, run this workflow by hand on a release tag.
 name: pages
 
