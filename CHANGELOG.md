@@ -2,6 +2,7 @@
 
 ## v0.47.0
 
+- Zoom Variations' adaptive plus omni chart uses box-auto-uni-50px, and a browser test drags a Zoom Ranger grip, on inkproof-web v0.33.0.
 - Pixels.retain cuts its display lists with inkproof-gpu's Layer.strokeCutMany instead of grouping layers itself.
 - Zoom Fetch restores the full data on a double click, on inkproof-web v0.32.0.
 

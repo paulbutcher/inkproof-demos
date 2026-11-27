@@ -530,6 +530,22 @@ test('each zoom variation boxes on a plain drag the axes its attributes name, an
   await page.close();
 });
 
+test('adaptive plus omni zooms both axes for a small drag and one axis for a long thin one', async () => {
+  for (const [dx, dy, both] of [[30, 30, true], [200, 20, false]]) {
+    const { page, at } = await openZoom('zoom-variations/', 4);
+    const [x0, y0] = at(100, 100);
+    await page.mouse.move(x0, y0);
+    await page.mouse.down();
+    await page.mouse.move(x0 + dx, y0 + dy, { steps: 4 });
+    await page.mouse.up();
+    await settled(page, 1);
+    const v = await lastView(page);
+    assert.equal(span(v).y < 10, both, `${dx}x${dy} ${JSON.stringify(v)}`);
+    assert.ok(span(v).x < 15, `${dx}x${dy} ${JSON.stringify(v)}`);
+    await page.close();
+  }
+});
+
 test('the reset button returns a zoomed chart to its full range exactly', async () => {
   const { page, at } = await openZoom('zoom-reset-range/');
   const [x, y] = at(150, 100);
@@ -706,6 +722,10 @@ test('zoom ranger: dragging the overview sets the main chart range, and the over
   await page.waitForTimeout(300);
   const moved = await page.evaluate(() => window.picked.at(-1));
   assert.ok(moved.xStart < first.band.xStart && Math.abs((moved.xEnd - moved.xStart) - (first.band.xEnd - first.band.xStart)) < 1e-6, `${JSON.stringify(first.band)} moved to ${JSON.stringify(moved)}`);
+  await drag(650, 690);
+  await page.waitForTimeout(300);
+  const resized = await page.evaluate(() => window.picked.at(-1));
+  assert.ok(resized.xEnd > moved.xEnd && Math.abs(resized.xStart - moved.xStart) < 1e-6, `${JSON.stringify(moved)} resized to ${JSON.stringify(resized)}`);
   assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
   await page.close();
 });

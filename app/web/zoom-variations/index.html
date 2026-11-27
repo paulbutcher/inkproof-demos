@@ -20,7 +20,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
     <figure><p>Drag a box to zoom: y only.</p><inkproof-chart interaction="drag-box box-y" src="variation-1" legend="below-center" aria-label="Y only"></inkproof-chart></figure>
     <figure><p>The box zooms the axis the drag is longer along.</p><inkproof-chart interaction="drag-box box-auto" src="variation-2" legend="below-center" aria-label="X or Y (adaptive)"></inkproof-chart></figure>
     <figure><p>The box zooms both axes to exactly the box you draw.</p><inkproof-chart interaction="drag-box box-xy" src="variation-3" legend="below-center" aria-label="X or Y (omni)"></inkproof-chart></figure>
-    <figure><p>Set up as the chart above: Inkproof has no separate mode for uPlot's adaptive and omni combined, so this repeats it.</p><inkproof-chart interaction="drag-box box-auto" src="variation-4" legend="below-center" aria-label="X or Y (adaptive + omni)"></inkproof-chart></figure>
+    <figure><p>Zoom both axes when the drag is under 50 pixels in each, else the axis it is longer along.</p><inkproof-chart interaction="drag-box box-auto-uni-50px" src="variation-4" legend="below-center" aria-label="X or Y (adaptive + omni)"></inkproof-chart></figure>
     <h2>With a minimum drag distance of 10 px</h2>
     <figure><p>Zoom x only; a drag shorter than 10 pixels is ignored.</p><inkproof-chart interaction="drag-box box-x 10px" src="variation-5" legend="below-center"></inkproof-chart></figure>
     <figure><p>Zoom y only; a drag shorter than 10 pixels is ignored.</p><inkproof-chart interaction="drag-box box-y 10px" src="variation-6" legend="below-center"></inkproof-chart></figure>

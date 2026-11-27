@@ -247,7 +247,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 - Layout: uPlot's 100 pixel overview is above the 400 pixel zoomed chart, both 800 wide; the site's are 120 and 300 high, in the same order. Explained.
 - Selection: the overview opens with a band over 1 to 4.5 and the zoomed chart shows that range; the site's opens with 600 to 1200. Dragging in the overview sets the other's range and the overview keeps its own, as uPlot's does. Matches.
 - Overview cursor: uPlot hides its points and its y drag; the site's overview drags in x only. Matches.
-- Grips and y selection (`zoom-ranger-grips.html`, `zoom-ranger-xy.html`): no counterpart. Open.
+- Grips (`zoom-ranger-grips.html`): the overview's band has a grip at each edge and drags inside it, as uPlot's. Matches. The y selection of `zoom-ranger-xy.html` is available as `select-xy` but has no page. Open.
 - Legend and cursor sync (`key: "moo"`): the zoomed chart's legend is `x` and `sin(x)` in uPlot; the site has none for the overview and the unnamed `Value` for the other. Open: see Shared differences.
 
 ## Zoom with Reset (`zoom-reset-range`)
@@ -258,5 +258,5 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: thirty points over -10 to 10 in purple, 600 by 400; the values are drawn from a fixed hash rather than at random. Matches.
 - Charts: uPlot's are the five drag variants and the same five with `dist: 10`, titled by variant; the site has ten with the titles in captions, and a drag shorter than 10 pixels does nothing. Matches.
-- Variants: X only, Y only, adaptive (the longer axis) and omni (both) match. uPlot's adaptive plus omni (`uni: 50`) has no mode of its own, so the site repeats the adaptive chart. Open.
+- Variants: X only, Y only, adaptive (the longer axis), omni (both) and adaptive plus omni (`uni: 50`, as `box-auto-uni-50px`) match.
 - Layout: uPlot shows the charts inline, the site one to a row. Explained.
