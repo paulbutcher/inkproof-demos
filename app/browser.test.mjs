@@ -668,6 +668,14 @@ test('zoom fetch: zooming requests the samples of the new range and redraws', as
   const [start, end] = fine.at(-1).range.match(/\d+/g).map(Number);
   assert.ok(start <= view.xStart && end >= view.xEnd - 1 && end - start < 4999, `${fine.at(-1).range} for ${JSON.stringify(view)}`);
   assert.ok(await page.evaluate(n => window.draws.length > n, drawn), 'the chart is drawn again');
+  const zoomed = requests.length;
+  const views = await page.evaluate(() => window.views.length);
+  await page.mouse.dblclick(box.x + 300, box.y + 150);
+  await page.waitForFunction(n => window.views.length > n, views);
+  await page.waitForTimeout(500);
+  const home = await lastView(page);
+  assert.ok(home.xEnd - home.xStart > view.xEnd - view.xStart, `${JSON.stringify(home)} after ${JSON.stringify(view)}`);
+  assert.ok(requests.slice(zoomed).some(r => r.url === 'zoom-fetch-coarse.bin'), JSON.stringify(requests.slice(zoomed)));
   assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
   await page.close();
 });

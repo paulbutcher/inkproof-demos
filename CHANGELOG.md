@@ -1,8 +1,9 @@
 # Changelog
 
-## v0.46.2
+## v0.47.0
 
 - Pixels.retain cuts its display lists with inkproof-gpu's Layer.strokeCutMany instead of grouping layers itself.
+- Zoom Fetch restores the full data on a double click, on inkproof-web v0.32.0.
 
 ## v0.46.1
 

@@ -238,7 +238,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Data: uPlot draws one red series of four points (3 to 6) after a zoom and the full nine points of four series at the start; the site serves 5000 one byte samples from a file, a coarse one (one in twenty) for the full range and a fine one for a zoomed range, a red line. Explained: the demo is about fetching, which the site does for real.
 - Zoom: uPlot's x drag zooms on release and fetches then; the site's wheel, drag and keys all fetch again for the range shown, and discard an answer that a later request has overtaken. Matches in kind.
-- Reset: uPlot's double click restores the full data; the site's key resets to the full range and fetches the coarse file. Open: no double click.
+- Reset: uPlot's double click restores the full data; the site's double click, key and button reset to the full range and fetch the coarse file. Matches.
 - Axis: uPlot's x is plain numbers; so is the site's. Matches.
 
 ## Zoom Ranger (`zoom-ranger.html`)
