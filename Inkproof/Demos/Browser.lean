@@ -186,14 +186,10 @@ def Retention.build {α : Type} (r : Retention) (f : Gpu.Retained → Bool → I
 /-- A drawing's display lists cut into the pieces of each paint layer and tessellated once, in the pixels of `p`: piece `j` of a layer is the base's (`j = 0`) or part `j - 1`'s commands on it. Drawing the pieces layer by layer paints what the concatenated lists paint. -/
 def Pixels.retain (p : Pixels) (d : Drawing) : Array (Array Gpu.Layer) :=
   let lists := #[d.base] ++ d.parts.map (·.display)
-  let scaled := lists.map (·.scale p.ratio)
-  let numbers := (scaled.flatMap fun l => l.map (·.layer)).qsort (· < ·) |>.toList.eraseDups
-  numbers.toArray.map fun n => scaled.map fun l => Gpu.Layer.stroke (l.filter (·.layer == n))
+  (Gpu.Layer.strokeCutMany (lists.map (·.scale p.ratio)).toList).toArray.map (·.toArray)
 
 theorem Pixels.retain_eq (p : Pixels) (d : Drawing) : p.retain d =
-    let scaled := (#[d.base] ++ d.parts.map (·.display)).map (·.scale p.ratio)
-    let numbers := (scaled.flatMap fun l => l.map (·.layer)).qsort (· < ·) |>.toList.eraseDups
-    numbers.toArray.map fun n => scaled.map fun l => Gpu.Layer.stroke (l.filter (·.layer == n)) := rfl
+    (Gpu.Layer.strokeCutMany ((#[d.base] ++ d.parts.map (·.display)).map (·.scale p.ratio)).toList).toArray.map (·.toArray) := rfl
 
 /-- The scene of `d` with its hidden parts left out, from pieces `retained` by `p.retain d` and the buffers `cache` keeps on the GPU: no piece is tessellated or uploaded again. -/
 def Pixels.drawRetained (p : Pixels) (cache : Retention) (d : Drawing) (retained : Array (Array Gpu.Layer)) (off : Array Bool) : IO Scene := do

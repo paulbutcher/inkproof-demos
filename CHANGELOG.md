@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.46.2
+
+- Pixels.retain cuts its display lists with inkproof-gpu's Layer.strokeCutMany instead of grouping layers itself.
+
 ## v0.46.1
 
 - DESIGN.md records why Data.gauss stays a sum of exact draws rather than RandomSampling's Float normal.
