@@ -1,7 +1,8 @@
 // Copyright (c) 2026 Paul Butcher. All rights reserved.
 // Released under Apache 2.0 license as described in the file LICENSE.
 // Browser tests: the built site, served under /inkproof-demos/ as GitHub Pages serves it.
-import { test, before, after } from 'node:test';
+import { describe, it, before, after } from 'node:test';
+import { availableParallelism } from 'node:os';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { createServer } from 'node:http';
@@ -11,6 +12,10 @@ import { extname, join, normalize } from 'node:path';
 const root = new URL('./dist/', import.meta.url).pathname;
 const prefix = '/inkproof-demos/';
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.wasm': 'application/wasm' };
+
+// Each test opens its own pages, so they run side by side; the tests are registered together at the end.
+const tests = [];
+const test = (name, fn) => tests.push([name, fn]);
 
 let server, browser, base;
 
@@ -1002,4 +1007,8 @@ test('legends sit centred under their plot', async () => {
   assert.ok(centres.below, 'the legend is below the plot');
   assert.deepEqual(problems, []);
   await page.close();
+});
+
+describe('browser', { concurrency: Math.max(1, Math.min(5, availableParallelism() - 1)) }, () => {
+  for (const [name, fn] of tests) it(name, fn);
 });
