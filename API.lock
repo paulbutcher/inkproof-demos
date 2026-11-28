@@ -1242,7 +1242,7 @@ theorem Inkproof.Demos.Zoom.Chart.commands_eq : ∀ (c : Inkproof.Demos.Zoom.Cha
 def Inkproof.Demos.Zoom.Chart.config : Inkproof.Demos.Zoom.Chart → Inkproof.Viewport.ViewConfig Float
 theorem Inkproof.Demos.Zoom.Chart.config_eq : ∀ (c : Inkproof.Demos.Zoom.Chart), c.config = have f := c.frame; have axis := fun length r => have span := (r.snd - r.fst).toFloat; { length := length.toFloat, minSpan := span / 1000, maxSpan := span, home := { start := r.fst.toFloat, span := span }, keyZoom := 5 / 4, keyPan := 1 / 10 }; { x := axis (f.right - f.left) f.xs, y := axis (f.bottom - f.top) f.ys }
 def Inkproof.Demos.Zoom.Chart.dimmed : Inkproof.Demos.Zoom.Chart → Array Float → Inkproof.Demos.Zoom.Chart
-theorem Inkproof.Demos.Zoom.Chart.dimmed_lines : ∀ (c : Inkproof.Demos.Zoom.Chart) (alphas : Array Float), (c.dimmed alphas).lines = List.map (fun x => match x with | (l, i) => Inkproof.Demos.Zoom.Line.dim (alphas.getD i 1) l) c.lines.zipIdx
+theorem Inkproof.Demos.Zoom.Chart.dimmed_lines : ∀ (c : Inkproof.Demos.Zoom.Chart) (alphas : Array Float), (c.dimmed alphas).lines = List.map (fun x => match x with | (l, i) => Inkproof.Demos.Zoom.Line.dim ((Inkproof.Float.Float.toRat (alphas.getD i 1)).getD 1) l) c.lines.zipIdx
 def Inkproof.Demos.Zoom.Chart.frame : Inkproof.Demos.Zoom.Chart → Inkproof.Demos.Frame
 theorem Inkproof.Demos.Zoom.Chart.frame_eq : ∀ (c : Inkproof.Demos.Zoom.Chart), c.frame = Inkproof.Demos.Frame.sized c.width c.height c.ranges.fst c.ranges.snd
 field Inkproof.Demos.Zoom.Chart.height : Inkproof.Demos.Zoom.Chart → Nat
@@ -1265,12 +1265,10 @@ field Inkproof.Demos.Zoom.Chart.unit : Inkproof.Demos.Zoom.Chart → String
 def Inkproof.Demos.Zoom.Chart.viewFrame : Inkproof.Demos.Zoom.Chart → Inkproof.Viewport.View Float → Inkproof.Demos.Frame
 theorem Inkproof.Demos.Zoom.Chart.viewFrame_eq : ∀ (c : Inkproof.Demos.Zoom.Chart) (v : Inkproof.Viewport.View Float), c.viewFrame v = have f := c.frame; have range := fun s d => ((Inkproof.Float.Float.toRat s.start).getD d.fst, (Inkproof.Float.Float.toRat (s.start + s.span)).getD d.snd); { left := f.left, right := f.right, top := f.top, bottom := f.bottom, xs := range v.x f.xs, ys := range v.y f.ys, theme := f.theme }
 field Inkproof.Demos.Zoom.Chart.width : Inkproof.Demos.Zoom.Chart → Nat
-def Inkproof.Demos.Zoom.Color.dim : Float → Inkproof.Scene.Color → Inkproof.Scene.Color
-theorem Inkproof.Demos.Zoom.Color.dim_eq : ∀ (a : Float) (c : Inkproof.Scene.Color), Inkproof.Demos.Zoom.Color.dim a c = { r := c.r, g := c.g, b := c.b, a := (c.a.toFloat * a).round.toUInt8 }
 structure Inkproof.Demos.Zoom.Line : Type
 field Inkproof.Demos.Zoom.Line.color : Inkproof.Demos.Zoom.Line → Inkproof.Scene.Color
-def Inkproof.Demos.Zoom.Line.dim : Float → Inkproof.Demos.Zoom.Line → Inkproof.Demos.Zoom.Line
-theorem Inkproof.Demos.Zoom.Line.dim_eq : ∀ (a : Float) (l : Inkproof.Demos.Zoom.Line), Inkproof.Demos.Zoom.Line.dim a l = { xs := l.xs, ys := l.ys, color := Inkproof.Demos.Zoom.Color.dim a l.color, fill := Option.map (Inkproof.Demos.Zoom.Color.dim a) l.fill }
+def Inkproof.Demos.Zoom.Line.dim : Rat → Inkproof.Demos.Zoom.Line → Inkproof.Demos.Zoom.Line
+theorem Inkproof.Demos.Zoom.Line.dim_eq : ∀ (a : Rat) (l : Inkproof.Demos.Zoom.Line), Inkproof.Demos.Zoom.Line.dim a l = { xs := l.xs, ys := l.ys, color := l.color.scaleAlpha a, fill := Option.map (fun x => x.scaleAlpha a) l.fill }
 field Inkproof.Demos.Zoom.Line.fill : Inkproof.Demos.Zoom.Line → Option Inkproof.Scene.Color
 constructor Inkproof.Demos.Zoom.Line.mk : Array Rat → Array Rat → Inkproof.Scene.Color → Option Inkproof.Scene.Color → Inkproof.Demos.Zoom.Line
 field Inkproof.Demos.Zoom.Line.xs : Inkproof.Demos.Zoom.Line → Array Rat

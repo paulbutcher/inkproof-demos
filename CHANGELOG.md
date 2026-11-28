@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.49.1
+
+- Dimmed series use inkproof-scene's Color.scaleAlpha in place of a local helper.
+
 ## v0.49.0
 
 - Tooltip and Legend dims the series away from the pointer with inkproof-web's focus attribute, and a browser test checks it.
