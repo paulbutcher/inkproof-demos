@@ -194,20 +194,41 @@ def periodic : Chart :=
     rows := (rows.zip ["Device A", "Device B", "Device C"]).toArray.map fun ((d, state, changes), name) =>
       ⟨name, sampled (deviceLook d) hour (series state changes)⟩ }
 
-/-- Letters, a flag and a state that comes and goes against a plain numeric axis, as uPlot's third chart has. -/
-def letters : Chart :=
+/-- Consecutive spans that hold the same state and meet are one span. -/
+def merge (spans : Array Span) : Array Span :=
+  spans.foldl (fun acc s =>
+    match acc.back? with
+    | some p => if p.text == s.text && p.stop == s.start then acc.pop.push { p with stop := s.stop } else acc.push s
+    | none => acc.push s) #[]
+
+theorem merge_eq (spans : Array Span) : merge spans =
+    spans.foldl (fun acc s =>
+      match acc.back? with
+      | some p => if p.text == s.text && p.stop == s.start then acc.pop.push { p with stop := s.stop } else acc.push s
+      | none => acc.push s) #[] := rfl
+
+/-- Letters, a flag and a state that comes and goes against a plain numeric axis, with each run of one state a bar per sample unless `merged`, as uPlot's third and fourth charts have. -/
+def lettersWith (name : String) (merged : Bool) : Chart :=
+  let hold (look : String → Look) (times : List Rat) (vals : List (Option String)) : Array Span :=
+    let ss := holding look 260 (times.zip vals).toArray
+    if merged then merge ss else ss
   let look : String → Look
     | "a" => tint 255 0 0 51 | "b" => tint 0 255 0 51 | "c" => tint 0 0 255 51 | "d" => tint 0 255 255 51
     | "e" => tint 255 0 255 51 | "true" => tint 0 255 0 51 | _ => tint 255 0 0 51
   let row (name : String) (times : List Rat) (vals : List (Option String)) : Row :=
-    ⟨name, holding look 260 (times.zip vals).toArray⟩
-  { name := "letters", xs := (0, 260), time := false,
+    ⟨name, hold look times vals⟩
+  { name := name, xs := (0, 260), time := false,
     rows := #[row "Series 1" [0, 18, 37, 55, 74, 92, 111, 129, 148, 166, 185, 203, 222, 240]
         [some "a", some "a", some "b", some "b", some "b", some "b", some "c", some "a", some "a", some "d", some "d", some "d", some "d", some "d"],
       row "Series 2" [0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240]
         [none, none, some "e", some "e", some "e", none, none, some "e", none, none, some "e", none, some "e", some "e", some "e", some "e"],
       row "Series 3" [0, 48, 96, 144, 192, 240] [some "true", none, some "false", none, some "true", some "false"]] }
 
-def charts : List Chart := [spans, periodic, letters]
+def letters : Chart := lettersWith "letters" false
+
+/-- The same states as `letters`, each run of one state drawn as a single bar. -/
+def mergedLetters : Chart := lettersWith "merged" true
+
+def charts : List Chart := [spans, periodic, letters, mergedLetters]
 
 end Inkproof.Demos.Timeline

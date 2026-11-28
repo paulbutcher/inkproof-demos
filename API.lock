@@ -1223,6 +1223,10 @@ def Inkproof.Demos.Timeline.holding : (String → Inkproof.Demos.Timeline.Look) 
 theorem Inkproof.Demos.Timeline.holding_eq : ∀ (look : String → Inkproof.Demos.Timeline.Look) (stop : Rat) (samples : Array (Rat × Option String)), Inkproof.Demos.Timeline.holding look stop samples = Array.filterMap (fun x => match x with | ((t, v), i) => Option.map (fun text => { start := t, stop := (Option.map (fun x => x.fst) samples[i + 1]?).getD stop, text := text, fill := (look text).snd, stroke := (look text).fst }) v) samples.zipIdx
 def Inkproof.Demos.Timeline.hour : Rat
 def Inkproof.Demos.Timeline.letters : Inkproof.Demos.Timeline.Chart
+def Inkproof.Demos.Timeline.lettersWith : String → Bool → Inkproof.Demos.Timeline.Chart
+def Inkproof.Demos.Timeline.merge : Array Inkproof.Demos.Timeline.Span → Array Inkproof.Demos.Timeline.Span
+theorem Inkproof.Demos.Timeline.merge_eq : ∀ (spans : Array Inkproof.Demos.Timeline.Span), Inkproof.Demos.Timeline.merge spans = Array.foldl (fun acc s => match acc.back? with | Option.some p => if (p.text == s.text && p.stop == s.start) = Bool.true then acc.pop.push { start := p.start, stop := s.stop, text := p.text, fill := p.fill, stroke := p.stroke } else acc.push s | Option.none => acc.push s) #[] spans
+def Inkproof.Demos.Timeline.mergedLetters : Inkproof.Demos.Timeline.Chart
 def Inkproof.Demos.Timeline.now : Rat
 def Inkproof.Demos.Timeline.outline : Rat
 def Inkproof.Demos.Timeline.periodic : Inkproof.Demos.Timeline.Chart

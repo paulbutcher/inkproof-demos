@@ -892,7 +892,7 @@ for (const [path, chart, expected] of [['missing-data/', 0, ['CPU', 'RAM', 'TCP 
 }
 
 // Pages whose legend reads a group of values at each x: the number of entries of each chart, in page order.
-for (const [path, counts] of Object.entries({ 'candlestick/': [5], 'box-whisker/': Array(17).fill(5), 'timeline-discrete/': [3, 3, 3], 'latency-heatmap/': [3, 3, 3, 3] })) {
+for (const [path, counts] of Object.entries({ 'candlestick/': [5], 'box-whisker/': Array(17).fill(5), 'timeline-discrete/': [3, 3, 3, 3], 'latency-heatmap/': [3, 3, 3, 3] })) {
   test(`${path.slice(0, -1)}: each chart's legend reads its group of values at the cursor`, async () => {
     const { page, problems } = await open(path);
     const rows = () => page.evaluate(() => [...document.querySelectorAll('inkproof-chart')].map(e => [...e.shadowRoot.querySelectorAll('.legend .entry')].map(b => b.textContent)));

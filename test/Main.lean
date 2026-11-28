@@ -363,11 +363,14 @@ private def timelineTest : Except String Unit := do
       check (r.spans.all fun s => s.start < s.stop) s!"{c.name} {r.name}: every interval has a length"
       check (rects.all fun b => f.left ≤ b.x0 && b.x1 ≤ f.right && f.top ≤ b.y0 && b.y1 ≤ f.bottom) s!"{c.name} {r.name}: bars lie within the plot"
     check ((List.range 2).all fun i => (c.lane i).2 ≤ (c.lane (i + 1)).1) s!"{c.name}: rows do not overlap"
-  let [spans, periodic, letters] := Timeline.charts | throw "expected three charts"
+  let [spans, periodic, letters, merged] := Timeline.charts | throw "expected four charts"
   check (spans.rows.all fun r => r.spans.size ≥ 3) "the first chart holds several states for each device"
   check ((periodic.rows.map (·.spans.size)).toList == [29, 30, 29]) "a missing sample leaves a gap in the periodic chart"
   check (periodic.rows.all fun r => r.spans.all fun s => s.stop - s.start == 9 * Timeline.hour / 10) "periodic bars are equally wide"
   check ((letters.rows.getD 2 ⟨"", #[]⟩).spans.size == 4) "the gaps in a series of flags have no bars"
+  check ((merged.rows.map (·.spans.size)).toList == [5, 4, 4]) "each run of one state is one bar"
+  check ((merged.rows.zip letters.rows).all fun (m, l) =>
+    m.spans.foldl (fun t s => t + (s.stop - s.start)) 0 == l.spans.foldl (fun t s => t + (s.stop - s.start)) 0) "merging keeps the time each row covers"
 
 private def annotationsTest : Except String Unit := do
   let c := Annotations.chart

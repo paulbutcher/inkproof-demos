@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.48.0
+
+- Timeline / Discrete adds the merged same consecutive states chart.
+
 ## v0.47.0
 
 - Box and Whisker uses uPlot's recorded benchmark timings.

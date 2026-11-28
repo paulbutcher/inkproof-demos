@@ -221,7 +221,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 ## Timeline / Discrete (`timeline-discrete.html`)
 
 - Data: the states of the first three charts (devices A to C, states 0 to 5, the periodic and lettered series) are uPlot's; the irregular times are drawn from a fixed seed rather than at random. Matches.
-- Charts: uPlot's fourth, `Merged same consecutive states`, has no counterpart. Open.
+- Charts: uPlot's fourth, `Merged same consecutive states`, is the third chart's data with each run of one state a single bar; the site's fourth chart is the same. Fixed.
 - Colours: states use the red, green, blue, cyan, orange and yellow strokes with the same fill alphas; bars have a four pixel inside outline. Matches.
 - Hover: uPlot highlights the bar under the cursor and shows its state in the legend. Fixed: each state is an item, highlighted under the pointer with a tooltip naming its row and state.
 - Axes: uPlot's labels sit 15 pixels from a 70 pixel wide gutter; the site's gutter is 90. Explained.
