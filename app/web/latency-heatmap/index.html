@@ -24,7 +24,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
     <inkproof-chart src="buckets" cursor="x markers" legend="below-center"></inkproof-chart>
     <h2>Latency Histogram (align: 1, gap: 0, stroke: 2, border collapse)</h2>
     <p>A histogram of how many latencies fall in each 5 millisecond bucket, with the bars touching and a red outline around them.</p>
-    <inkproof-chart src="outlined" cursor="x markers" legend="below-center"></inkproof-chart>
+    <inkproof-chart id="outlined" src="outlined" cursor="x markers" legend="below-center"></inkproof-chart>
+    <p>Bucket size: <input id="binsize" type="range" min="1" max="25" step="1" value="5"> <span id="cursize">5</span></p>
+    <p>Bucket offset: <input id="binoffset" type="range" min="0" max="25" step="1" value="0"> <span id="curoffset">0</span></p>
     <h2>Latency Histogram (align: 1, gap: 2, stroke: 1, disp-gap-shift)</h2>
     <p>The same histogram with a small gap between the bars and a thinner outline.</p>
     <inkproof-chart src="gapped" cursor="x markers" legend="below-center"></inkproof-chart>

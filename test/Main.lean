@@ -264,6 +264,9 @@ private def latencyTest : Except String Unit := do
   check (LatencyHistogram.columns.size == 100 && LatencyHistogram.columns.all fun c => 200 ≤ c.size && c.size ≤ 500) "each column holds 200 to 500 latencies"
   check (LatencyHistogram.samples.all (LatencyHistogram.floor ≤ ·)) "no latency falls below the floor"
   check (LatencyHistogram.counts.foldl max 0 > 0) "the histogram is not empty"
+  for (size, offset) in [(1, 0), (7, 3), (25, 25), (13, 11)] do
+    check ((LatencyHistogram.counts size offset).foldl (· + ·) 0 == LatencyHistogram.samples.size) s!"every latency is counted with buckets {size} wide from {offset}"
+    check ((LatencyHistogram.span size offset).1 ≤ LatencyHistogram.samples.foldl min 1000000 && (LatencyHistogram.span size offset).1 % size == offset % size) s!"the buckets of width {size} start on the offset {offset}"
 
 private def heatmapTest : Except String Unit := do
   let measure := fun (t : String) => (7.0 * t.length.toFloat, 14.0)

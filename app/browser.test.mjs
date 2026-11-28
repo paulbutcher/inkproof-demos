@@ -1083,3 +1083,25 @@ test('legends sit centred under their plot', async () => {
 describe('browser', { concurrency: Math.max(1, Math.min(5, availableParallelism() - 1)) }, () => {
   for (const [name, fn] of tests) it(name, fn);
 });
+
+test('latency-heatmap: the bucket sliders rebuild the outlined histogram', async () => {
+  const { page, problems } = await open('latency-heatmap/');
+  const legend = () => page.evaluate(() => {
+    const el = document.getElementById('outlined');
+    const r = el.getBoundingClientRect();
+    el.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: 0, clientX: r.left + 60 + (r.width - 80) * 0.3, clientY: r.top + r.height / 2 }));
+    return [...el.shadowRoot.querySelectorAll('.legend .entry')].map(b => b.textContent).join('|');
+  });
+  await page.waitForFunction(() => document.getElementById('outlined').shadowRoot?.querySelector('.legend .entry'));
+  const before = await legend();
+  await page.evaluate(() => { const s = document.getElementById('binsize'); s.value = '25'; s.dispatchEvent(new Event('input')); });
+  await page.waitForFunction(() => document.getElementById('cursize').textContent === '25');
+  await page.waitForFunction(b => {
+    const el = document.getElementById('outlined');
+    const r = el.getBoundingClientRect();
+    el.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerId: 1, pointerType: 'mouse', isPrimary: true, buttons: 0, clientX: r.left + 60 + (r.width - 80) * 0.3, clientY: r.top + r.height / 2 }));
+    return [...el.shadowRoot.querySelectorAll('.legend .entry')].map(x => x.textContent).join('|') !== b;
+  }, before);
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});
