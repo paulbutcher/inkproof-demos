@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.49.1
+## v0.50.0
 
 - Dimmed series use inkproof-scene's Color.scaleAlpha in place of a local helper.
 
