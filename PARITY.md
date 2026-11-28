@@ -231,7 +231,7 @@ Pages not yet compared have no section. Done: Line Paths, Area Fill, Axis Contro
 
 - Page stands in for uPlot's `tooltips-closest.html` and legend pages; the data are those of Cursor Bind, not the benchmark results uPlot's tooltips draw (a series per cache state with commit hashes). Explained.
 - Tooltip: uPlot shows the value and commit in a box beside the nearest point, with its border in the series colour; the page names the series and values of the nearest point. Matches in kind.
-- Focus: uPlot dims series other than the one nearest the cursor (`alpha: 0.3`, `prox: 5`); the page does not. Open: [inkproof-web#110](http://localhost:3000/tentenths/inkproof-web/issues/110) concerns the legend.
+- Focus: uPlot dims series other than the one nearest the cursor (`alpha: 0.3`, `prox: 5`); the page's `focus="0.3 5px"` does the same, dimming the legend entries with them. Matches.
 - Legend: see Shared differences.
 
 ## Zoom Fetch (`zoom-fetch.html`)

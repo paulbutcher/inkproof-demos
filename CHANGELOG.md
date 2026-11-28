@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.49.0
+
+- Tooltip and Legend dims the series away from the pointer with inkproof-web's focus attribute, and a browser test checks it.
+
 ## v0.48.0
 
 - Timeline / Discrete adds the merged same consecutive states chart.

@@ -825,6 +825,49 @@ test('tooltip and legend: the tooltip names the nearest point, the legend reads 
   await page.close();
 });
 
+test('tooltip and legend: the series away from the pointer are drawn dimmed, with their legend entries, and restored when it leaves', async () => {
+  const { page, problems } = await open('tooltip-legend/');
+  await page.waitForFunction(() => window.draws.length >= 1);
+  await page.evaluate(() => addEventListener('inkproof-focus', e => (window.focused ??= []).push(e.detail.series)));
+  // The pixels within 40 of each series' full colour, which a series drawn at 0.3 opacity over white has none of.
+  const strong = () => page.evaluate(() => {
+    const canvas = document.querySelector('inkproof-chart').shadowRoot.querySelector('canvas');
+    const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+    const count = [0, 0, 0];
+    for (let i = 0; i < d.length; i += 4) {
+      [[255, 0, 0], [0, 128, 0], [0, 0, 255]].forEach(([r, g, b], k) => {
+        if (Math.abs(d[i] - r) + Math.abs(d[i + 1] - g) + Math.abs(d[i + 2] - b) < 40) count[k]++;
+      });
+    }
+    return count;
+  });
+  const opacities = () => page.evaluate(() => [...document.querySelector('inkproof-chart').shadowRoot.querySelectorAll('.legend button')].map(b => Number(b.style.opacity || 1)));
+  const before = await strong();
+  assert.ok(before.every(n => n > 100), `every series is drawn: ${before}`);
+  let series = null;
+  for (let y = 20; y < 300 && series === null; y += 6) {
+    await pointerAt(page, 'chart', 'pointermove', 400, y);
+    await page.waitForTimeout(60);
+    series = await page.evaluate(() => window.focused?.at(-1) ?? null);
+  }
+  assert.notEqual(series, null, 'the pointer comes within range of a series');
+  await page.waitForTimeout(300);
+  const during = await strong();
+  for (const k of [0, 1, 2]) {
+    if (k === series) assert.ok(during[k] > 0.8 * before[k], `series ${k} keeps its colour: ${before[k]} to ${during[k]}`);
+    else assert.ok(during[k] < 0.3 * before[k], `series ${k} is dimmed: ${before[k]} to ${during[k]}`);
+  }
+  assert.deepEqual((await opacities()).map((o, k) => k === series || o < 1), [true, true, true]);
+  assert.ok((await opacities()).some(o => o < 1), 'a dimmed series has its legend entry dimmed');
+  await pointerAt(page, 'chart', 'pointerleave', 400, 20);
+  await page.waitForFunction(() => window.focused.at(-1) === null);
+  await page.waitForTimeout(300);
+  const after = await strong();
+  after.forEach((n, k) => assert.ok(n > 0.8 * before[k], `series ${k} is restored: ${before[k]} to ${n}`));
+  assert.deepEqual(problems.filter(p => !p.includes('willReadFrequently')), []);
+  await page.close();
+});
+
 // Static legends: the pages whose uPlot demo has a key without values.
 const barNames = ['Lib Size (KB)', 'Render Time (ms)', 'Peak Heap (MB)', 'Final Heap (MB)', 'Interact 10s (ms)', 'Toggle 6x (ms)', 'Random line'];
 for (const [path, chart, expected] of [['grouped-bars/', 0, ['Metric 1', 'Metric 2', 'Metric 3']], ['multi-bars/', 2, barNames], ['multi-bars/', 3, barNames], ['scatter/', 0, ['Region A', 'Region B', 'Region C', 'Region D']], ['scatter/', 1, ['Value', 'Value', 'Value', 'Value']]]) {

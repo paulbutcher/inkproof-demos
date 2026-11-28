@@ -25,6 +25,18 @@ structure Line where
   color : Color
   fill : Option Color
 
+/-- The colour `c` drawn at opacity `a`, from 0 to 1, over its own. -/
+def Color.dim (a : Float) (c : Color) : Color :=
+  { c with a := (c.a.toFloat * a).round.toUInt8 }
+
+theorem Color.dim_eq (a : Float) (c : Color) : Color.dim a c = { c with a := (c.a.toFloat * a).round.toUInt8 } := rfl
+
+/-- The line drawn at opacity `a`, its fill included. -/
+def Line.dim (a : Float) (l : Line) : Line :=
+  { l with color := Color.dim a l.color, fill := l.fill.map (Color.dim a) }
+
+theorem Line.dim_eq (a : Float) (l : Line) : l.dim a = { l with color := Color.dim a l.color, fill := l.fill.map (Color.dim a) } := rfl
+
 /-- A note on the x axis: a line at `start`, or a band from `start` to `stop`, drawn dashed over the data with its label in a box on the top or the bottom edge of the plot. -/
 structure Mark where
   start : Rat
@@ -44,6 +56,12 @@ structure Chart where
   bounds : Option ((Rat × Rat) × (Rat × Rat))
   marks : List Mark
   unit : String := ""
+
+/-- The chart with line `i` drawn at opacity `alphas[i]`; a line past the end of `alphas` is opaque. -/
+def Chart.dimmed (c : Chart) (alphas : Array Float) : Chart :=
+  { c with lines := c.lines.zipIdx.map fun (l, i) => l.dim (alphas.getD i 1) }
+
+theorem Chart.dimmed_lines (c : Chart) (alphas : Array Float) : (c.dimmed alphas).lines = c.lines.zipIdx.map fun (l, i) => l.dim (alphas.getD i 1) := rfl
 
 /-- The names uPlot's wheel and touch zoom pages give their series; the other pages leave theirs unnamed. -/
 def legendNames (page : String) : List String :=
